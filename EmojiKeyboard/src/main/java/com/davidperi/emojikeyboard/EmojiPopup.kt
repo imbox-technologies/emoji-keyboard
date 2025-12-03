@@ -1,5 +1,8 @@
 package com.davidperi.emojikeyboard
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -14,6 +17,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.davidperi.emojikeyboard.utils.MeasureUtils.dp
 
 class EmojiPopup(
@@ -22,9 +26,9 @@ class EmojiPopup(
     private val editText: EditText,
     private val onStatusChanged: (Int) -> Unit
 ) {
-    private var DEBUG_KeyboardUp = 300.dp
-    private var DEBUG_KeyboardDown = 0
+    private var keyboardHeight = 300.dp
     private var popupStatus: Int = STATE_COLLAPSED
+    private var currentAnimator: ValueAnimator? = null
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -36,6 +40,8 @@ class EmojiPopup(
         const val STATE_COLLAPSED = 0
         const val STATE_BEHIND = 1
         const val STATE_FOCUSED = 2
+
+        private const val ANIMATION_DURATION = 250L
     }
 
     init {
@@ -43,7 +49,9 @@ class EmojiPopup(
     }
 
     private fun setup() {
-        changeSize(0)
+        emojiKeyboard.layoutParams.height = 0
+        emojiKeyboard.isVisible = false
+
         setupKeyboardListener()
         setupBackPressHandler()
     }
@@ -51,14 +59,14 @@ class EmojiPopup(
     fun hide() {
         if (popupStatus == STATE_FOCUSED) {
             setStatus(STATE_COLLAPSED)
-            changeSize(DEBUG_KeyboardDown)
+            animateSize(0)
         }
     }
 
     fun show() {
         if (popupStatus == STATE_COLLAPSED) {
             setStatus(STATE_FOCUSED)
-            changeSize(DEBUG_KeyboardUp)
+            animateSize(keyboardHeight)
         }
     }
 
@@ -76,7 +84,7 @@ class EmojiPopup(
 
             STATE_COLLAPSED -> {
                 setStatus(STATE_FOCUSED)
-                changeSize(DEBUG_KeyboardUp)
+                animateSize(keyboardHeight)
             }
         }
     }
@@ -91,12 +99,12 @@ class EmojiPopup(
             val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
 
             if (imeInset > 0) {
-                DEBUG_KeyboardUp = imeInset - rootView.paddingBottom
+                keyboardHeight = imeInset - rootView.paddingBottom
                 // ime up
                 when (popupStatus) {
                     STATE_COLLAPSED, STATE_FOCUSED -> {
                         setStatus(STATE_BEHIND)
-                        changeSize(DEBUG_KeyboardUp)
+                        animateSize(keyboardHeight)
                     }
                 }
 
@@ -104,7 +112,7 @@ class EmojiPopup(
                 // ime down
                 if (popupStatus == STATE_BEHIND) {
                     setStatus(STATE_COLLAPSED)
-                    changeSize(DEBUG_KeyboardDown)
+                    animateSize(0)
                 }
             }
 
@@ -114,11 +122,10 @@ class EmojiPopup(
 
     private fun setupBackPressHandler() {
         val activity = rootView.context.getActivity()
-
         if (activity is ComponentActivity) {
             activity.onBackPressedDispatcher.addCallback(activity, backCallback)
         } else {
-            Log.e("EMOJI", "Back press handling disabled")
+            Log.e("EMOJI", "Back press handling disabled.")
         }
     }
 
@@ -128,13 +135,47 @@ class EmojiPopup(
         onStatusChanged(newStatus)
     }
 
+    private fun animateSize(targetHeight: Int) {
+        currentAnimator?.cancel()
+
+        val currentHeight = emojiKeyboard.layoutParams.height
+        if (currentHeight == targetHeight) return
+
+        if (targetHeight > 0) {
+            emojiKeyboard.isVisible = true
+        }
+
+        currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
+            duration = ANIMATION_DURATION
+            interpolator = FastOutSlowInInterpolator()
+
+            addUpdateListener { animation ->
+                val value = animation.animatedValue as Int
+                val lp = emojiKeyboard.layoutParams
+                lp.height = value
+                emojiKeyboard.layoutParams = lp
+            }
+
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (targetHeight == 0) {
+                        emojiKeyboard.isVisible = false
+                    }
+                    currentAnimator = null
+                }
+            })
+
+            start()
+        }
+    }
+
     private fun changeSize(size: Int) {
+        currentAnimator?.cancel()
         val lp = emojiKeyboard.layoutParams
         if (lp.height != size) {
             lp.height = size
             emojiKeyboard.layoutParams = lp
         }
-
         emojiKeyboard.isVisible = size > 0
     }
 
