@@ -1,6 +1,5 @@
 package com.davidperi.emojikeyboardtest
 
-import android.content.res.Resources
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -63,19 +62,14 @@ class MainActivity : AppCompatActivity() {
     private fun setupEmojiKeyboard() {
         emojiPopup = EmojiPopup(
             binding.root, binding.emojiKeyboard, binding.etTest
-        ) { newStatus -> onEmojiKeyboardStatusChanged(newStatus) }
+        ) { newStatus -> updateIcon(newStatus) }
     }
 
-    private fun onEmojiKeyboardStatusChanged(newStatus: Int) {
+    private fun updateIcon(status: Int) {
         binding.ivToggleEmojiKeyboard.setImageResource(
-            when (newStatus) {
-                EmojiPopup.STATE_FOCUSED -> {
-                    R.drawable.keyboard
-                }
-
-                else -> {
-                    R.drawable.smile
-                }
+            when (status) {
+                EmojiPopup.STATE_FOCUSED -> R.drawable.keyboard
+                else -> R.drawable.smile
             }
         )
     }

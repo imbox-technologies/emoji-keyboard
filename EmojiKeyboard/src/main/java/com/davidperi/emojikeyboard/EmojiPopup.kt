@@ -1,11 +1,15 @@
 package com.davidperi.emojikeyboard
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -20,8 +24,13 @@ class EmojiPopup(
 ) {
     private var DEBUG_KeyboardUp = 300.dp
     private var DEBUG_KeyboardDown = 0
-
     private var popupStatus: Int = STATE_COLLAPSED
+
+    private val backCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            hide()
+        }
+    }
 
     companion object {
         const val STATE_COLLAPSED = 0
@@ -36,6 +45,7 @@ class EmojiPopup(
     private fun setup() {
         changeSize(0)
         setupKeyboardListener()
+        setupBackPressHandler()
     }
 
     fun hide() {
@@ -84,8 +94,7 @@ class EmojiPopup(
                 DEBUG_KeyboardUp = imeInset - rootView.paddingBottom
                 // ime up
                 when (popupStatus) {
-                    STATE_COLLAPSED,
-                    STATE_FOCUSED -> {
+                    STATE_COLLAPSED, STATE_FOCUSED -> {
                         setStatus(STATE_BEHIND)
                         changeSize(DEBUG_KeyboardUp)
                     }
@@ -103,8 +112,19 @@ class EmojiPopup(
         }
     }
 
+    private fun setupBackPressHandler() {
+        val activity = rootView.context.getActivity()
+
+        if (activity is ComponentActivity) {
+            activity.onBackPressedDispatcher.addCallback(activity, backCallback)
+        } else {
+            Log.e("EMOJI", "Back press handling disabled")
+        }
+    }
+
     private fun setStatus(newStatus: Int) {
         popupStatus = newStatus
+        backCallback.isEnabled = (newStatus == STATE_FOCUSED)
         onStatusChanged(newStatus)
     }
 
@@ -129,6 +149,16 @@ class EmojiPopup(
         val imm =
             editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+
+    private fun Context.getActivity(): Activity? {
+        var context = this
+        while (context is ContextWrapper) {
+            if (context is Activity) return context
+            context = context.baseContext
+        }
+        return null
     }
 
 }
