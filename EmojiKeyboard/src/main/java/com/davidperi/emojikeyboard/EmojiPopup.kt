@@ -10,10 +10,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import kotlin.math.roundToInt
 
-class EmojiPopup (
+class EmojiPopup(
     private val rootView: View,
     private val emojiKeyboard: EmojiKeyboard,
     private val editText: EditText,
+    private val onStatusChanged: (Int) -> Unit
 ) {
     private var DEBUG_KeyboardUp = 965 // 1026
     private var DEBUG_KeyboardDown = 0 // 45
@@ -22,8 +23,8 @@ class EmojiPopup (
 
     companion object {
         const val STATE_COLLAPSED = 0
-        const val STATE_BEHIND = 2
-        const val STATE_FOCUSED = 3
+        const val STATE_BEHIND = 1
+        const val STATE_FOCUSED = 2
     }
 
     init {
@@ -37,37 +38,35 @@ class EmojiPopup (
 
     fun hide() {
         if (popupStatus == STATE_FOCUSED) {
-            popupStatus = STATE_COLLAPSED
+            setStatus(STATE_COLLAPSED)
             changeSize(DEBUG_KeyboardDown)
         }
     }
 
     fun show() {
         if (popupStatus == STATE_COLLAPSED) {
-            popupStatus = STATE_FOCUSED
+            setStatus(STATE_FOCUSED)
             changeSize(DEBUG_KeyboardUp)
         }
     }
 
-    fun toggle(): Int {
+    fun toggle() {
         when (popupStatus) {
             STATE_FOCUSED -> {
-                popupStatus = STATE_BEHIND
+                setStatus(STATE_BEHIND)
                 showKeyboard()
             }
 
             STATE_BEHIND -> {
-                popupStatus = STATE_FOCUSED
+                setStatus(STATE_FOCUSED)
                 hideKeyboard()
             }
 
             STATE_COLLAPSED -> {
-                popupStatus = STATE_FOCUSED
+                setStatus(STATE_FOCUSED)
                 changeSize(DEBUG_KeyboardUp)
             }
         }
-
-        return popupStatus
     }
 
     private fun setupKeyboardListener() {
@@ -82,14 +81,18 @@ class EmojiPopup (
 
             if (imeHeight > 0) {
                 // ime up
-                if (popupStatus == STATE_COLLAPSED) {
-                    popupStatus = STATE_BEHIND
-                    changeSize(DEBUG_KeyboardUp)
+                when (popupStatus) {
+                    STATE_COLLAPSED,
+                    STATE_FOCUSED -> {
+                        setStatus(STATE_BEHIND)
+                        changeSize(DEBUG_KeyboardUp)
+                    }
                 }
+
             } else {
                 // ime down
                 if (popupStatus == STATE_BEHIND) {
-                    popupStatus = STATE_COLLAPSED
+                    setStatus(STATE_COLLAPSED)
                     changeSize(DEBUG_KeyboardDown)
                 }
             }
@@ -98,22 +101,31 @@ class EmojiPopup (
         }
     }
 
+    private fun setStatus(newStatus: Int) {
+        popupStatus = newStatus
+        onStatusChanged(newStatus)
+    }
+
     private fun changeSize(size: Int) {
         val lp = emojiKeyboard.layoutParams
-        lp.height = size
-        emojiKeyboard.layoutParams = lp
+        if (lp.height != size) {
+            lp.height = size
+            emojiKeyboard.layoutParams = lp
+        }
 
         emojiKeyboard.isVisible = size > 0
     }
 
     private fun hideKeyboard() {
-        val imm = rootView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            rootView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(editText.windowToken, 0)
     }
 
     private fun showKeyboard() {
         editText.requestFocus()
-        val imm = editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
     }
 

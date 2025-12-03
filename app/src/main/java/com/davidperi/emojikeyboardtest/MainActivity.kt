@@ -5,10 +5,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.davidperi.emojikeyboard.EmojiPopup
-import com.davidperi.emojikeyboard.EmojiTest
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -39,18 +37,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.ivToggleEmojiKeyboard.setOnClickListener {
-            val newStatus = emojiPopup.toggle()
-            binding.ivToggleEmojiKeyboard.setImageResource(
-                when (newStatus) {
-                    EmojiPopup.STATE_FOCUSED -> {
-                        R.drawable.keyboard
-                    }
-
-                    else -> {
-                        R.drawable.smile
-                    }
-                }
-            )
+            emojiPopup.toggle()
         }
 
         binding.etTest.addTextChangedListener { s ->
@@ -59,7 +46,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupEmojiKeyboard() {
-        emojiPopup = EmojiPopup(binding.root, binding.emojiKeyboard, binding.etTest)
+        emojiPopup = EmojiPopup(
+            binding.root, binding.emojiKeyboard, binding.etTest
+        ) { newStatus -> onEmojiKeyboardStatusChanged(newStatus) }
+    }
+
+    private fun onEmojiKeyboardStatusChanged(newStatus: Int) {
+        binding.ivToggleEmojiKeyboard.setImageResource(
+            when (newStatus) {
+                EmojiPopup.STATE_FOCUSED -> {
+                    R.drawable.keyboard
+                }
+
+                else -> {
+                    R.drawable.smile
+                }
+            }
+        )
     }
 
 }
