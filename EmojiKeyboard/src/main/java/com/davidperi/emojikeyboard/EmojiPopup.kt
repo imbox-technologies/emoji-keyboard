@@ -14,6 +14,7 @@ import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -53,6 +54,7 @@ class EmojiPopup(
         emojiKeyboard.isVisible = false
 
         setupKeyboardListener()
+        setupAnimationListener()
         setupBackPressHandler()
     }
 
@@ -73,7 +75,6 @@ class EmojiPopup(
     fun toggle() {
         when (popupStatus) {
             STATE_FOCUSED -> {
-                setStatus(STATE_BEHIND)
                 showKeyboard()
             }
 
@@ -97,27 +98,79 @@ class EmojiPopup(
             }
 
             val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val effectiveHeight = (imeInset - rootView.paddingBottom).coerceAtLeast(0)
 
-            if (imeInset > 0) {
-                keyboardHeight = imeInset - rootView.paddingBottom
+            if (effectiveHeight > 0) {
                 // ime up
-                when (popupStatus) {
-                    STATE_COLLAPSED, STATE_FOCUSED -> {
-                        setStatus(STATE_BEHIND)
-                        animateSize(keyboardHeight)
-                    }
+                keyboardHeight = effectiveHeight
+
+                if (popupStatus == STATE_COLLAPSED) {
+                    setStatus(STATE_BEHIND)
                 }
+
+//                when (popupStatus) {
+//                    STATE_COLLAPSED, STATE_FOCUSED -> {
+//                        setStatus(STATE_BEHIND)
+//                        // animateSize(keyboardHeight)
+//                    }
+//                }
 
             } else {
                 // ime down
                 if (popupStatus == STATE_BEHIND) {
                     setStatus(STATE_COLLAPSED)
-                    animateSize(0)
+                    // animateSize(0)
                 }
             }
 
             insets
         }
+    }
+
+    private fun setupAnimationListener() {
+        ViewCompat.setWindowInsetsAnimationCallback(
+            rootView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+                override fun onPrepare(animation: WindowInsetsAnimationCompat) {
+                    if (animation.typeMask and WindowInsetsCompat.Type.ime() != 0) {
+                        emojiKeyboard.isVisible = true
+                    }
+                }
+
+                override fun onProgress(
+                    insets: WindowInsetsCompat,
+                    runningAnimations: List<WindowInsetsAnimationCompat?>
+                ): WindowInsetsCompat {
+                    val imeAnimation = runningAnimations.find {
+                        it?.typeMask?.and(WindowInsetsCompat.Type.ime()) != 0
+                    }
+
+                    if (imeAnimation != null) {
+                        val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                        val effectiveHeight = (imeHeight - rootView.paddingBottom).coerceAtLeast(0)
+
+                        when (popupStatus) {
+                            STATE_BEHIND -> changeSize(effectiveHeight)
+                            STATE_COLLAPSED -> changeSize(effectiveHeight)
+                            STATE_FOCUSED -> changeSize(keyboardHeight)
+                        }
+                    }
+
+                    return insets
+                }
+
+                override fun onEnd(animation: WindowInsetsAnimationCompat) {
+                    val isImeVisible = ViewCompat.getRootWindowInsets(rootView)
+                        ?.isVisible(WindowInsetsCompat.Type.ime()) == true
+
+                    if (isImeVisible && popupStatus == STATE_FOCUSED) {
+                        setStatus(STATE_BEHIND)
+                    }
+
+                    if (popupStatus == STATE_COLLAPSED) {
+                        emojiKeyboard.isVisible = false
+                    }
+                }
+            })
     }
 
     private fun setupBackPressHandler() {
