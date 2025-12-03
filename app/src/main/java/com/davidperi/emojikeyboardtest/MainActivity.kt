@@ -1,13 +1,18 @@
 package com.davidperi.emojikeyboardtest
 
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.widget.addTextChangedListener
 import com.davidperi.emojikeyboard.EmojiPopup
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
+import com.davidperi.emojikeyboardtest.utils.MeasureUtils.dp
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,9 +26,19 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            // Manually manage insets
+//            binding.welcomeText.updatePadding(top = systemBars.top)
+//
+//            binding.inputContainer.updateLayoutParams<ConstraintLayout.LayoutParams> {
+//                goneBottomMargin = systemBars.bottom + 8.dp
+//            }
+
+            // Set padding to the full view
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+
             insets
         }
 

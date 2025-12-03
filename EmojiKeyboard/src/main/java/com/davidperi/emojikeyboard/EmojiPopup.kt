@@ -1,6 +1,7 @@
 package com.davidperi.emojikeyboard
 
 import android.content.Context
+import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -8,7 +9,8 @@ import android.widget.EditText
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import kotlin.math.roundToInt
+import androidx.core.view.updatePadding
+import com.davidperi.emojikeyboard.utils.MeasureUtils.dp
 
 class EmojiPopup(
     private val rootView: View,
@@ -16,8 +18,8 @@ class EmojiPopup(
     private val editText: EditText,
     private val onStatusChanged: (Int) -> Unit
 ) {
-    private var DEBUG_KeyboardUp = 965 // 1026
-    private var DEBUG_KeyboardDown = 0 // 45
+    private var DEBUG_KeyboardUp = 300.dp
+    private var DEBUG_KeyboardDown = 0
 
     private var popupStatus: Int = STATE_COLLAPSED
 
@@ -70,16 +72,16 @@ class EmojiPopup(
     }
 
     private fun setupKeyboardListener() {
-        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
-            val imeHeight: Int = if (android.os.Build.VERSION.SDK_INT >= 30) {
-                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-            } else {
-                insets.systemWindowInsetBottom
+        ViewCompat.setOnApplyWindowInsetsListener(emojiKeyboard) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            if (rootView.paddingBottom < systemBars.bottom) {
+                emojiKeyboard.updatePadding(bottom = systemBars.bottom)
             }
 
-            Log.d("EMOJI", "$imeHeight")
+            val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
 
-            if (imeHeight > 0) {
+            if (imeInset > 0) {
+                DEBUG_KeyboardUp = imeInset - rootView.paddingBottom
                 // ime up
                 when (popupStatus) {
                     STATE_COLLAPSED,
@@ -127,10 +129,6 @@ class EmojiPopup(
         val imm =
             editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
-    }
-
-    private fun Int.dpToPx(context: Context): Int {
-        return (this * context.resources.displayMetrics.density).roundToInt()
     }
 
 }
