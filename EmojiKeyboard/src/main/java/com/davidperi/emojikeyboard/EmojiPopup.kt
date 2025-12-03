@@ -6,7 +6,6 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -46,15 +45,11 @@ class EmojiPopup(
     }
 
     init {
-        setup()
-    }
-
-    private fun setup() {
         emojiKeyboard.layoutParams.height = 0
         emojiKeyboard.isVisible = false
 
-        setupKeyboardListener()
-        setupAnimationListener()
+        setupStaticInsetsListener()
+        setupAnimatedInsetsListener()
         setupBackPressHandler()
     }
 
@@ -90,7 +85,7 @@ class EmojiPopup(
         }
     }
 
-    private fun setupKeyboardListener() {
+    private fun setupStaticInsetsListener() {
         ViewCompat.setOnApplyWindowInsetsListener(emojiKeyboard) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             if (rootView.paddingBottom < systemBars.bottom) {
@@ -108,18 +103,10 @@ class EmojiPopup(
                     setStatus(STATE_BEHIND)
                 }
 
-//                when (popupStatus) {
-//                    STATE_COLLAPSED, STATE_FOCUSED -> {
-//                        setStatus(STATE_BEHIND)
-//                        // animateSize(keyboardHeight)
-//                    }
-//                }
-
             } else {
                 // ime down
                 if (popupStatus == STATE_BEHIND) {
                     setStatus(STATE_COLLAPSED)
-                    // animateSize(0)
                 }
             }
 
@@ -127,7 +114,7 @@ class EmojiPopup(
         }
     }
 
-    private fun setupAnimationListener() {
+    private fun setupAnimatedInsetsListener() {
         ViewCompat.setWindowInsetsAnimationCallback(
             rootView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
                 override fun onPrepare(animation: WindowInsetsAnimationCompat) {
@@ -182,6 +169,7 @@ class EmojiPopup(
         }
     }
 
+
     private fun setStatus(newStatus: Int) {
         popupStatus = newStatus
         backCallback.isEnabled = (newStatus == STATE_FOCUSED)
@@ -232,6 +220,7 @@ class EmojiPopup(
         emojiKeyboard.isVisible = size > 0
     }
 
+
     private fun hideKeyboard() {
         val imm =
             rootView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -256,15 +245,3 @@ class EmojiPopup(
     }
 
 }
-
-//    private fun setupTreeObserver() {
-//        rootView.viewTreeObserver.addOnGlobalLayoutListener {
-//            val rect = Rect()
-//            rootView.getWindowVisibleDisplayFrame(rect)
-//
-//            val screenHeight = rootView.rootView.height
-//            val imeHeight = screenHeight - rect.bottom
-//
-//            // Log.d("EMOJI", "keyboard_height=$imeHeight")
-//        }
-//    }
