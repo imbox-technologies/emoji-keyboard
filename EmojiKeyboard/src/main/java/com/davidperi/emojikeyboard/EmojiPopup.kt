@@ -116,6 +116,8 @@ class EmojiPopup(
 
                 if (popupStatus == STATE_COLLAPSED) {
                     setStatus(STATE_BEHIND)
+                } else if (popupStatus == STATE_SEARCHING) {
+                    extendSize()
                 }
 
             } else {
