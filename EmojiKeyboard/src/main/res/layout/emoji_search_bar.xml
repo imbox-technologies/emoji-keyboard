@@ -28,6 +28,7 @@
                 android:src="@drawable/search" />
 
             <EditText
+                android:id="@+id/search_bar"
                 style="@style/SimpleTextStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
