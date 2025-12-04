@@ -53,6 +53,7 @@ class EmojiPopup(
         setupBackPressHandler()
     }
 
+
     fun hide() {
         if (popupStatus == STATE_FOCUSED) {
             setStatus(STATE_COLLAPSED)
@@ -84,6 +85,7 @@ class EmojiPopup(
             }
         }
     }
+
 
     private fun setupStaticInsetsListener() {
         ViewCompat.setOnApplyWindowInsetsListener(emojiKeyboard) { v, insets ->
