@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.davidperi.emojikeyboard.utils.MeasureUtils.dp
@@ -26,12 +27,13 @@ class EmojiPopup(
     private val editText: EditText,
     private val onStatusChanged: (Int) -> Unit
 ) {
-    private var keyboardHeight = 300.dp
+    private var keyboardHeight = DEFAULT_HEIGHT.dp
     private var popupStatus: Int = STATE_COLLAPSED
     private var currentAnimator: ValueAnimator? = null
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
+            Log.d("EMOJI", "Captured back press")
             hide()
         }
     }
@@ -40,7 +42,10 @@ class EmojiPopup(
         const val STATE_COLLAPSED = 0
         const val STATE_BEHIND = 1
         const val STATE_FOCUSED = 2
+        const val STATE_SEARCHING = 3
 
+        private const val DEFAULT_HEIGHT = 300
+        private const val EXTENSION_HEIGHT = 100
         private const val ANIMATION_DURATION = 250L
     }
 
@@ -51,6 +56,8 @@ class EmojiPopup(
         setupStaticInsetsListener()
         setupAnimatedInsetsListener()
         setupBackPressHandler()
+        setupMsgFocusListener()
+        setupSearchBarFocusListener()
     }
 
 
@@ -83,6 +90,13 @@ class EmojiPopup(
                 setStatus(STATE_FOCUSED)
                 animateSize(keyboardHeight)
             }
+
+            STATE_SEARCHING -> {
+                setStatus(STATE_BEHIND)
+                editText.requestFocus()
+                emojiKeyboard.topBar.isVisible = true
+                animateSize(keyboardHeight)
+            }
         }
     }
 
@@ -107,8 +121,9 @@ class EmojiPopup(
 
             } else {
                 // ime down
-                if (popupStatus == STATE_BEHIND) {
-                    setStatus(STATE_COLLAPSED)
+                when (popupStatus) {
+                    STATE_BEHIND -> setStatus(STATE_COLLAPSED)
+                    STATE_SEARCHING -> backToNormalSize()
                 }
             }
 
@@ -155,6 +170,11 @@ class EmojiPopup(
                         setStatus(STATE_BEHIND)
                     }
 
+                    if (!isImeVisible && popupStatus == STATE_SEARCHING) {
+                        setStatus(STATE_FOCUSED)
+                        silentlyFocusMsg()
+                    }
+
                     if (popupStatus == STATE_COLLAPSED) {
                         emojiKeyboard.isVisible = false
                     }
@@ -168,6 +188,29 @@ class EmojiPopup(
             activity.onBackPressedDispatcher.addCallback(activity, backCallback)
         } else {
             Log.e("EMOJI", "Back press handling disabled.")
+        }
+    }
+
+    private fun setupMsgFocusListener() {
+        editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                when (popupStatus) {
+                    STATE_SEARCHING -> toggle()
+                }
+            }
+        }
+    }
+
+    private fun setupSearchBarFocusListener() {
+        emojiKeyboard.searchBar.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                when (popupStatus) {
+                    STATE_FOCUSED -> {
+                        setStatus(STATE_SEARCHING)
+                        extendSize()
+                    }
+                }
+            }
         }
     }
 
@@ -194,9 +237,12 @@ class EmojiPopup(
 
             addUpdateListener { animation ->
                 val value = animation.animatedValue as Int
-                val lp = emojiKeyboard.layoutParams
-                lp.height = value
-                emojiKeyboard.layoutParams = lp
+                emojiKeyboard.updateLayoutParams {
+                    height = value
+                }
+//                val lp = emojiKeyboard.layoutParams
+//                lp.height = value
+//                emojiKeyboard.layoutParams = lp
             }
 
             addListener(object : AnimatorListenerAdapter() {
@@ -222,6 +268,16 @@ class EmojiPopup(
         emojiKeyboard.isVisible = size > 0
     }
 
+    private fun extendSize() {
+        emojiKeyboard.topBar.isVisible = false
+        animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
+    }
+
+    private fun backToNormalSize() {
+        emojiKeyboard.topBar.isVisible = true
+        animateSize(keyboardHeight)
+    }
+
 
     private fun hideKeyboard() {
         val imm =
@@ -234,6 +290,15 @@ class EmojiPopup(
         val imm =
             editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun silentlyFocusMsg() {
+        val prev = editText.showSoftInputOnFocus
+        editText.showSoftInputOnFocus = false
+        editText.requestFocus()
+        editText.postDelayed({
+            editText.showSoftInputOnFocus = prev
+        }, 50)
     }
 
 

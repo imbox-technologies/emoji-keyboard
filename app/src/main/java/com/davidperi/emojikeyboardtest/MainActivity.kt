@@ -49,10 +49,21 @@ class MainActivity : AppCompatActivity() {
     private fun updateIcon(status: Int) {
         binding.ivToggleEmojiKeyboard.setImageResource(
             when (status) {
+                EmojiPopup.STATE_COLLAPSED -> R.drawable.smile
+                EmojiPopup.STATE_BEHIND -> R.drawable.smile
                 EmojiPopup.STATE_FOCUSED -> R.drawable.keyboard
+                EmojiPopup.STATE_SEARCHING -> R.drawable.keyboard
                 else -> R.drawable.smile
             }
         )
+
+        binding.debugStatus.text = when (status) {
+            EmojiPopup.STATE_COLLAPSED -> "COLLAPSED"
+            EmojiPopup.STATE_BEHIND -> "BEHIND"
+            EmojiPopup.STATE_FOCUSED -> "FOCUSED"
+            EmojiPopup.STATE_SEARCHING -> "SEARCHING"
+            else -> "WTF"
+        }
     }
 
 }

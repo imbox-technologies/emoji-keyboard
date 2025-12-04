@@ -17,10 +17,8 @@ class EmojiKeyboard @JvmOverloads constructor(
         EmojiKeyboardPopupBinding.inflate(LayoutInflater.from(context), this, true)
 
     val searchBar: EditText
-        private set
         get() = binding.searchBar.searchBar
 
     val topBar: LinearLayout
-        private set
         get() = binding.topBar
 }
