@@ -33,7 +33,6 @@ class EmojiPopup(
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
-            Log.d("EMOJI", "Captured back press")
             hide()
         }
     }
@@ -134,12 +133,6 @@ class EmojiPopup(
     private fun setupAnimatedInsetsListener() {
         ViewCompat.setWindowInsetsAnimationCallback(
             rootView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
-                override fun onPrepare(animation: WindowInsetsAnimationCompat) {
-                    if (animation.typeMask and WindowInsetsCompat.Type.ime() != 0) {
-                        emojiKeyboard.isVisible = true
-                    }
-                }
-
                 override fun onProgress(
                     insets: WindowInsetsCompat,
                     runningAnimations: List<WindowInsetsAnimationCompat?>
@@ -227,22 +220,17 @@ class EmojiPopup(
         val currentHeight = emojiKeyboard.layoutParams.height
         if (currentHeight == targetHeight) return
 
-        if (targetHeight > 0) {
-            emojiKeyboard.isVisible = true
-        }
-
         currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
             duration = ANIMATION_DURATION
             interpolator = FastOutSlowInInterpolator()
 
             addUpdateListener { animation ->
                 val value = animation.animatedValue as Int
-                emojiKeyboard.updateLayoutParams {
-                    height = value
+                emojiKeyboard.updateLayoutParams { height = value }
+
+                if (value > 0 && !emojiKeyboard.isVisible) {
+                    emojiKeyboard.isVisible = true
                 }
-//                val lp = emojiKeyboard.layoutParams
-//                lp.height = value
-//                emojiKeyboard.layoutParams = lp
             }
 
             addListener(object : AnimatorListenerAdapter() {
@@ -260,12 +248,17 @@ class EmojiPopup(
 
     private fun changeSize(size: Int) {
         currentAnimator?.cancel()
-        val lp = emojiKeyboard.layoutParams
-        if (lp.height != size) {
-            lp.height = size
-            emojiKeyboard.layoutParams = lp
+        if (size == 0) {
+            emojiKeyboard.isVisible = false
         }
-        emojiKeyboard.isVisible = size > 0
+
+        if (emojiKeyboard.layoutParams.height != size){
+            emojiKeyboard.updateLayoutParams { height = size }
+        }
+
+        if (size > 0 && !emojiKeyboard.isVisible) {
+            emojiKeyboard.isVisible = true
+        }
     }
 
     private fun extendSize() {
