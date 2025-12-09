@@ -3,12 +3,7 @@ package com.davidperi.emojikeyboard
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.util.Log
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
@@ -17,19 +12,24 @@ import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.core.view.updatePadding
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.davidperi.emojikeyboard.utils.MeasureUtils.dp
+import com.davidperi.emojikeyboard.utils.ActivityUtils.getActivity
+import com.davidperi.emojikeyboard.utils.ActivityUtils.hideKeyboard
+import com.davidperi.emojikeyboard.utils.ActivityUtils.showKeyboard
 
 class EmojiPopup(
-    private val rootView: View,
     private val emojiKeyboard: EmojiKeyboard,
     private val editText: EditText,
-    private val onStatusChanged: (Int) -> Unit
+    private val onStateChanged: (PopupState) -> Unit
 ) {
-    var state: Int = STATE_COLLAPSED
+
+    enum class PopupState { Collapsed, Behind, Focused, Searching }
+    var state: PopupState = PopupState.Collapsed
+
     private var keyboardHeight = DEFAULT_HEIGHT.dp
     private var currentAnimator: ValueAnimator? = null
+    private var shouldMimicIme = true
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -38,11 +38,6 @@ class EmojiPopup(
     }
 
     companion object {
-        const val STATE_COLLAPSED = 0
-        const val STATE_BEHIND = 1
-        const val STATE_FOCUSED = 2
-        const val STATE_SEARCHING = 3
-
         private const val DEFAULT_HEIGHT = 300
         private const val EXTENSION_HEIGHT = 100
         private const val ANIMATION_DURATION = 250L
@@ -56,75 +51,92 @@ class EmojiPopup(
         setupAnimatedInsetsListener()
         setupBackPressHandler()
         setupMsgFocusListener()
-        setupSearchBarFocusListener()
     }
 
 
     fun hide() {
-        if (state == STATE_FOCUSED) {
-            setStatus(STATE_COLLAPSED)
-            animateSize(0)
-        }
-    }
-
-    fun show() {
-        if (state == STATE_COLLAPSED) {
-            setStatus(STATE_FOCUSED)
-            animateSize(keyboardHeight)
+        if (state == PopupState.Focused) {
+            transitionTo(PopupState.Collapsed)
         }
     }
 
     fun toggle() {
         when (state) {
-            STATE_FOCUSED -> {
-                showKeyboard()
-            }
+            PopupState.Collapsed -> transitionTo(PopupState.Focused)
+            PopupState.Behind -> transitionTo(PopupState.Focused)
+            PopupState.Focused -> transitionTo(PopupState.Behind)
+            PopupState.Searching -> transitionTo(PopupState.Behind)
+        }
+    }
 
-            STATE_BEHIND -> {
-                setStatus(STATE_FOCUSED)
-                hideKeyboard()
-            }
 
-            STATE_COLLAPSED -> {
-                setStatus(STATE_FOCUSED)
-                animateSize(keyboardHeight)
-            }
+    private fun transitionTo(newState: PopupState) {
+        if (state == newState) return
 
-            STATE_SEARCHING -> {
-                setStatus(STATE_BEHIND)
+        val oldState = state
+        state = newState
+
+        when (newState) {
+            PopupState.Collapsed -> {
+                if (oldState == PopupState.Focused) animateSize(0)
                 editText.requestFocus()
+                emojiKeyboard.hideKeyboard()
+                backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = true
+            }
+
+            PopupState.Behind -> {
+                if (oldState == PopupState.Focused) shouldMimicIme = false
+                if (oldState != PopupState.Collapsed) animateSize(keyboardHeight)
+                editText.showKeyboard()
+                backCallback.isEnabled = false
+                emojiKeyboard.topBar.isVisible = true
+            }
+
+            PopupState.Focused -> {
+                if (oldState == PopupState.Behind) shouldMimicIme = false
                 animateSize(keyboardHeight)
+                editText.requestFocus()
+                editText.hideKeyboard()
+                backCallback.isEnabled = true
+                emojiKeyboard.topBar.isVisible = true
+            }
+
+            PopupState.Searching -> {
+                animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
+                emojiKeyboard.searchBar.showKeyboard()
+                backCallback.isEnabled = false
+                emojiKeyboard.topBar.isVisible = false
             }
         }
+
+        onStateChanged(newState)
     }
 
 
     private fun setupStaticInsetsListener() {
         ViewCompat.setOnApplyWindowInsetsListener(emojiKeyboard) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            if (rootView.paddingBottom < systemBars.bottom) {
-                emojiKeyboard.updatePadding(bottom = systemBars.bottom)
-            }
-
             val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-            val effectiveHeight = (imeInset - rootView.paddingBottom).coerceAtLeast(0)
+            val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val effectiveHeight = (imeInset - navInset).coerceAtLeast(0)
 
-            if (effectiveHeight > 0) {
-                // ime up
+            if (effectiveHeight > 0) {  // ime up
                 keyboardHeight = effectiveHeight
 
-                if (state == STATE_COLLAPSED) {
-                    setStatus(STATE_BEHIND)
-                } else if (state == STATE_SEARCHING) {
-                    extendSize()
+                when (state) {
+                    PopupState.Collapsed -> transitionTo(PopupState.Behind)
+                    PopupState.Focused -> {
+                        if (editText.hasFocus()) transitionTo(PopupState.Behind)
+                        else if (emojiKeyboard.searchBar.hasFocus()) transitionTo(PopupState.Searching)
+                    }
+                    else -> {}
                 }
 
-            } else {
-                // ime down
+            } else {  // ime down
                 when (state) {
-                    STATE_BEHIND -> setStatus(STATE_COLLAPSED)
-                    STATE_SEARCHING -> backToNormalSize()
+                    PopupState.Behind -> transitionTo(PopupState.Collapsed)
+                    PopupState.Searching -> transitionTo(PopupState.Focused)
+                    else -> {}
                 }
             }
 
@@ -134,7 +146,7 @@ class EmojiPopup(
 
     private fun setupAnimatedInsetsListener() {
         ViewCompat.setWindowInsetsAnimationCallback(
-            rootView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+            emojiKeyboard, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
                 override fun onProgress(
                     insets: WindowInsetsCompat,
                     runningAnimations: List<WindowInsetsAnimationCompat?>
@@ -143,14 +155,15 @@ class EmojiPopup(
                         it?.typeMask?.and(WindowInsetsCompat.Type.ime()) != 0
                     }
 
-                    if (imeAnimation != null) {
+                    if (imeAnimation != null && shouldMimicIme) {
                         val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-                        val effectiveHeight = (imeHeight - rootView.paddingBottom).coerceAtLeast(0)
+                        val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                        val effectiveHeight = (imeHeight - navInset).coerceAtLeast(0)
 
                         when (state) {
-                            STATE_BEHIND -> changeSize(effectiveHeight)
-                            STATE_COLLAPSED -> changeSize(effectiveHeight)
-                            STATE_FOCUSED -> changeSize(keyboardHeight)
+                            PopupState.Collapsed -> changeSize(effectiveHeight)
+                            PopupState.Behind -> changeSize(effectiveHeight)
+                            else -> {}
                         }
                     }
 
@@ -158,63 +171,26 @@ class EmojiPopup(
                 }
 
                 override fun onEnd(animation: WindowInsetsAnimationCompat) {
-                    val isImeVisible = ViewCompat.getRootWindowInsets(rootView)
-                        ?.isVisible(WindowInsetsCompat.Type.ime()) == true
-
-                    if (isImeVisible && state == STATE_FOCUSED) {
-                        setStatus(STATE_BEHIND)
-                    }
-
-                    if (!isImeVisible && state == STATE_SEARCHING) {
-                        setStatus(STATE_FOCUSED)
-                        silentlyFocusMsg()
-                    }
-
-                    if (state == STATE_COLLAPSED) {
-                        emojiKeyboard.isVisible = false
-                    }
+                    shouldMimicIme = true
                 }
             })
     }
 
     private fun setupBackPressHandler() {
-        val activity = rootView.context.getActivity()
+        val activity = emojiKeyboard.context.getActivity()
         if (activity is ComponentActivity) {
             activity.onBackPressedDispatcher.addCallback(activity, backCallback)
-        } else {
-            Log.e("EMOJI", "Back press handling disabled.")
         }
     }
 
     private fun setupMsgFocusListener() {
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                when (state) {
-                    STATE_SEARCHING -> toggle()
-                }
+            if (hasFocus && state == PopupState.Searching) {
+                transitionTo(PopupState.Behind)
             }
         }
     }
 
-    private fun setupSearchBarFocusListener() {
-        emojiKeyboard.searchBar.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                when (state) {
-                    STATE_FOCUSED -> {
-                        setStatus(STATE_SEARCHING)
-                        extendSize()
-                    }
-                }
-            }
-        }
-    }
-
-
-    private fun setStatus(newStatus: Int) {
-        state = newStatus
-        backCallback.isEnabled = (newStatus == STATE_FOCUSED)
-        onStatusChanged(newStatus)
-    }
 
     private fun animateSize(targetHeight: Int) {
         currentAnimator?.cancel()
@@ -261,49 +237,6 @@ class EmojiPopup(
         if (size > 0 && !emojiKeyboard.isVisible) {
             emojiKeyboard.isVisible = true
         }
-    }
-
-    private fun extendSize() {
-        emojiKeyboard.topBar.isVisible = false
-        animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
-    }
-
-    private fun backToNormalSize() {
-        emojiKeyboard.topBar.isVisible = true
-        animateSize(keyboardHeight)
-    }
-
-
-    private fun hideKeyboard() {
-        val imm =
-            rootView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(editText.windowToken, 0)
-    }
-
-    private fun showKeyboard() {
-        editText.requestFocus()
-        val imm =
-            editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
-    }
-
-    private fun silentlyFocusMsg() {
-        val prev = editText.showSoftInputOnFocus
-        editText.showSoftInputOnFocus = false
-        editText.requestFocus()
-        editText.postDelayed({
-            editText.showSoftInputOnFocus = prev
-        }, 50)
-    }
-
-
-    private fun Context.getActivity(): Activity? {
-        var context = this
-        while (context is ContextWrapper) {
-            if (context is Activity) return context
-            context = context.baseContext
-        }
-        return null
     }
 
 }

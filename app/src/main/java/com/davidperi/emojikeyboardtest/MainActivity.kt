@@ -42,27 +42,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupEmojiKeyboard() {
         emojiPopup = EmojiPopup(
-            binding.root, binding.emojiKeyboard, binding.etTest
-        ) { newStatus -> updateIcon(newStatus) }
+            binding.emojiKeyboard, binding.etTest
+        ) { newState -> updateIcon(newState) }
     }
 
-    private fun updateIcon(status: Int) {
+    private fun updateIcon(state: EmojiPopup.PopupState) {
         binding.ivToggleEmojiKeyboard.setImageResource(
-            when (status) {
-                EmojiPopup.STATE_COLLAPSED -> R.drawable.smile
-                EmojiPopup.STATE_BEHIND -> R.drawable.smile
-                EmojiPopup.STATE_FOCUSED -> R.drawable.keyboard
-                EmojiPopup.STATE_SEARCHING -> R.drawable.keyboard
-                else -> R.drawable.smile
+            when (state) {
+                EmojiPopup.PopupState.Collapsed -> R.drawable.smile
+                EmojiPopup.PopupState.Behind -> R.drawable.smile
+                EmojiPopup.PopupState.Focused -> R.drawable.keyboard
+                EmojiPopup.PopupState.Searching -> R.drawable.keyboard
             }
         )
 
-        binding.debugStatus.text = when (status) {
-            EmojiPopup.STATE_COLLAPSED -> "COLLAPSED"
-            EmojiPopup.STATE_BEHIND -> "BEHIND"
-            EmojiPopup.STATE_FOCUSED -> "FOCUSED"
-            EmojiPopup.STATE_SEARCHING -> "SEARCHING"
-            else -> "WTF"
+        binding.debugStatus.text = when (state) {
+            EmojiPopup.PopupState.Collapsed -> "COLLAPSED"
+            EmojiPopup.PopupState.Behind -> "BEHIND"
+            EmojiPopup.PopupState.Focused -> "FOCUSED"
+            EmojiPopup.PopupState.Searching -> "SEARCHING"
         }
     }
 
