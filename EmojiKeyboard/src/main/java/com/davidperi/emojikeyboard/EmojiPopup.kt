@@ -27,8 +27,8 @@ class EmojiPopup(
     private val editText: EditText,
     private val onStatusChanged: (Int) -> Unit
 ) {
+    var state: Int = STATE_COLLAPSED
     private var keyboardHeight = DEFAULT_HEIGHT.dp
-    private var popupStatus: Int = STATE_COLLAPSED
     private var currentAnimator: ValueAnimator? = null
 
     private val backCallback = object : OnBackPressedCallback(false) {
@@ -61,21 +61,21 @@ class EmojiPopup(
 
 
     fun hide() {
-        if (popupStatus == STATE_FOCUSED) {
+        if (state == STATE_FOCUSED) {
             setStatus(STATE_COLLAPSED)
             animateSize(0)
         }
     }
 
     fun show() {
-        if (popupStatus == STATE_COLLAPSED) {
+        if (state == STATE_COLLAPSED) {
             setStatus(STATE_FOCUSED)
             animateSize(keyboardHeight)
         }
     }
 
     fun toggle() {
-        when (popupStatus) {
+        when (state) {
             STATE_FOCUSED -> {
                 showKeyboard()
             }
@@ -114,15 +114,15 @@ class EmojiPopup(
                 // ime up
                 keyboardHeight = effectiveHeight
 
-                if (popupStatus == STATE_COLLAPSED) {
+                if (state == STATE_COLLAPSED) {
                     setStatus(STATE_BEHIND)
-                } else if (popupStatus == STATE_SEARCHING) {
+                } else if (state == STATE_SEARCHING) {
                     extendSize()
                 }
 
             } else {
                 // ime down
-                when (popupStatus) {
+                when (state) {
                     STATE_BEHIND -> setStatus(STATE_COLLAPSED)
                     STATE_SEARCHING -> backToNormalSize()
                 }
@@ -147,7 +147,7 @@ class EmojiPopup(
                         val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
                         val effectiveHeight = (imeHeight - rootView.paddingBottom).coerceAtLeast(0)
 
-                        when (popupStatus) {
+                        when (state) {
                             STATE_BEHIND -> changeSize(effectiveHeight)
                             STATE_COLLAPSED -> changeSize(effectiveHeight)
                             STATE_FOCUSED -> changeSize(keyboardHeight)
@@ -161,16 +161,16 @@ class EmojiPopup(
                     val isImeVisible = ViewCompat.getRootWindowInsets(rootView)
                         ?.isVisible(WindowInsetsCompat.Type.ime()) == true
 
-                    if (isImeVisible && popupStatus == STATE_FOCUSED) {
+                    if (isImeVisible && state == STATE_FOCUSED) {
                         setStatus(STATE_BEHIND)
                     }
 
-                    if (!isImeVisible && popupStatus == STATE_SEARCHING) {
+                    if (!isImeVisible && state == STATE_SEARCHING) {
                         setStatus(STATE_FOCUSED)
                         silentlyFocusMsg()
                     }
 
-                    if (popupStatus == STATE_COLLAPSED) {
+                    if (state == STATE_COLLAPSED) {
                         emojiKeyboard.isVisible = false
                     }
                 }
@@ -189,7 +189,7 @@ class EmojiPopup(
     private fun setupMsgFocusListener() {
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                when (popupStatus) {
+                when (state) {
                     STATE_SEARCHING -> toggle()
                 }
             }
@@ -199,7 +199,7 @@ class EmojiPopup(
     private fun setupSearchBarFocusListener() {
         emojiKeyboard.searchBar.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                when (popupStatus) {
+                when (state) {
                     STATE_FOCUSED -> {
                         setStatus(STATE_SEARCHING)
                         extendSize()
@@ -211,7 +211,7 @@ class EmojiPopup(
 
 
     private fun setStatus(newStatus: Int) {
-        popupStatus = newStatus
+        state = newStatus
         backCallback.isEnabled = (newStatus == STATE_FOCUSED)
         onStatusChanged(newStatus)
     }
