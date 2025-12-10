@@ -14,18 +14,21 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.davidperi.emojikeyboard.utils.MeasureUtils.dp
+import com.davidperi.emojikeyboard.EmojiKeyboard.PopupState
+import com.davidperi.emojikeyboard.EmojiKeyboard.PopupState.COLLAPSED
+import com.davidperi.emojikeyboard.EmojiKeyboard.PopupState.BEHIND
+import com.davidperi.emojikeyboard.EmojiKeyboard.PopupState.FOCUSED
+import com.davidperi.emojikeyboard.EmojiKeyboard.PopupState.SEARCHING
 import com.davidperi.emojikeyboard.utils.ActivityUtils.getActivity
 import com.davidperi.emojikeyboard.utils.ActivityUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.ActivityUtils.showKeyboard
 
-class EmojiPopup(
+internal class EmojiPopup(
     private val emojiKeyboard: EmojiKeyboard,
     private val editText: EditText,
-    private val onStateChanged: (PopupState) -> Unit
 ) {
 
-    enum class PopupState { Collapsed, Behind, Focused, Searching }
-    var state: PopupState = PopupState.Collapsed
+    var state: PopupState = COLLAPSED
 
     private var keyboardHeight = DEFAULT_HEIGHT.dp
     private var currentAnimator: ValueAnimator? = null
@@ -39,7 +42,7 @@ class EmojiPopup(
 
     companion object {
         private const val DEFAULT_HEIGHT = 300
-        private const val EXTENSION_HEIGHT = 100
+        private const val EXTENSION_HEIGHT = 150
         private const val ANIMATION_DURATION = 250L
     }
 
@@ -55,17 +58,17 @@ class EmojiPopup(
 
 
     fun hide() {
-        if (state == PopupState.Focused) {
-            transitionTo(PopupState.Collapsed)
+        if (state == FOCUSED) {
+            transitionTo(COLLAPSED)
         }
     }
 
     fun toggle() {
         when (state) {
-            PopupState.Collapsed -> transitionTo(PopupState.Focused)
-            PopupState.Behind -> transitionTo(PopupState.Focused)
-            PopupState.Focused -> transitionTo(PopupState.Behind)
-            PopupState.Searching -> transitionTo(PopupState.Behind)
+            COLLAPSED -> transitionTo(FOCUSED)
+            BEHIND -> transitionTo(FOCUSED)
+            FOCUSED -> transitionTo(BEHIND)
+            SEARCHING -> transitionTo(BEHIND)
         }
     }
 
@@ -77,24 +80,24 @@ class EmojiPopup(
         state = newState
 
         when (newState) {
-            PopupState.Collapsed -> {
-                if (oldState == PopupState.Focused) animateSize(0)
+            COLLAPSED -> {
+                if (oldState == FOCUSED) animateSize(0)
                 editText.requestFocus()
                 emojiKeyboard.hideKeyboard()
                 backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = true
             }
 
-            PopupState.Behind -> {
-                if (oldState == PopupState.Focused) shouldMimicIme = false
-                if (oldState != PopupState.Collapsed) animateSize(keyboardHeight)
+            BEHIND -> {
+                if (oldState == FOCUSED) shouldMimicIme = false
+                if (oldState != COLLAPSED) animateSize(keyboardHeight)
                 editText.showKeyboard()
                 backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = true
             }
 
-            PopupState.Focused -> {
-                if (oldState == PopupState.Behind) shouldMimicIme = false
+            FOCUSED -> {
+                if (oldState == BEHIND) shouldMimicIme = false
                 animateSize(keyboardHeight)
                 editText.requestFocus()
                 editText.hideKeyboard()
@@ -102,15 +105,13 @@ class EmojiPopup(
                 emojiKeyboard.topBar.isVisible = true
             }
 
-            PopupState.Searching -> {
+            SEARCHING -> {
                 animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
                 emojiKeyboard.searchBar.showKeyboard()
                 backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = false
             }
         }
-
-        onStateChanged(newState)
     }
 
 
@@ -124,18 +125,18 @@ class EmojiPopup(
                 keyboardHeight = effectiveHeight
 
                 when (state) {
-                    PopupState.Collapsed -> transitionTo(PopupState.Behind)
-                    PopupState.Focused -> {
-                        if (editText.hasFocus()) transitionTo(PopupState.Behind)
-                        else if (emojiKeyboard.searchBar.hasFocus()) transitionTo(PopupState.Searching)
+                    COLLAPSED -> transitionTo(BEHIND)
+                    FOCUSED -> {
+                        if (editText.hasFocus()) transitionTo(BEHIND)
+                        else if (emojiKeyboard.searchBar.hasFocus()) transitionTo(SEARCHING)
                     }
                     else -> {}
                 }
 
             } else {  // ime down
                 when (state) {
-                    PopupState.Behind -> transitionTo(PopupState.Collapsed)
-                    PopupState.Searching -> transitionTo(PopupState.Focused)
+                    BEHIND -> transitionTo(COLLAPSED)
+                    SEARCHING -> transitionTo(FOCUSED)
                     else -> {}
                 }
             }
@@ -161,8 +162,8 @@ class EmojiPopup(
                         val effectiveHeight = (imeHeight - navInset).coerceAtLeast(0)
 
                         when (state) {
-                            PopupState.Collapsed -> changeSize(effectiveHeight)
-                            PopupState.Behind -> changeSize(effectiveHeight)
+                            COLLAPSED -> changeSize(effectiveHeight)
+                            BEHIND -> changeSize(effectiveHeight)
                             else -> {}
                         }
                     }
@@ -185,8 +186,8 @@ class EmojiPopup(
 
     private fun setupMsgFocusListener() {
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && state == PopupState.Searching) {
-                transitionTo(PopupState.Behind)
+            if (hasFocus && state == SEARCHING) {
+                transitionTo(BEHIND)
             }
         }
     }
