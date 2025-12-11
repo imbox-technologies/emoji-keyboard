@@ -5,8 +5,8 @@ import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.model.Emoji
 
 object DefaultEmojiProvider : EmojiProvider {
-    override fun getCategories(): List<Category> {
-        val faces = listOf(
+    private val faces by lazy {
+        listOf(
             Emoji("\uD83D\uDE00", "Grinning Face"),
             Emoji("\uD83D\uDE01", "Beaming Face with Smiling Eyes"),
             Emoji("\uD83D\uDE02", "Face with Tears of Joy"),
@@ -35,7 +35,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83D\uDE44", "Face with Rolling Eyes"),
             Emoji("\uD83D\uDE0F", "Smirking Face")
         )
-        val nature = listOf(
+    }
+    private val nature by lazy {
+        listOf(
             Emoji("\uD83D\uDC36", "Dog Face"),
             Emoji("\uD83D\uDC31", "Cat Face"),
             Emoji("\uD83D\uDC2D", "Mouse Face"),
@@ -64,7 +66,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83D\uDC1E", "Lady Beetle"),
             Emoji("\uD83C\uDF38", "Cherry Blossom")
         )
-        val food = listOf(
+    }
+    private val food by lazy {
+        listOf(
             Emoji("\uD83C\uDF4F", "Green Apple"),
             Emoji("\uD83C\uDF4E", "Red Apple"),
             Emoji("\uD83C\uDF50", "Pear"),
@@ -93,7 +97,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83C\uDF54", "Hamburger"),
             Emoji("\uD83C\uDF63", "Sushi")
         )
-        val activity = listOf(
+    }
+    private val activity by lazy {
+        listOf(
             Emoji("\u26BD", "Soccer Ball"),
             Emoji("\uD83C\uDFC0", "Basketball"),
             Emoji("\uD83C\uDFC8", "American Football"),
@@ -122,7 +128,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83D\uDEF9", "Skateboard"),
             Emoji("\uD83E\uDDB7\u200D\u2640\uFE0F", "Woman Climbing")
         )
-        val travel = listOf(
+    }
+    private val travel by lazy {
+        listOf(
             Emoji("\uD83D\uDE97", "Automobile"),
             Emoji("\uD83D\uDE95", "Taxi"),
             Emoji("\uD83D\uDE99", "SUV"),
@@ -151,7 +159,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83C\uDF0B", "Volcano"),
             Emoji("\uD83C\uDFDD\uFE0F", "Desert Island")
         )
-        val objects = listOf(
+    }
+    private val objects by lazy {
+        listOf(
             Emoji("\uD83D\uDCA1", "Light Bulb"),
             Emoji("\uD83D\uDD26", "Flashlight"),
             Emoji("\uD83D\uDD6F\uFE0F", "Candle"),
@@ -180,7 +190,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83D\uDECF\uFE0F", "Bed"),
             Emoji("\uD83E\uDE91", "Chair")
         )
-        val symbols = listOf(
+    }
+    private val symbols by lazy {
+        listOf(
             Emoji("\u2764\uFE0F", "Red Heart"),
             Emoji("\uD83D\uDC9B", "Yellow Heart"),
             Emoji("\uD83D\uDC9A", "Green Heart"),
@@ -209,7 +221,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83D\uDD11", "Key"),
             Emoji("\uD83D\uDED1", "Stop Sign")
         )
-        val flags = listOf(
+    }
+    private val flags by lazy {
+        listOf(
             Emoji("\uD83C\uDFF3\uFE0F", "White Flag"),
             Emoji("\uD83C\uDFF4", "Black Flag"),
             Emoji("\uD83C\uDFC1", "Chequered Flag"),
@@ -238,7 +252,9 @@ object DefaultEmojiProvider : EmojiProvider {
             Emoji("\uD83C\uDDFA\uD83C\uDDE6", "Ukraine"),
             Emoji("\uD83C\uDDF5\uD83C\uDDF9", "Portugal")
         )
+    }
 
+    override fun getCategories(): List<Category> {
         return listOf(
             Category("faces", "Smileys & People", R.drawable.smile, faces),
             Category("nature", "Animals & Nature", R.drawable.dog, nature),
