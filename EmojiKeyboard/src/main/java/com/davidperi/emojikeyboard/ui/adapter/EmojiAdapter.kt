@@ -35,8 +35,13 @@ class EmojiAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             VIEW_TYPE_HEADER -> HeaderViewHolder(parent.inflate(R.layout.item_header))
-            VIEW_TYPE_EMOJI -> EmojiViewHolder(parent.inflate(R.layout.item_emoji))
-            else -> EmojiViewHolder(parent.inflate(R.layout.item_header))
+            VIEW_TYPE_EMOJI -> EmojiViewHolder(
+                parent.inflate(R.layout.item_emoji),
+                cachedTypeface,
+                onEmojiClicked
+            )
+
+            else -> HeaderViewHolder(parent.inflate(R.layout.item_header))
         }
     }
 
@@ -44,7 +49,7 @@ class EmojiAdapter(
         val item = getItem(position)
         when (holder) {
             is HeaderViewHolder -> holder.bind(item as EmojiListItem.Header)
-            is EmojiViewHolder -> holder.bind(item as EmojiListItem.EmojiKey, cachedTypeface, onEmojiClicked)
+            is EmojiViewHolder -> holder.bind(item as EmojiListItem.EmojiKey)
         }
     }
 }
