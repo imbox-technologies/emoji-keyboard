@@ -12,6 +12,7 @@ import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
 import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.provider.DefaultEmojiProvider
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
+import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 
 class EmojiKeyboardView @JvmOverloads constructor(
     context: Context,
@@ -24,6 +25,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private val adapter = EmojiAdapter { emoji ->
         Log.d("EMOJI", "emoji clicked: ${emoji.unicode}, ${emoji.description}")
     }
+    private val provider = DefaultEmojiProvider  // Later this will be selected by the user
 
     init {
         setupAdapter()
@@ -58,19 +60,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun loadEmojis() {
-        val data = DefaultEmojiProvider.getCategories().toListItem()
+        val data = EmojiListMapper.map(provider.getCategories())
         adapter.submitList(data)
-    }
-
-    private fun List<Category>.toListItem(): List<EmojiListItem> {
-        return flatMap { category ->
-            buildList {
-                add(EmojiListItem.Header(category))
-                category.emojis.forEach { emoji ->
-                    add(EmojiListItem.EmojiKey(emoji))
-                }
-            }
-        }
     }
 
     internal val searchBar = binding.searchBar.searchBar
