@@ -8,6 +8,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.util.AttributeSet
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -35,9 +36,18 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private val adapter = EmojiAdapter { emoji ->
         Log.d("EMOJI", "emoji clicked: ${emoji.unicode}, ${emoji.description}")
         onEmojiSelected(emoji.unicode)
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
     private val provider = DefaultEmojiProvider  // Later this will be selected by the user
     private var targetEditText: EditText? = null
+
+    private val deleteHandler = Handler(Looper.getMainLooper())
+    private val deleteRepeater = object : Runnable {
+        override fun run() {
+            handleBackspace()
+            deleteHandler.postDelayed(this, 50L)
+        }
+    }
 
     init {
         setupAdapter()
@@ -56,6 +66,10 @@ class EmojiKeyboardView @JvmOverloads constructor(
     fun toggle() { controller?.toggle() }
     fun hide() { controller?.hide() }
     fun state() = controller?.state
+
+    fun onStateChangedListener(callback: (PopupState) -> Unit) {
+        controller?.onStateChanged = callback
+    }
 
 
     private fun setupAdapter() {
@@ -78,35 +92,31 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupDeleteButton() {
-        binding.backspace.setOnTouchListener(object : OnTouchListener {
-            private val handler = Handler(Looper.getMainLooper())
-            private val threshold = 400L
-            private val interval = 50L
-
-            private val repeater = object : Runnable {
-                override fun run() {
+        binding.backspace.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
                     handleBackspace()
-                    handler.postDelayed(this, interval)
+                    deleteHandler.postDelayed(deleteRepeater, 400L)
+                    v.isPressed = true
+                    true
                 }
-            }
 
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        handleBackspace()
-                        handler.postDelayed(repeater, threshold)
-                        v.isPressed = true
-                        return true
-                    }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        handler.removeCallbacks(repeater)
-                        v.isPressed = false
-                        return true
-                    }
+                MotionEvent.ACTION_UP -> {
+                    deleteHandler.removeCallbacks(deleteRepeater)
+                    v.isPressed = false
+                    v.performClick()
+                    true
                 }
-                return false
+
+                MotionEvent.ACTION_CANCEL -> {
+                    deleteHandler.removeCallbacks(deleteRepeater)
+                    v.isPressed = false
+                    true
+                }
+
+                else -> false
             }
-        })
+        }
     }
 
     private fun loadEmojis() {
@@ -140,6 +150,9 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private fun handleBackspace() {
         val editText = targetEditText ?: return
+        if (editText.text.isNullOrEmpty()) return
+
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
         val event = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
         editText.dispatchKeyEvent(event)
     }

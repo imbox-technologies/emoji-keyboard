@@ -73,6 +73,8 @@
                 android:layout_marginEnd="8dp"
                 android:background="@null"
                 android:hint="@string/write_here"
+                android:textColorHint="#9D9D9D"
+                android:textColor="@color/black"
                 android:includeFontPadding="false" />
 
         </LinearLayout>

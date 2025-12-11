@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.davidperi.emojikeyboard.ui.EmojiKeyboardView
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 
@@ -26,6 +27,10 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = true
+        }
+
         init()
     }
 
@@ -43,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupEmojiKeyboard() {
         binding.emojiKeyboard.setupWith(binding.etTest)
-
+        binding.emojiKeyboard.onStateChangedListener { state -> updateIcon(state) }
     }
 
     private fun setupBackHandling() {
@@ -60,22 +65,22 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-//    private fun updateIcon(state: EmojiPopup.PopupState) {
-//        binding.ivToggleEmojiKeyboard.setImageResource(
-//            when (state) {
-//                EmojiPopup.PopupState.Collapsed -> R.drawable.smile
-//                EmojiPopup.PopupState.Behind -> R.drawable.smile
-//                EmojiPopup.PopupState.Focused -> R.drawable.keyboard
-//                EmojiPopup.PopupState.Searching -> R.drawable.keyboard
-//            }
-//        )
-//
-//        binding.debugStatus.text = when (state) {
-//            EmojiPopup.PopupState.Collapsed -> "COLLAPSED"
-//            EmojiPopup.PopupState.Behind -> "BEHIND"
-//            EmojiPopup.PopupState.Focused -> "FOCUSED"
-//            EmojiPopup.PopupState.Searching -> "SEARCHING"
-//        }
-//    }
+    private fun updateIcon(state: EmojiKeyboardView.PopupState) {
+        binding.ivToggleEmojiKeyboard.setImageResource(
+            when (state) {
+                EmojiKeyboardView.PopupState.COLLAPSED -> R.drawable.smile
+                EmojiKeyboardView.PopupState.BEHIND -> R.drawable.smile
+                EmojiKeyboardView.PopupState.FOCUSED -> R.drawable.keyboard
+                EmojiKeyboardView.PopupState.SEARCHING -> R.drawable.keyboard
+            }
+        )
+
+        binding.debugStatus.text = when (state) {
+            EmojiKeyboardView.PopupState.COLLAPSED -> "COLLAPSED"
+            EmojiKeyboardView.PopupState.BEHIND -> "BEHIND"
+            EmojiKeyboardView.PopupState.FOCUSED -> "FOCUSED"
+            EmojiKeyboardView.PopupState.SEARCHING -> "SEARCHING"
+        }
+    }
 
 }

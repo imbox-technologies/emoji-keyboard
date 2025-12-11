@@ -26,6 +26,7 @@ internal class PopupStateMachine(
 ) {
 
     var state: PopupState = COLLAPSED
+    var onStateChanged: (PopupState) -> Unit = {}
 
     private var keyboardHeight = DEFAULT_HEIGHT.dp
     private var currentAnimator: ValueAnimator? = null
@@ -68,6 +69,7 @@ internal class PopupStateMachine(
 
         val oldState = state
         state = newState
+        onStateChanged(newState)
 
         when (newState) {
             COLLAPSED -> {
