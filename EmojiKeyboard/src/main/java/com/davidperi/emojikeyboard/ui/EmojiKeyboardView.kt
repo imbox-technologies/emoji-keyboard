@@ -1,11 +1,17 @@
 package com.davidperi.emojikeyboard.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.util.AttributeSet
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.GridLayoutManager
@@ -35,6 +41,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     init {
         setupAdapter()
+        setupDeleteButton()
         loadEmojis()
     }
 
@@ -69,6 +76,39 @@ class EmojiKeyboardView @JvmOverloads constructor(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupDeleteButton() {
+        binding.backspace.setOnTouchListener(object : OnTouchListener {
+            private val handler = Handler(Looper.getMainLooper())
+            private val threshold = 400L
+            private val interval = 50L
+
+            private val repeater = object : Runnable {
+                override fun run() {
+                    handleBackspace()
+                    handler.postDelayed(this, interval)
+                }
+            }
+
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        handleBackspace()
+                        handler.postDelayed(repeater, threshold)
+                        v.isPressed = true
+                        return true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        handler.removeCallbacks(repeater)
+                        v.isPressed = false
+                        return true
+                    }
+                }
+                return false
+            }
+        })
+    }
+
     private fun loadEmojis() {
         val data = EmojiListMapper.map(provider.getCategories())
         adapter.submitList(data)
@@ -96,6 +136,12 @@ class EmojiKeyboardView @JvmOverloads constructor(
             max(start, end),
             spannableString
         )
+    }
+
+    private fun handleBackspace() {
+        val editText = targetEditText ?: return
+        val event = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
+        editText.dispatchKeyEvent(event)
     }
 
 
