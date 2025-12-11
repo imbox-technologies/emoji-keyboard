@@ -5,8 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.view.View
 import android.widget.EditText
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
@@ -19,7 +17,6 @@ import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.BEHIND
 import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.FOCUSED
 import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.SEARCHING
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
-import com.davidperi.emojikeyboard.utils.DisplayUtils.getActivity
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
 
@@ -34,12 +31,6 @@ internal class PopupStateMachine(
     private var currentAnimator: ValueAnimator? = null
     private var shouldMimicIme = true
 
-    private val backCallback = object : OnBackPressedCallback(false) {
-        override fun handleOnBackPressed() {
-            hide()
-        }
-    }
-
     companion object {
         private const val DEFAULT_HEIGHT = 300
         private const val EXTENSION_HEIGHT = 150
@@ -52,7 +43,6 @@ internal class PopupStateMachine(
 
         setupStaticInsetsListener()
         setupAnimatedInsetsListener()
-        setupBackPressHandler()
         setupMsgFocusListener()
     }
 
@@ -84,7 +74,6 @@ internal class PopupStateMachine(
                 if (oldState == FOCUSED) animateSize(0)
                 editText.requestFocus()
                 emojiKeyboard.hideKeyboard()
-                backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = true
             }
 
@@ -92,7 +81,6 @@ internal class PopupStateMachine(
                 if (oldState == FOCUSED) shouldMimicIme = false
                 if (oldState != COLLAPSED) animateSize(keyboardHeight)
                 editText.showKeyboard()
-                backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = true
             }
 
@@ -101,14 +89,12 @@ internal class PopupStateMachine(
                 animateSize(keyboardHeight)
                 editText.requestFocus()
                 editText.hideKeyboard()
-                backCallback.isEnabled = true
                 emojiKeyboard.topBar.isVisible = true
             }
 
             SEARCHING -> {
                 animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
                 emojiKeyboard.searchBar.showKeyboard()
-                backCallback.isEnabled = false
                 emojiKeyboard.topBar.isVisible = false
             }
         }
@@ -175,13 +161,6 @@ internal class PopupStateMachine(
                     shouldMimicIme = true
                 }
             })
-    }
-
-    private fun setupBackPressHandler() {
-        val activity = emojiKeyboard.context.getActivity()
-        if (activity is ComponentActivity) {
-            activity.onBackPressedDispatcher.addCallback(activity, backCallback)
-        }
     }
 
     private fun setupMsgFocusListener() {

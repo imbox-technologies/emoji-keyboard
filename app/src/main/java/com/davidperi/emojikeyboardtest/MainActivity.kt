@@ -1,10 +1,12 @@
 package com.davidperi.emojikeyboardtest
 
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.davidperi.emojikeyboard.ui.EmojiKeyboardView
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -30,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         setupListeners()
         setupEmojiKeyboard()
+        setupBackHandling()
     }
 
     private fun setupListeners() {
@@ -41,6 +44,20 @@ class MainActivity : AppCompatActivity() {
     private fun setupEmojiKeyboard() {
         binding.emojiKeyboard.setupWith(binding.etTest)
 
+    }
+
+    private fun setupBackHandling() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.emojiKeyboard.state() == EmojiKeyboardView.PopupState.FOCUSED) {
+                    binding.emojiKeyboard.hide()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
     }
 
 //    private fun updateIcon(state: EmojiPopup.PopupState) {

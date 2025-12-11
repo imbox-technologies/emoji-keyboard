@@ -1,8 +1,6 @@
 package com.davidperi.emojikeyboard.utils
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
@@ -10,15 +8,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 
 object DisplayUtils {
-
-    fun Context.getActivity(): Activity? {
-        var context = this
-        while (context is ContextWrapper) {
-            if (context is Activity) return context
-            context = context.baseContext
-        }
-        return null
-    }
 
     fun ViewGroup.inflate(viewResource: Int): View {
         val inflater = LayoutInflater.from(this.context)
