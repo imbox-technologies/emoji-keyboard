@@ -7,21 +7,20 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.GridLayoutManager
-import com.davidperi.emojikeyboard.EmojiPopup
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
 import com.davidperi.emojikeyboard.model.Category
-import com.davidperi.emojikeyboard.provider.CustomEmojiProvider
+import com.davidperi.emojikeyboard.provider.DefaultEmojiProvider
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 
-class EmojiKeyboard @JvmOverloads constructor(
+class EmojiKeyboardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ) : FrameLayout(context, attrs) {
 
     private val binding = EmojiKeyboardPopupBinding.inflate(LayoutInflater.from(context), this, true)
 
-    private var controller: EmojiPopup? = null
+    private var controller: PopupStateMachine? = null
     private val adapter = EmojiAdapter { emoji ->
         Log.d("EMOJI", "emoji clicked: ${emoji.unicode}, ${emoji.description}")
     }
@@ -33,7 +32,7 @@ class EmojiKeyboard @JvmOverloads constructor(
 
     // PUBLIC API
     enum class PopupState { COLLAPSED, BEHIND, FOCUSED, SEARCHING }
-    fun setupWith(editText: EditText) { controller = EmojiPopup(this, editText)
+    fun setupWith(editText: EditText) { controller = PopupStateMachine(this, editText)
     }
     fun toggle() { controller?.toggle() }
     fun hide() { controller?.hide() }
@@ -53,13 +52,13 @@ class EmojiKeyboard @JvmOverloads constructor(
 
         binding.rvEmojis.apply {
             layoutManager = gridManager
-            this.adapter = this@EmojiKeyboard.adapter
+            this.adapter = this@EmojiKeyboardView.adapter
             setHasFixedSize(true)
         }
     }
 
     private fun loadEmojis() {
-        val data = CustomEmojiProvider.getCategories().toListItem()
+        val data = DefaultEmojiProvider.getCategories().toListItem()
         adapter.submitList(data)
     }
 

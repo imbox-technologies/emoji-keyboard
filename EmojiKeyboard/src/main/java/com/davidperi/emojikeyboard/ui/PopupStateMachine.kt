@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard
+package com.davidperi.emojikeyboard.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -13,19 +13,18 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.davidperi.emojikeyboard.ui.EmojiKeyboard
-import com.davidperi.emojikeyboard.utils.MeasureUtils.dp
-import com.davidperi.emojikeyboard.ui.EmojiKeyboard.PopupState
-import com.davidperi.emojikeyboard.ui.EmojiKeyboard.PopupState.COLLAPSED
-import com.davidperi.emojikeyboard.ui.EmojiKeyboard.PopupState.BEHIND
-import com.davidperi.emojikeyboard.ui.EmojiKeyboard.PopupState.FOCUSED
-import com.davidperi.emojikeyboard.ui.EmojiKeyboard.PopupState.SEARCHING
-import com.davidperi.emojikeyboard.utils.ActivityUtils.getActivity
-import com.davidperi.emojikeyboard.utils.ActivityUtils.hideKeyboard
-import com.davidperi.emojikeyboard.utils.ActivityUtils.showKeyboard
+import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState
+import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.COLLAPSED
+import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.BEHIND
+import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.FOCUSED
+import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.SEARCHING
+import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
+import com.davidperi.emojikeyboard.utils.DisplayUtils.getActivity
+import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
+import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
 
-internal class EmojiPopup(
-    private val emojiKeyboard: EmojiKeyboard,
+internal class PopupStateMachine(
+    private val emojiKeyboard: EmojiKeyboardView,
     private val editText: EditText,
 ) {
 

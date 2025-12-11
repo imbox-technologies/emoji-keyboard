@@ -4,7 +4,7 @@ import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.model.Emoji
 
-object CustomEmojiProvider : EmojiProvider {
+object DefaultEmojiProvider : EmojiProvider {
     override fun getCategories(): List<Category> {
         val faces = listOf(
             Emoji("\uD83D\uDE00", "Grinning Face"),

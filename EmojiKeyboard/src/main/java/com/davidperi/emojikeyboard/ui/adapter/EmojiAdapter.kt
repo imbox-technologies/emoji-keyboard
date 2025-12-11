@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.model.Emoji
-import com.davidperi.emojikeyboard.utils.BindingUtils.inflate
+import com.davidperi.emojikeyboard.utils.DisplayUtils.inflate
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 
 class EmojiAdapter(
