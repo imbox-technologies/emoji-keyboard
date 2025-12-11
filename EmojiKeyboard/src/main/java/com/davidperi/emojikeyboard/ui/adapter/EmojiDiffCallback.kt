@@ -1,13 +1,12 @@
-package com.davidperi.emojikeyboard.adapter
+package com.davidperi.emojikeyboard.ui.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.davidperi.emojikeyboard.data.EmojiListItem
 
 object EmojiDiffCallback : DiffUtil.ItemCallback<EmojiListItem>() {
     override fun areItemsTheSame(oldItem: EmojiListItem, newItem: EmojiListItem): Boolean {
         return when {
-            oldItem is EmojiListItem.Header && newItem is EmojiListItem.Header -> oldItem.title == newItem.title
-            oldItem is EmojiListItem.Emoji && newItem is EmojiListItem.Emoji -> oldItem.unicode == newItem.unicode
+            oldItem is EmojiListItem.Header && newItem is EmojiListItem.Header -> oldItem.category.id == newItem.category.id
+            oldItem is EmojiListItem.EmojiKey && newItem is EmojiListItem.EmojiKey -> oldItem.emoji.unicode == newItem.emoji.unicode
             else -> false
         }
     }
