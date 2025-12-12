@@ -20,10 +20,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
+import com.davidperi.emojikeyboard.ui.adapter.CategoryGapDecoration
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
+import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import kotlin.math.max
 import kotlin.math.min
@@ -38,6 +40,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private var config: EmojiKeyboardConfig = EmojiKeyboardConfig()
     private var targetEditText: EditText? = null
     private var controller: PopupStateMachine? = null
+    private var categoryRanges: List<IntRange> = emptyList()
 
     private val adapter = EmojiAdapter { emoji ->
         onEmojiSelected(emoji.unicode)
@@ -50,6 +53,12 @@ class EmojiKeyboardView @JvmOverloads constructor(
             handleBackspace()
             deleteHandler.postDelayed(this, 50L)
         }
+    }
+
+    companion object {
+        private const val HORIZONTAL_SPAN_COUNT = 4
+        private const val VERTICAL_SPAN_COUNT = 9
+        private const val HORIZONTAL_GAP_SIZE = 16  // dp
     }
 
     init {
@@ -124,8 +133,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private fun setupAdapter(config: EmojiKeyboardConfig) {
         val isVertical = config.layoutMode == EmojiLayoutMode.ROBOT
-
-        val spanCount = if (isVertical) 9 else 5
+        val spanCount = if (isVertical) VERTICAL_SPAN_COUNT else HORIZONTAL_SPAN_COUNT
         val orientation = if (isVertical) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
 
         val gridManager = GridLayoutManager(context, spanCount, orientation, false)
@@ -178,9 +186,32 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun loadEmojis() {
-        val includeHeaders = config.layoutMode == EmojiLayoutMode.ROBOT
-        val data = EmojiListMapper.map(config.provider.getCategories(), includeHeaders)
-        adapter.submitList(data)
+        val isHorizontal = config.layoutMode == EmojiLayoutMode.COOPER
+        val spanCount = if (isHorizontal) HORIZONTAL_SPAN_COUNT else VERTICAL_SPAN_COUNT
+
+        val result = EmojiListMapper.map(
+            config.provider.getCategories(),
+            config.layoutMode,
+            spanCount
+        )
+
+        this.categoryRanges = result.categoryRanges
+
+        while (binding.rvEmojis.itemDecorationCount > 0) {
+            binding.rvEmojis.removeItemDecorationAt(0)
+        }
+
+        if (isHorizontal) {
+            binding.rvEmojis.addItemDecoration(
+                CategoryGapDecoration(
+                    categoryRanges = result.categoryRanges,
+                    gapSize = HORIZONTAL_GAP_SIZE.dp,
+                    spanCount = spanCount
+                )
+            )
+        }
+
+        adapter.submitList(result.items)
     }
 
 

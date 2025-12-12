@@ -6,4 +6,5 @@ import com.davidperi.emojikeyboard.model.Emoji
 sealed class EmojiListItem {
     data class Header(val category: Category): EmojiListItem()
     data class EmojiKey(val emoji: Emoji): EmojiListItem()
+    object Spacer : EmojiListItem()
 }

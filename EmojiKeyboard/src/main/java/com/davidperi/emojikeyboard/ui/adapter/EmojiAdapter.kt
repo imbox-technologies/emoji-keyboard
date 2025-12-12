@@ -18,6 +18,7 @@ class EmojiAdapter(
     companion object {
         const val VIEW_TYPE_HEADER = 0
         const val VIEW_TYPE_EMOJI = 1
+        const val VIEW_TYPE_SPACER = 2
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -29,6 +30,7 @@ class EmojiAdapter(
         return when (getItem(position)) {
             is EmojiListItem.Header -> VIEW_TYPE_HEADER
             is EmojiListItem.EmojiKey -> VIEW_TYPE_EMOJI
+            EmojiListItem.Spacer -> VIEW_TYPE_SPACER
         }
     }
 
@@ -40,8 +42,8 @@ class EmojiAdapter(
                 cachedTypeface,
                 onEmojiClicked
             )
-
-            else -> HeaderViewHolder(parent.inflate(R.layout.item_header))
+            VIEW_TYPE_SPACER -> SpacerViewHolder.create(parent)
+            else -> throw IllegalArgumentException("Unknown view type") // HeaderViewHolder(parent.inflate(R.layout.item_header))
         }
     }
 
@@ -50,6 +52,7 @@ class EmojiAdapter(
         when (holder) {
             is HeaderViewHolder -> holder.bind(item as EmojiListItem.Header)
             is EmojiViewHolder -> holder.bind(item as EmojiListItem.EmojiKey)
+            SpacerViewHolder -> { /* Do nothing */ }
         }
     }
 }
