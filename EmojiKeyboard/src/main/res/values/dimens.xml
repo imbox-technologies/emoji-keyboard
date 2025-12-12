@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="EmojiButtonSize">28dp</dimen>
+    <dimen name="EmojiButtonSize">20dp</dimen>
 
 </resources>

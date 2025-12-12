@@ -6,10 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 
 object DisplayUtils {
 
     fun ViewGroup.inflate(viewResource: Int): View {
+        val inflater = LayoutInflater.from(this.context)
+        return inflater.inflate(viewResource, this, false)
+    }
+
+    fun LinearLayout.inflate(viewResource: Int): View {
         val inflater = LayoutInflater.from(this.context)
         return inflater.inflate(viewResource, this, false)
     }

@@ -12,5 +12,5 @@ enum class EmojiLayoutMode {
 data class EmojiKeyboardConfig(
     val provider: EmojiProvider = DefaultEmojiProvider,
     val font: Typeface? = null,
-    val layoutMode: EmojiLayoutMode = EmojiLayoutMode.COOPER,
+    val layoutMode: EmojiLayoutMode = EmojiLayoutMode.ROBOT,
 )

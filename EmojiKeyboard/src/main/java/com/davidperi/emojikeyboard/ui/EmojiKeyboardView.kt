@@ -41,6 +41,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private var targetEditText: EditText? = null
     private var controller: PopupStateMachine? = null
     private var categoryRanges: List<IntRange> = emptyList()
+    private var isProgrammaticScroll = false
 
     private val adapter = EmojiAdapter { emoji ->
         onEmojiSelected(emoji.unicode)
@@ -154,6 +155,25 @@ class EmojiKeyboardView @JvmOverloads constructor(
             this.adapter = this@EmojiKeyboardView.adapter
             setHasFixedSize(true)
         }
+
+        binding.rvEmojis.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (isProgrammaticScroll) {
+                    isProgrammaticScroll = false
+                    return
+                }
+
+                val lm = recyclerView.layoutManager as GridLayoutManager
+                val firstPos = lm.findFirstVisibleItemPosition()
+
+                if (firstPos == RecyclerView.NO_POSITION) return
+
+                val index = categoryRanges.indexOfFirst { range -> firstPos in range }
+                if (index >= 0) {
+                    binding.categoriesSelector.setSelectedCategory(index)
+                }
+            }
+        })
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -188,14 +208,29 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private fun loadEmojis() {
         val isHorizontal = config.layoutMode == EmojiLayoutMode.COOPER
         val spanCount = if (isHorizontal) HORIZONTAL_SPAN_COUNT else VERTICAL_SPAN_COUNT
+        val categories = config.provider.getCategories()
+
+        binding.categoriesSelector.setup(categories)
 
         val result = EmojiListMapper.map(
-            config.provider.getCategories(),
+            categories,
             config.layoutMode,
             spanCount
         )
-
         this.categoryRanges = result.categoryRanges
+
+        binding.categoriesSelector.setSelectedCategory(0)
+        binding.categoriesSelector.setOnSeekListener { index, progress ->
+            val range = categoryRanges.getOrNull(index) ?: return@setOnSeekListener
+
+            val totalItemsInCategory = range.last - range.first
+            val offsetItems = (totalItemsInCategory * progress).toInt()
+            val targetPosition = range.first + offsetItems
+
+            isProgrammaticScroll = true
+            val lm = binding.rvEmojis.layoutManager as GridLayoutManager
+            lm.scrollToPositionWithOffset(targetPosition, 0)
+        }
 
         while (binding.rvEmojis.itemDecorationCount > 0) {
             binding.rvEmojis.removeItemDecorationAt(0)
