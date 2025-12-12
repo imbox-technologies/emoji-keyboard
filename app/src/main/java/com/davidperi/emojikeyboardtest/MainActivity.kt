@@ -8,6 +8,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.davidperi.emojikeyboard.ui.EmojiKeyboardView
+import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
+import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -49,6 +51,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupEmojiKeyboard() {
         binding.emojiKeyboard.setupWith(binding.etTest)
         binding.emojiKeyboard.onStateChangedListener { state -> updateIcon(state) }
+
+        val iosConfig = EmojiKeyboardConfig(layoutMode = EmojiLayoutMode.COOPER)
+        binding.emojiKeyboard.configure(iosConfig)
     }
 
     private fun setupBackHandling() {

@@ -5,11 +5,15 @@ import android.graphics.Typeface
 
 object EmojiFontManager {
     private var typeface: Typeface? = null
-    private const val FONT_PATH = "fonts/Twemoji.ttf"
+    private const val DEFAULT_FONT_PATH = "fonts/Twemoji.ttf"
+
+    fun setCustomTypeface(typeface: Typeface) {
+        this.typeface = typeface
+    }
 
     fun getTypeface(context: Context): Typeface {
         return typeface ?: synchronized(this) {
-            typeface ?: Typeface.createFromAsset(context.assets, FONT_PATH).also {
+            typeface ?: Typeface.createFromAsset(context.assets, DEFAULT_FONT_PATH).also {
                 typeface = it
             }
         }

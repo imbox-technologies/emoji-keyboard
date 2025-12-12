@@ -111,6 +111,7 @@ internal class PopupStateMachine(
 
             if (effectiveHeight > 0) {  // ime up
                 keyboardHeight = effectiveHeight
+                emojiKeyboard.setInternalContentHeight(keyboardHeight)
 
                 when (state) {
                     COLLAPSED -> transitionTo(BEHIND)
@@ -180,6 +181,10 @@ internal class PopupStateMachine(
         val currentHeight = emojiKeyboard.layoutParams.height
         if (currentHeight == targetHeight) return
 
+        if (targetHeight > 0) {
+            emojiKeyboard.setInternalContentHeight(targetHeight)
+        }
+
         currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
             duration = ANIMATION_DURATION
             interpolator = FastOutSlowInInterpolator()
@@ -208,6 +213,11 @@ internal class PopupStateMachine(
 
     private fun changeSize(size: Int) {
         currentAnimator?.cancel()
+
+        if (size > 0) {
+            emojiKeyboard.setInternalContentHeight(maxOf(size, keyboardHeight))
+        }
+
         if (size == 0) {
             emojiKeyboard.isVisible = false
         }

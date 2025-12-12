@@ -4,10 +4,10 @@ import com.davidperi.emojikeyboard.model.Category
 
 object EmojiListMapper {
 
-    fun map(categories: List<Category>): List<EmojiListItem> {
+    fun map(categories: List<Category>, includeHeaders: Boolean): List<EmojiListItem> {
         return categories.flatMap { category ->
             buildList {
-                add(EmojiListItem.Header(category))
+                if (includeHeaders) add(EmojiListItem.Header(category))
                 addAll(category.emojis.map { EmojiListItem.EmojiKey(it) })
             }
         }

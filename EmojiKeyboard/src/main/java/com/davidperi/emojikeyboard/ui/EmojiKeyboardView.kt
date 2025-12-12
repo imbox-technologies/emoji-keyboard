@@ -7,19 +7,22 @@ import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.util.AttributeSet
-import android.util.Log
+import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.View
 import android.widget.EditText
 import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
-import com.davidperi.emojikeyboard.provider.DefaultEmojiProvider
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
+import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
+import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import kotlin.math.max
@@ -32,14 +35,14 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private val binding = EmojiKeyboardPopupBinding.inflate(LayoutInflater.from(context), this, true)
 
+    private var config: EmojiKeyboardConfig = EmojiKeyboardConfig()
+    private var targetEditText: EditText? = null
     private var controller: PopupStateMachine? = null
+
     private val adapter = EmojiAdapter { emoji ->
-        Log.d("EMOJI", "emoji clicked: ${emoji.unicode}, ${emoji.description}")
         onEmojiSelected(emoji.unicode)
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
-    private val provider = DefaultEmojiProvider  // Later this will be selected by the user
-    private var targetEditText: EditText? = null
 
     private val deleteHandler = Handler(Looper.getMainLooper())
     private val deleteRepeater = object : Runnable {
@@ -50,9 +53,9 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     init {
-        setupAdapter()
+        clipChildren = true
+        applyConfig(config)
         setupDeleteButton()
-        loadEmojis()
     }
 
     // PUBLIC API
@@ -61,6 +64,11 @@ class EmojiKeyboardView @JvmOverloads constructor(
     fun setupWith(editText: EditText) {
         this.targetEditText = editText
         controller = PopupStateMachine(this, editText)
+    }
+
+    fun configure(newConfig: EmojiKeyboardConfig) {
+        this.config = newConfig
+        applyConfig(newConfig)
     }
 
     fun toggle() { controller?.toggle() }
@@ -72,14 +80,64 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
 
-    private fun setupAdapter() {
-        val spanCount = 9
-        val gridManager = GridLayoutManager(context, spanCount)
+    private fun applyConfig(config: EmojiKeyboardConfig) {
+        config.font?.let { EmojiFontManager.setCustomTypeface(it) }
+        setupLayoutMode(config.layoutMode)
+        setupAdapter(config)
+        loadEmojis()
+    }
+
+    private fun setupLayoutMode(mode: EmojiLayoutMode) {
+        val set = ConstraintSet()
+        set.clone(binding.root)
+
+        when (mode) {
+            EmojiLayoutMode.ROBOT -> {
+                // Top Bar
+                set.connect(binding.topBar.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+                set.clear(binding.topBar.id, ConstraintSet.BOTTOM)
+
+                // Search Bar
+                set.connect(binding.searchBar.root.id, ConstraintSet.TOP, binding.topBar.id, ConstraintSet.BOTTOM)
+
+                // Recycler
+                set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
+                set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
+            }
+
+            EmojiLayoutMode.COOPER -> {
+                // Top Bar
+                set.clear(binding.topBar.id, ConstraintSet.TOP)
+                set.connect(binding.topBar.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
+
+                // Search Bar
+                set.connect(binding.searchBar.root.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+
+                // Recycler
+                set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
+                set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, binding.topBar.id, ConstraintSet.TOP)
+            }
+        }
+
+        set.applyTo(binding.root)
+    }
+
+    private fun setupAdapter(config: EmojiKeyboardConfig) {
+        val isVertical = config.layoutMode == EmojiLayoutMode.ROBOT
+
+        val spanCount = if (isVertical) 9 else 5
+        val orientation = if (isVertical) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
+
+        val gridManager = GridLayoutManager(context, spanCount, orientation, false)
 
         gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                val type = adapter.getItemViewType(position)
-                return if (type == EmojiAdapter.Companion.VIEW_TYPE_EMOJI) 1 else spanCount
+                if (isVertical) {
+                    val type = adapter.getItemViewType(position)
+                    return if (type == EmojiAdapter.Companion.VIEW_TYPE_EMOJI) 1 else spanCount
+                } else {
+                    return 1
+                }
             }
         }
 
@@ -120,7 +178,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun loadEmojis() {
-        val data = EmojiListMapper.map(provider.getCategories())
+        val includeHeaders = config.layoutMode == EmojiLayoutMode.ROBOT
+        val data = EmojiListMapper.map(config.provider.getCategories(), includeHeaders)
         adapter.submitList(data)
     }
 
@@ -158,8 +217,16 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
 
-    internal val searchBar = binding.searchBar.searchBar
+    internal val searchBar = binding.searchBar.root
     internal val topBar = binding.topBar
+    internal val recycler = binding.rvEmojis
+
+    internal fun setInternalContentHeight(newHeight: Int) {
+        binding.root.updateLayoutParams {
+            height = newHeight
+            foregroundGravity = Gravity.BOTTOM
+        }
+    }
 
 
     override fun onDetachedFromWindow() {
