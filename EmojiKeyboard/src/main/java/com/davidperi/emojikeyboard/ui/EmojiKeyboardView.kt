@@ -27,6 +27,12 @@ import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -48,6 +54,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
+    private val viewScope = CoroutineScope(Dispatchers.Main + Job())
     private val deleteHandler = Handler(Looper.getMainLooper())
     private val deleteRepeater = object : Runnable {
         override fun run() {
@@ -206,47 +213,52 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun loadEmojis() {
-        val isHorizontal = config.layoutMode == EmojiLayoutMode.COOPER
-        val spanCount = if (isHorizontal) HORIZONTAL_SPAN_COUNT else VERTICAL_SPAN_COUNT
-        val categories = config.provider.getCategories()
+        viewScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val isHorizontal = config.layoutMode == EmojiLayoutMode.COOPER
+                val spanCount = if (isHorizontal) HORIZONTAL_SPAN_COUNT else VERTICAL_SPAN_COUNT
+                val categories = config.provider.getCategories(context)
 
-        binding.categoriesSelector.setup(categories)
-
-        val result = EmojiListMapper.map(
-            categories,
-            config.layoutMode,
-            spanCount
-        )
-        this.categoryRanges = result.categoryRanges
-
-        binding.categoriesSelector.setSelectedCategory(0)
-        binding.categoriesSelector.setOnSeekListener { index, progress ->
-            val range = categoryRanges.getOrNull(index) ?: return@setOnSeekListener
-
-            val totalItemsInCategory = range.last - range.first
-            val offsetItems = (totalItemsInCategory * progress).toInt()
-            val targetPosition = range.first + offsetItems
-
-            isProgrammaticScroll = true
-            val lm = binding.rvEmojis.layoutManager as GridLayoutManager
-            lm.scrollToPositionWithOffset(targetPosition, 0)
-        }
-
-        while (binding.rvEmojis.itemDecorationCount > 0) {
-            binding.rvEmojis.removeItemDecorationAt(0)
-        }
-
-        if (isHorizontal) {
-            binding.rvEmojis.addItemDecoration(
-                CategoryGapDecoration(
-                    categoryRanges = result.categoryRanges,
-                    gapSize = HORIZONTAL_GAP_SIZE.dp,
-                    spanCount = spanCount
+                val mappedResult = EmojiListMapper.map(
+                    categories,
+                    config.layoutMode,
+                    spanCount
                 )
-            )
-        }
 
-        adapter.submitList(result.items)
+                Pair(categories, mappedResult)
+            }
+
+            val (categories, mappedResult) = result
+
+            binding.categoriesSelector.setup(categories)
+            categoryRanges = mappedResult.categoryRanges
+
+            binding.categoriesSelector.setSelectedCategory(0)
+            binding.categoriesSelector.setOnSeekListener { index, progress ->
+                val range = categoryRanges.getOrNull(index) ?: return@setOnSeekListener
+                val totalItemsInCategory = range.last - range.first
+                val offsetItems = (totalItemsInCategory * progress).toInt()
+                val targetPosition = range.first + offsetItems
+
+                isProgrammaticScroll = true
+                val lm = binding.rvEmojis.layoutManager as GridLayoutManager
+                lm.scrollToPositionWithOffset(targetPosition, 0)
+            }
+
+            if (config.layoutMode == EmojiLayoutMode.COOPER) {
+                val isHorizontal = true
+                val spanCount = HORIZONTAL_SPAN_COUNT
+                binding.rvEmojis.addItemDecoration(
+                    CategoryGapDecoration(
+                        categoryRanges = mappedResult.categoryRanges,
+                        gapSize = HORIZONTAL_GAP_SIZE.dp,
+                        spanCount = spanCount
+                    )
+                )
+            }
+
+            adapter.submitList(mappedResult.items)
+        }
     }
 
 
@@ -298,5 +310,6 @@ class EmojiKeyboardView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         targetEditText = null
+        viewScope.cancel()
     }
 }

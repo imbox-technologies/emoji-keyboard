@@ -1,5 +1,6 @@
 package com.davidperi.emojikeyboard.provider
 
+import android.content.Context
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.model.Emoji
@@ -254,7 +255,7 @@ object DefaultEmojiProvider : EmojiProvider {
         )
     }
 
-    override fun getCategories(): List<Category> {
+    override suspend fun getCategories(context: Context): List<Category> {
         return listOf(
             Category("faces", "Smileys & People", R.drawable.smile, faces),
             Category("nature", "Animals & Nature", R.drawable.dog, nature),

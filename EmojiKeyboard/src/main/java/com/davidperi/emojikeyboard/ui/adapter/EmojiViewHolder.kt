@@ -12,7 +12,7 @@ class EmojiViewHolder(itemView: View, typeface: Typeface, onClick: (Emoji) -> Un
     private var currentEmoji: Emoji? = null
 
     init {
-        binding.tvEmoji.typeface = typeface
+        // binding.tvEmoji.typeface = typeface
         binding.tvEmoji.setOnClickListener {
             currentEmoji?.let { onClick(it) }
         }

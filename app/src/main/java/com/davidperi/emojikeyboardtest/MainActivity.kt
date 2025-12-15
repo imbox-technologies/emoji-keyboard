@@ -52,8 +52,8 @@ class MainActivity : AppCompatActivity() {
         binding.emojiKeyboard.setupWith(binding.etTest)
         binding.emojiKeyboard.onStateChangedListener { state -> updateIcon(state) }
 
-        val iosConfig = EmojiKeyboardConfig(layoutMode = EmojiLayoutMode.COOPER)
-        binding.emojiKeyboard.configure(iosConfig)
+        // val iosConfig = EmojiKeyboardConfig(layoutMode = EmojiLayoutMode.COOPER)
+        // binding.emojiKeyboard.configure(iosConfig)
     }
 
     private fun setupBackHandling() {
