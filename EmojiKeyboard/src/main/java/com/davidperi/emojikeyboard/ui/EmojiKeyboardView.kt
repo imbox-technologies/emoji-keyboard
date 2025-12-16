@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
@@ -15,12 +17,17 @@ import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
+import com.davidperi.emojikeyboard.model.Emoji
 import com.davidperi.emojikeyboard.ui.adapter.CategoryGapDecoration
+import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
@@ -31,6 +38,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
@@ -48,11 +56,15 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private var controller: PopupStateMachine? = null
     private var categoryRanges: List<IntRange> = emptyList()
     private var isProgrammaticScroll = false
+    private var cachedMappedItems: List<EmojiListItem>? = null
 
     private val adapter = EmojiAdapter { emoji ->
         onEmojiSelected(emoji.unicode)
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
+    private val searchEngine = EmojiSearchEngine()
+
+    private var searchJob: Job? = null
 
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
     private val deleteHandler = Handler(Looper.getMainLooper())
@@ -73,6 +85,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
         clipChildren = true
         applyConfig(config)
         setupDeleteButton()
+        setupSearchBar()
     }
 
     // PUBLIC API
@@ -212,6 +225,15 @@ class EmojiKeyboardView @JvmOverloads constructor(
         }
     }
 
+    private fun setupSearchBar() {
+        // TODO: add button to clear
+
+        binding.searchBar.searchBar.addTextChangedListener { s ->
+            val query = s?.toString() ?: ""
+            performSearch(query)
+        }
+    }
+
     private fun loadEmojis() {
         viewScope.launch {
             val result = withContext(Dispatchers.IO) {
@@ -219,16 +241,15 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 val spanCount = if (isHorizontal) HORIZONTAL_SPAN_COUNT else VERTICAL_SPAN_COUNT
                 val categories = config.provider.getCategories(context)
 
-                val mappedResult = EmojiListMapper.map(
-                    categories,
-                    config.layoutMode,
-                    spanCount
-                )
+                searchEngine.initialize(categories)
 
+                val mappedResult = EmojiListMapper.map(categories, config.layoutMode, spanCount)
                 Pair(categories, mappedResult)
             }
 
             val (categories, mappedResult) = result
+
+            cachedMappedItems = mappedResult.items
 
             binding.categoriesSelector.setup(categories)
             categoryRanges = mappedResult.categoryRanges
@@ -292,6 +313,36 @@ class EmojiKeyboardView @JvmOverloads constructor(
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
         val event = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
         editText.dispatchKeyEvent(event)
+    }
+
+    private fun performSearch(query: String) {
+        searchJob?.cancel()
+
+        if (query.isEmpty()) {
+            restoreCategoryView()
+            return
+        }
+
+        searchJob = viewScope.launch {
+            delay(150)
+            val results = searchEngine.search(query)
+            updateAdapterWithSearchResults(results)
+        }
+    }
+
+    private fun updateAdapterWithSearchResults(results: List<Emoji>) {
+        val listItems = results.map { EmojiListItem.EmojiKey(it) }
+        adapter.submitList(listItems) {
+            binding.rvEmojis.scrollToPosition(0)
+        }
+    }
+
+    private fun restoreCategoryView() {
+        searchJob?.cancel()
+
+        cachedMappedItems?.let {
+            adapter.submitList(it)
+        }
     }
 
 

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
+import java.text.Normalizer
 
 object DisplayUtils {
 
@@ -33,5 +34,11 @@ object DisplayUtils {
 
     val Int.dp: Int
         get() = (this * Resources.getSystem().displayMetrics.density + 0.5f).toInt()
+
+    fun String.removeAccents(): String {
+        val regex = "\\p{InCombiningDiacriticalMarks}+".toRegex()
+        val temp = Normalizer.normalize(this, Normalizer.Form.NFD)
+        return regex.replace(temp, "")
+    }
 
 }
