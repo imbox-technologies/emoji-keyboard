@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
@@ -17,16 +15,15 @@ import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
 import com.davidperi.emojikeyboard.model.Emoji
 import com.davidperi.emojikeyboard.ui.adapter.CategoryGapDecoration
+import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
@@ -59,6 +56,10 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private var cachedMappedItems: List<EmojiListItem>? = null
 
     private val adapter = EmojiAdapter { emoji ->
+        onEmojiSelected(emoji.unicode)
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+    private val searchAdapter = EmojiAdapter { emoji ->
         onEmojiSelected(emoji.unicode)
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
@@ -114,6 +115,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
         config.font?.let { EmojiFontManager.setCustomTypeface(it) }
         setupLayoutMode(config.layoutMode)
         setupAdapter(config)
+        setupSearchAdapter()
         loadEmojis()
     }
 
@@ -133,6 +135,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 // Recycler
                 set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
                 set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
+                set.constrainHeight(binding.rvEmojis.id, ConstraintSet.MATCH_CONSTRAINT)
             }
 
             EmojiLayoutMode.COOPER -> {
@@ -146,6 +149,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 // Recycler
                 set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
                 set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, binding.topBar.id, ConstraintSet.TOP)
+                set.constrainHeight(binding.rvEmojis.id, ConstraintSet.WRAP_CONTENT)
             }
         }
 
@@ -194,6 +198,13 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 }
             }
         })
+    }
+
+    private fun setupSearchAdapter() {
+        binding.rvSearch.apply {
+            layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            adapter = searchAdapter
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -332,8 +343,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private fun updateAdapterWithSearchResults(results: List<Emoji>) {
         val listItems = results.map { EmojiListItem.EmojiKey(it) }
-        adapter.submitList(listItems) {
-            binding.rvEmojis.scrollToPosition(0)
+        searchAdapter.submitList(listItems) {
+            // binding.rvEmojis.scrollToPosition(0)
         }
     }
 
@@ -348,7 +359,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     internal val searchBar = binding.searchBar.root
     internal val topBar = binding.topBar
-    internal val recycler = binding.rvEmojis
+    internal val rvKeyboard = binding.rvEmojis
+    internal val rvSearch = binding.rvSearch
 
     internal fun setInternalContentHeight(newHeight: Int) {
         binding.root.updateLayoutParams {

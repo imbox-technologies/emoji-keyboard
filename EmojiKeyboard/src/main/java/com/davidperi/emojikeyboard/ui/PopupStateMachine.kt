@@ -77,6 +77,8 @@ internal class PopupStateMachine(
                 editText.requestFocus()
                 emojiKeyboard.hideKeyboard()
                 emojiKeyboard.topBar.isVisible = true
+                emojiKeyboard.rvKeyboard.isVisible = true
+                emojiKeyboard.rvSearch.isVisible = false
             }
 
             BEHIND -> {
@@ -84,6 +86,8 @@ internal class PopupStateMachine(
                 if (oldState != COLLAPSED) animateSize(keyboardHeight)
                 editText.showKeyboard()
                 emojiKeyboard.topBar.isVisible = true
+                emojiKeyboard.rvKeyboard.isVisible = true
+                emojiKeyboard.rvSearch.isVisible = false
             }
 
             FOCUSED -> {
@@ -92,12 +96,16 @@ internal class PopupStateMachine(
                 editText.requestFocus()
                 editText.hideKeyboard()
                 emojiKeyboard.topBar.isVisible = true
+                emojiKeyboard.rvKeyboard.isVisible = true
+                emojiKeyboard.rvSearch.isVisible = false
             }
 
             SEARCHING -> {
                 animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
                 emojiKeyboard.searchBar.showKeyboard()
                 emojiKeyboard.topBar.isVisible = false
+                emojiKeyboard.rvKeyboard.isVisible = false
+                emojiKeyboard.rvSearch.isVisible = true
             }
         }
     }
