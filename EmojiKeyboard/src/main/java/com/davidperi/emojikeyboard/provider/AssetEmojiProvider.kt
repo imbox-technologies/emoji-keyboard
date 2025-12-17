@@ -15,6 +15,13 @@ object AssetEmojiProvider : EmojiProvider {
         isLenient = true
     }
 
+    private val debugRecents = listOf(Category(
+        id = "recent",
+        name = "Recent Emojis",
+        icon = R.drawable.clock,
+        emojis = emptyList()
+    ))
+
     private val categoryIcons = mapOf(
         "faces" to R.drawable.smile,
         "nature" to R.drawable.dog,
@@ -46,8 +53,8 @@ object AssetEmojiProvider : EmojiProvider {
                     )
                 }
 
-                cachedCategories = domainCategories
-                domainCategories
+                cachedCategories = debugRecents + domainCategories
+                debugRecents + domainCategories
             } catch (e: IOException) {
                 e.printStackTrace()
                 emptyList()

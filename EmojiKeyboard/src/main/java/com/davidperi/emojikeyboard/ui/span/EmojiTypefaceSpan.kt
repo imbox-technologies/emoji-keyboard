@@ -18,6 +18,6 @@ class EmojiTypefaceSpan(private val typeface: Typeface) : MetricAffectingSpan() 
 //        val old = paint.typeface
 //        val oldStyle = old?.style ?: 0
 
-        paint.typeface = typeface
+        // paint.typeface = typeface
     }
 }

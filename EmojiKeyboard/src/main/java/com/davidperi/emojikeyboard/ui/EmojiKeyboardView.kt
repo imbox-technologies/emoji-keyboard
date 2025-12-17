@@ -135,7 +135,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 // Recycler
                 set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
                 set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
-                set.constrainHeight(binding.rvEmojis.id, ConstraintSet.MATCH_CONSTRAINT)
+                // set.constrainHeight(binding.rvEmojis.id, ConstraintSet.MATCH_CONSTRAINT)
             }
 
             EmojiLayoutMode.COOPER -> {
@@ -149,7 +149,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 // Recycler
                 set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
                 set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, binding.topBar.id, ConstraintSet.TOP)
-                set.constrainHeight(binding.rvEmojis.id, ConstraintSet.WRAP_CONTENT)
+                // set.constrainHeight(binding.rvEmojis.id, ConstraintSet.WRAP_CONTENT)
             }
         }
 
