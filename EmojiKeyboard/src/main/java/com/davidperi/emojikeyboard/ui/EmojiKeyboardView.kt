@@ -275,16 +275,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
             categoryRanges = ranges
 
             binding.categoriesSelector.setSelectedCategory(0)
-            binding.categoriesSelector.setOnSeekListener { index, progress ->
-                val range = categoryRanges.getOrNull(index) ?: return@setOnSeekListener
-                val totalItemsInCategory = range.last - range.first
-                val offsetItems = (totalItemsInCategory * progress).toInt()
-                val targetPosition = range.first + offsetItems
-
-                isProgrammaticScroll = true
-                val lm = binding.rvEmojis.layoutManager as GridLayoutManager
-                lm.scrollToPositionWithOffset(targetPosition, 0)
-            }
+            binding.categoriesSelector.setOnSeekListener(::onSeekListener)
 
             if (config.layoutMode == EmojiLayoutMode.COOPER) {
                 val spanCount = HORIZONTAL_SPAN_COUNT
@@ -299,6 +290,17 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
             emojisAdapter.submitList(items)
         }
+    }
+
+    private fun onSeekListener(index: Int, progress: Float) {
+        val range = categoryRanges.getOrNull(index) ?: return
+        val totalItemsInCategory = range.last - range.first
+        val offsetItems = (totalItemsInCategory * progress).toInt()
+        val targetPosition = range.first + offsetItems
+
+        isProgrammaticScroll = true
+        val lm = binding.rvEmojis.layoutManager as GridLayoutManager
+        lm.scrollToPositionWithOffset(targetPosition, 0)
     }
 
 
