@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -26,18 +27,29 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/search"
-                android:tint="@color/gray"/>
+                android:tint="@color/gray" />
 
             <EditText
                 android:id="@+id/search_bar"
                 style="@style/SearchBarText"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
+                android:layout_weight="1"
                 android:hint="Search emojis"
                 android:inputType="text"
                 android:lines="1"
                 android:maxLines="1" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ic_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="2dp"
+                android:src="@drawable/cross"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

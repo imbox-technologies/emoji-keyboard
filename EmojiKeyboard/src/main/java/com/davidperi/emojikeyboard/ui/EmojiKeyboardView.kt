@@ -15,6 +15,7 @@ import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.GridLayoutManager
@@ -237,10 +238,13 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun setupSearchBar() {
-        // TODO: add button to clear
+        binding.searchBar.icClear.setOnClickListener {
+            binding.searchBar.searchBar.text.clear()
+        }
 
         binding.searchBar.searchBar.addTextChangedListener { s ->
             val query = s?.toString() ?: ""
+            binding.searchBar.icClear.isVisible = query.isNotEmpty()
             performSearch(query)
         }
     }
@@ -330,29 +334,28 @@ class EmojiKeyboardView @JvmOverloads constructor(
         searchJob?.cancel()
 
         if (query.isEmpty()) {
-            restoreCategoryView()
-            return
-        }
-
-        searchJob = viewScope.launch {
-            delay(150)
-            val results = searchEngine.search(query)
-            updateAdapterWithSearchResults(results)
+            // TODO: show recent emojis as suggestions
+            searchAdapter.submitList(emptyList())
+            binding.tvNoSearchResults.isVisible = false
+        } else {
+            searchJob = viewScope.launch {
+                delay(150)
+                val results = searchEngine.search(query)
+                updateAdapterWithSearchResults(results)
+            }
         }
     }
 
     private fun updateAdapterWithSearchResults(results: List<Emoji>) {
-        val listItems = results.map { EmojiListItem.EmojiKey(it) }
-        searchAdapter.submitList(listItems) {
-            // binding.rvEmojis.scrollToPosition(0)
-        }
-    }
-
-    private fun restoreCategoryView() {
-        searchJob?.cancel()
-
-        cachedMappedItems?.let {
-            adapter.submitList(it)
+        if (results.isEmpty()) {
+            binding.tvNoSearchResults.isVisible = true
+            searchAdapter.submitList(emptyList())
+        } else {
+            binding.tvNoSearchResults.isVisible = false
+            val listItems = results.map { EmojiListItem.EmojiKey(it) }
+            searchAdapter.submitList(listItems) {
+                binding.rvSearch.scrollToPosition(0)
+            }
         }
     }
 
@@ -360,7 +363,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     internal val searchBar = binding.searchBar.root
     internal val topBar = binding.topBar
     internal val rvKeyboard = binding.rvEmojis
-    internal val rvSearch = binding.rvSearch
+    internal val searchResults = binding.searchResults
 
     internal fun setInternalContentHeight(newHeight: Int) {
         binding.root.updateLayoutParams {

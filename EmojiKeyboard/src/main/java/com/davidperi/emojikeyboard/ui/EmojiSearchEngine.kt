@@ -20,12 +20,38 @@ class EmojiSearchEngine {
     suspend fun search(query: String): List<Emoji> = withContext(Dispatchers.Default) {
         if (query.isBlank()) return@withContext emptyList()
         val normalizedQuery = query.trim().lowercase().removeAccents()
-        allEmojis.filter { emoji ->
-            if (emoji.description.lowercase().contains(normalizedQuery)) return@filter true
 
-            emoji.keywords.any { keyword ->
-                keyword.lowercase().contains(normalizedQuery)
-            }
+        val resultsWithScore = allEmojis.mapNotNull { emoji ->
+            val score = calculateScore(emoji, normalizedQuery)
+            if (score != -1) emoji to score else null
         }
+
+        resultsWithScore.sortedBy { it.second }.map { it.first }
+
+//        allEmojis.filter { emoji ->
+//            if (emoji.description.lowercase().contains(normalizedQuery)) return@filter true
+//
+//            emoji.keywords.any { keyword ->
+//                keyword.lowercase().contains(normalizedQuery)
+//            }
+//        }
+    }
+
+    private fun calculateScore(emoji: Emoji, query: String): Int {
+        if (emoji.keywords.any { it.equals(query, ignoreCase = true) }) {
+            return 1
+        }
+
+        if (emoji.keywords.any { it.startsWith(query, ignoreCase = true) }) {
+            return 2
+        }
+
+        val normalizedDesc = emoji.description.lowercase().removeAccents()
+        val words = normalizedDesc.split(" ", "-")
+        if (words.any { it.startsWith(query) }) {
+            return 3
+        }
+
+        return -1
     }
 }
