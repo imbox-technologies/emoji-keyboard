@@ -4,6 +4,9 @@ import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 
 object EmojiListMapper {
+    // Transform from List<Category> to List<EmojiListItem>
+    // Also return category ranges for scrolling logic
+    // It depends on the Config (layoutMode)
 
     data class Result(
         val items: List<EmojiListItem>,
@@ -12,18 +15,17 @@ object EmojiListMapper {
 
     fun map(
         categories: List<Category>,
-        mode: EmojiLayoutMode,
+        isVertical: Boolean,
         spanCount: Int
     ): Result {
-
         val list = mutableListOf<EmojiListItem>()
         val ranges = mutableListOf<IntRange>()
-        val isHorizontal = mode == EmojiLayoutMode.COOPER
 
         categories.forEach { category ->
             val startIndex = list.size
 
-            if (!isHorizontal) {
+            // In vertical mode, category names are displayed
+            if (isVertical) {
                 list.add(EmojiListItem.Header(category))
             }
 
@@ -31,7 +33,8 @@ object EmojiListMapper {
                 list.add(EmojiListItem.EmojiKey(it))
             }
 
-            if (isHorizontal) {
+            // In horizontal mode could be necessary to add filler views
+            if (!isVertical) {
                 val currentItemsCount = category.emojis.size
                 val remainder = currentItemsCount % spanCount
 
@@ -49,5 +52,4 @@ object EmojiListMapper {
 
         return Result(list, ranges)
     }
-
 }

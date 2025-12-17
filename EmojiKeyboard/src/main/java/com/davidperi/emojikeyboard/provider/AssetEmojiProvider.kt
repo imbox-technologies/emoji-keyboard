@@ -35,7 +35,7 @@ object AssetEmojiProvider : EmojiProvider {
 
     private var cachedCategories: List<Category>? = null
 
-    suspend fun loadCategories(context: Context): List<Category> {
+    private suspend fun loadCategories(context: Context): List<Category> {
         return cachedCategories ?: withContext(Dispatchers.IO) {
             try {
                 val jsonString = context.assets.open("providers/emojis_en_v2.json")

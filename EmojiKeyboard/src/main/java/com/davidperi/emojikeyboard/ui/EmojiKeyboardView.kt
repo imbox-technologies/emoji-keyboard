@@ -48,27 +48,34 @@ class EmojiKeyboardView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs) {
 
     private val binding = EmojiKeyboardPopupBinding.inflate(LayoutInflater.from(context), this, true)
+    private val viewScope = CoroutineScope(Dispatchers.Main + Job())
 
+    // Config
     private var config: EmojiKeyboardConfig = EmojiKeyboardConfig()
+
+    private val isVerticalLayout: Boolean
+        get() = config.layoutMode in listOf(EmojiLayoutMode.ROBOT)  // for future reference
+    private val spanCount: Int
+        get() = if (isVerticalLayout) VERTICAL_SPAN_COUNT else HORIZONTAL_SPAN_COUNT
+
+    // Controllers
+    private var stateMachine: PopupStateMachine? = null
+    private val searchEngine = EmojiSearchEngine()
+    private val fontManager = EmojiFontManager
+    // TODO: recent emoji controller
+
+    // Adapters
+    private val emojisAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }
+    private val searchAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }
+    private val recentAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }  // TODO: use this
+
     private var targetEditText: EditText? = null
-    private var controller: PopupStateMachine? = null
+
     private var categoryRanges: List<IntRange> = emptyList()
     private var isProgrammaticScroll = false
-    private var cachedMappedItems: List<EmojiListItem>? = null
-
-    private val adapter = EmojiAdapter { emoji ->
-        onEmojiSelected(emoji.unicode)
-        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-    }
-    private val searchAdapter = EmojiAdapter { emoji ->
-        onEmojiSelected(emoji.unicode)
-        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-    }
-    private val searchEngine = EmojiSearchEngine()
 
     private var searchJob: Job? = null
 
-    private val viewScope = CoroutineScope(Dispatchers.Main + Job())
     private val deleteHandler = Handler(Looper.getMainLooper())
     private val deleteRepeater = object : Runnable {
         override fun run() {
@@ -85,7 +92,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     init {
         clipChildren = true
-        applyConfig(config)
+        applyConfig()
         setupDeleteButton()
         setupSearchBar()
     }
@@ -95,28 +102,32 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     fun setupWith(editText: EditText) {
         this.targetEditText = editText
-        controller = PopupStateMachine(this, editText)
+        stateMachine = PopupStateMachine(this, editText)
     }
 
     fun configure(newConfig: EmojiKeyboardConfig) {
-        this.config = newConfig
-        applyConfig(newConfig)
+        config = newConfig
+        applyConfig()
     }
 
-    fun toggle() { controller?.toggle() }
-    fun hide() { controller?.hide() }
-    fun state() = controller?.state
+    fun toggle() { stateMachine?.toggle() }
+    fun hide() { stateMachine?.hide() }
+    fun state() = stateMachine?.state
 
     fun onStateChangedListener(callback: (PopupState) -> Unit) {
-        controller?.onStateChanged = callback
+        stateMachine?.onStateChanged = callback
     }
 
 
-    private fun applyConfig(config: EmojiKeyboardConfig) {
-        config.font?.let { EmojiFontManager.setCustomTypeface(it) }
-        setupLayoutMode(config.layoutMode)
-        setupAdapter(config)
-        setupSearchAdapter()
+    // CONFIGURATION (One-time or with dynamic Config changes)
+    private fun applyConfig() {
+        config.font?.let { fontManager.setCustomTypeface(it) }
+
+        setupLayoutMode(config.layoutMode)  // depends on Config
+
+        setupEmojisAdapter()  // depends on Config
+        setupSearchAdapter()  // doesn't depend on Config
+
         loadEmojis()
     }
 
@@ -157,17 +168,14 @@ class EmojiKeyboardView @JvmOverloads constructor(
         set.applyTo(binding.root)
     }
 
-    private fun setupAdapter(config: EmojiKeyboardConfig) {
-        val isVertical = config.layoutMode == EmojiLayoutMode.ROBOT
-        val spanCount = if (isVertical) VERTICAL_SPAN_COUNT else HORIZONTAL_SPAN_COUNT
-        val orientation = if (isVertical) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
-
+    private fun setupEmojisAdapter() {
+        // Setup GridLayoutManager
+        val orientation = if (isVerticalLayout) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
         val gridManager = GridLayoutManager(context, spanCount, orientation, false)
-
         gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                if (isVertical) {
-                    val type = adapter.getItemViewType(position)
+                if (isVerticalLayout) {
+                    val type = emojisAdapter.getItemViewType(position)
                     return if (type == EmojiAdapter.Companion.VIEW_TYPE_EMOJI) 1 else spanCount
                 } else {
                     return 1
@@ -175,12 +183,14 @@ class EmojiKeyboardView @JvmOverloads constructor(
             }
         }
 
+        // Connect Recycler with Adapter and GridLayoutManager
         binding.rvEmojis.apply {
             layoutManager = gridManager
-            this.adapter = this@EmojiKeyboardView.adapter
+            adapter = emojisAdapter
             setHasFixedSize(true)
         }
 
+        // Scroll listener for categories
         binding.rvEmojis.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (isProgrammaticScroll) {
@@ -202,9 +212,11 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun setupSearchAdapter() {
+        // Connect Recycler with Adapter and LinearLayoutManager
         binding.rvSearch.apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = searchAdapter
+            setHasFixedSize(true)
         }
     }
 
@@ -251,23 +263,16 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private fun loadEmojis() {
         viewScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                val isHorizontal = config.layoutMode == EmojiLayoutMode.COOPER
-                val spanCount = if (isHorizontal) HORIZONTAL_SPAN_COUNT else VERTICAL_SPAN_COUNT
+            val (categories, items, ranges) = withContext(Dispatchers.IO) {
                 val categories = config.provider.getCategories(context)
-
+                val (items, ranges) = EmojiListMapper.map(categories, isVerticalLayout, spanCount)
                 searchEngine.initialize(categories)
 
-                val mappedResult = EmojiListMapper.map(categories, config.layoutMode, spanCount)
-                Pair(categories, mappedResult)
+                Triple(categories, items, ranges)
             }
 
-            val (categories, mappedResult) = result
-
-            cachedMappedItems = mappedResult.items
-
             binding.categoriesSelector.setup(categories)
-            categoryRanges = mappedResult.categoryRanges
+            categoryRanges = ranges
 
             binding.categoriesSelector.setSelectedCategory(0)
             binding.categoriesSelector.setOnSeekListener { index, progress ->
@@ -282,18 +287,17 @@ class EmojiKeyboardView @JvmOverloads constructor(
             }
 
             if (config.layoutMode == EmojiLayoutMode.COOPER) {
-                val isHorizontal = true
                 val spanCount = HORIZONTAL_SPAN_COUNT
                 binding.rvEmojis.addItemDecoration(
                     CategoryGapDecoration(
-                        categoryRanges = mappedResult.categoryRanges,
+                        categoryRanges = categoryRanges,
                         gapSize = HORIZONTAL_GAP_SIZE.dp,
                         spanCount = spanCount
                     )
                 )
             }
 
-            adapter.submitList(mappedResult.items)
+            emojisAdapter.submitList(items)
         }
     }
 
@@ -319,6 +323,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
             max(start, end),
             spannableString
         )
+
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
     private fun handleBackspace() {
