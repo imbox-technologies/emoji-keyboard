@@ -27,14 +27,6 @@ class EmojiSearchEngine {
         }
 
         resultsWithScore.sortedBy { it.second }.map { it.first }
-
-//        allEmojis.filter { emoji ->
-//            if (emoji.description.lowercase().contains(normalizedQuery)) return@filter true
-//
-//            emoji.keywords.any { keyword ->
-//                keyword.lowercase().contains(normalizedQuery)
-//            }
-//        }
     }
 
     private fun calculateScore(emoji: Emoji, query: String): Int {

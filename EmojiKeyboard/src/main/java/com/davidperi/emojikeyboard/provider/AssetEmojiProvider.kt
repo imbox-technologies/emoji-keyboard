@@ -25,11 +25,11 @@ object AssetEmojiProvider : EmojiProvider {
     private val categoryIcons = mapOf(
         "faces" to R.drawable.smile,
         "nature" to R.drawable.dog,
-        "food" to R.drawable.coffee,
+        "food" to R.drawable.apple, // R.drawable.coffee,
         "activities" to R.drawable.volleyball,
         "travel" to R.drawable.car_front,
         "objects" to R.drawable.lightbulb,
-        "symbols" to R.drawable.square_radical,
+        "symbols" to R.drawable.heart, // R.drawable.square_radical,
         "flags" to R.drawable.flag
     )
 
@@ -38,7 +38,7 @@ object AssetEmojiProvider : EmojiProvider {
     suspend fun loadCategories(context: Context): List<Category> {
         return cachedCategories ?: withContext(Dispatchers.IO) {
             try {
-                val jsonString = context.assets.open("providers/emojis_en.json")
+                val jsonString = context.assets.open("providers/emojis_en_v2.json")
                     .bufferedReader()
                     .use { it.readText() }
 

@@ -5,7 +5,7 @@ import android.graphics.Typeface
 
 object EmojiFontManager {
     private var typeface: Typeface? = null
-    private const val DEFAULT_FONT_PATH = "fonts/TwemojiV2.ttf"
+    private const val DEFAULT_FONT_PATH = "fonts/Cooper.ttf"
 
     fun setCustomTypeface(typeface: Typeface) {
         this.typeface = typeface
