@@ -73,6 +73,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private var targetEditText: EditText? = null
 
     private var categoryRanges: List<IntRange> = emptyList()
+    private var recentsCache: List<EmojiListItem> = emptyList()
     private var isProgrammaticScroll = false
 
     private var searchJob: Job? = null
@@ -88,7 +89,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     companion object {
         private const val HORIZONTAL_SPAN_COUNT = 4
         private const val VERTICAL_SPAN_COUNT = 9
-        const val HORIZONTAL_GAP_SIZE = 32  // dp
+        const val HORIZONTAL_GAP_SIZE = 40  // dp
     }
 
     init {
@@ -351,8 +352,6 @@ class EmojiKeyboardView @JvmOverloads constructor(
         )
 
         recentManager.addEmoji(unicode)
-        refreshRecentList()
-
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
@@ -360,6 +359,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
         val recents = recentManager.getRecentUnicodes()
         val recentsItem = EmojiListMapper.mapRecents(recents, isVerticalLayout, spanCount)
         recentAdapter.submitList(recentsItem.items)
+        searchAdapter.submitList(recentsItem.items)
+        recentsCache = recentsItem.items
     }
 
     private fun handleBackspace() {
@@ -374,8 +375,9 @@ class EmojiKeyboardView @JvmOverloads constructor(
         searchJob?.cancel()
 
         if (query.isEmpty()) {
-            // TODO: show recent emojis as suggestions
-            searchAdapter.submitList(emptyList())
+            searchAdapter.submitList(recentsCache) {
+                binding.rvSearch.scrollToPosition(0)
+            }
             binding.tvNoSearchResults.isVisible = false
         } else {
             searchJob = viewScope.launch {
