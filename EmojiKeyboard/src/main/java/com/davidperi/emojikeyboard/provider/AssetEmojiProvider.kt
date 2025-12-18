@@ -15,21 +15,14 @@ object AssetEmojiProvider : EmojiProvider {
         isLenient = true
     }
 
-    private val debugRecents = listOf(Category(
-        id = "recent",
-        name = "Recent Emojis",
-        icon = R.drawable.clock,
-        emojis = emptyList()
-    ))
-
     private val categoryIcons = mapOf(
         "faces" to R.drawable.smile,
         "nature" to R.drawable.dog,
-        "food" to R.drawable.apple, // R.drawable.coffee,
+        "food" to R.drawable.apple,
         "activities" to R.drawable.volleyball,
         "travel" to R.drawable.car_front,
         "objects" to R.drawable.lightbulb,
-        "symbols" to R.drawable.heart, // R.drawable.square_radical,
+        "symbols" to R.drawable.heart,
         "flags" to R.drawable.flag
     )
 
@@ -53,8 +46,8 @@ object AssetEmojiProvider : EmojiProvider {
                     )
                 }
 
-                cachedCategories = debugRecents + domainCategories
-                debugRecents + domainCategories
+                cachedCategories = domainCategories
+                domainCategories
             } catch (e: IOException) {
                 e.printStackTrace()
                 emptyList()
@@ -64,6 +57,5 @@ object AssetEmojiProvider : EmojiProvider {
 
     override suspend fun getCategories(context: Context): List<Category> {
         return loadCategories(context)
-        // return cachedCategories ?: emptyList()
     }
 }

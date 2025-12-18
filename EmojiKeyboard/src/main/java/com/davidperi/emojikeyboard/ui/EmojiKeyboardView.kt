@@ -18,19 +18,20 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.databinding.EmojiKeyboardPopupBinding
+import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.model.Emoji
-import com.davidperi.emojikeyboard.ui.adapter.CategoryGapDecoration
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
-import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,12 +63,12 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private var stateMachine: PopupStateMachine? = null
     private val searchEngine = EmojiSearchEngine()
     private val fontManager = EmojiFontManager
-    // TODO: recent emoji controller
+    private val recentManager = RecentEmojiManager(context)
 
     // Adapters
     private val emojisAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }
     private val searchAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }
-    private val recentAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }  // TODO: use this
+    private val recentAdapter = EmojiAdapter { emoji -> onEmojiSelected(emoji.unicode) }
 
     private var targetEditText: EditText? = null
 
@@ -87,7 +88,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     companion object {
         private const val HORIZONTAL_SPAN_COUNT = 4
         private const val VERTICAL_SPAN_COUNT = 9
-        private const val HORIZONTAL_GAP_SIZE = 16  // dp
+        const val HORIZONTAL_GAP_SIZE = 32  // dp
     }
 
     init {
@@ -174,8 +175,18 @@ class EmojiKeyboardView @JvmOverloads constructor(
         val gridManager = GridLayoutManager(context, spanCount, orientation, false)
         gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
+                val recentCount = recentAdapter.itemCount
+                if (position < recentCount) {
+                    return 1
+                }
+
+                val localPos = position - recentCount
+                if (localPos < 0 || localPos >= emojisAdapter.itemCount) {
+                    return 1
+                }
+
                 if (isVerticalLayout) {
-                    val type = emojisAdapter.getItemViewType(position)
+                    val type = emojisAdapter.getItemViewType(localPos)
                     return if (type == EmojiAdapter.Companion.VIEW_TYPE_EMOJI) 1 else spanCount
                 } else {
                     return 1
@@ -186,7 +197,11 @@ class EmojiKeyboardView @JvmOverloads constructor(
         // Connect Recycler with Adapter and GridLayoutManager
         binding.rvEmojis.apply {
             layoutManager = gridManager
-            adapter = emojisAdapter
+            adapter = ConcatAdapter(
+                ConcatAdapter.Config.Builder().setIsolateViewTypes(false).build(),
+                recentAdapter,
+                emojisAdapter
+            )
             setHasFixedSize(true)
         }
 
@@ -203,9 +218,17 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
                 if (firstPos == RecyclerView.NO_POSITION) return
 
-                val index = categoryRanges.indexOfFirst { range -> firstPos in range }
+                val recentCount = recentAdapter.itemCount
+
+                if (firstPos < recentCount) {
+                    binding.categoriesSelector.setSelectedCategory(0)
+                    return
+                }
+
+                val localPos = firstPos - recentCount
+                val index = categoryRanges.indexOfFirst { range -> localPos in range }
                 if (index >= 0) {
-                    binding.categoriesSelector.setSelectedCategory(index)
+                    binding.categoriesSelector.setSelectedCategory(index + 1)
                 }
             }
         })
@@ -267,42 +290,43 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 val categories = config.provider.getCategories(context)
                 val (items, ranges) = EmojiListMapper.map(categories, isVerticalLayout, spanCount)
                 searchEngine.initialize(categories)
-
                 Triple(categories, items, ranges)
             }
 
-            binding.categoriesSelector.setup(categories)
+            val recents = listOf(Category("recent", "Recent Emojis", R.drawable.clock, emptyList()))
+
+            binding.categoriesSelector.setup(recents + categories)
             categoryRanges = ranges
 
             binding.categoriesSelector.setSelectedCategory(0)
             binding.categoriesSelector.setOnSeekListener(::onSeekListener)
 
-            if (config.layoutMode == EmojiLayoutMode.COOPER) {
-                val spanCount = HORIZONTAL_SPAN_COUNT
-                binding.rvEmojis.addItemDecoration(
-                    CategoryGapDecoration(
-                        categoryRanges = categoryRanges,
-                        gapSize = HORIZONTAL_GAP_SIZE.dp,
-                        spanCount = spanCount
-                    )
-                )
-            }
-
             emojisAdapter.submitList(items)
+            refreshRecentList()
         }
     }
 
     private fun onSeekListener(index: Int, progress: Float) {
-        val range = categoryRanges.getOrNull(index) ?: return
+        if (index == 0) {
+            isProgrammaticScroll = true
+            val lm = binding.rvEmojis.layoutManager as GridLayoutManager
+            lm.scrollToPositionWithOffset(0, 0)
+            return
+        }
+
+        val staticIndex = index - 1
+        val range = categoryRanges.getOrNull(staticIndex) ?: return
         val totalItemsInCategory = range.last - range.first
         val offsetItems = (totalItemsInCategory * progress).toInt()
-        val targetPosition = range.first + offsetItems
+        var targetLocalPos = range.first + offsetItems
+        val remainder = targetLocalPos % spanCount
+        targetLocalPos -= remainder
+        val globalPos = targetLocalPos + recentAdapter.itemCount
 
         isProgrammaticScroll = true
         val lm = binding.rvEmojis.layoutManager as GridLayoutManager
-        lm.scrollToPositionWithOffset(targetPosition, 0)
+        lm.scrollToPositionWithOffset(globalPos, 0)
     }
-
 
     private fun onEmojiSelected(unicode: String) {
         val editText = targetEditText ?: return
@@ -326,13 +350,21 @@ class EmojiKeyboardView @JvmOverloads constructor(
             spannableString
         )
 
+        recentManager.addEmoji(unicode)
+        refreshRecentList()
+
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    private fun refreshRecentList() {
+        val recents = recentManager.getRecentUnicodes()
+        val recentsItem = EmojiListMapper.mapRecents(recents, isVerticalLayout, spanCount)
+        recentAdapter.submitList(recentsItem.items)
     }
 
     private fun handleBackspace() {
         val editText = targetEditText ?: return
         if (editText.text.isNullOrEmpty()) return
-
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
         val event = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
         editText.dispatchKeyEvent(event)
@@ -379,7 +411,6 @@ class EmojiKeyboardView @JvmOverloads constructor(
             foregroundGravity = Gravity.BOTTOM
         }
     }
-
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()

@@ -30,7 +30,7 @@ class EmojiAdapter(
         return when (getItem(position)) {
             is EmojiListItem.Header -> VIEW_TYPE_HEADER
             is EmojiListItem.EmojiKey -> VIEW_TYPE_EMOJI
-            EmojiListItem.Spacer -> VIEW_TYPE_SPACER
+            is EmojiListItem.Spacer -> VIEW_TYPE_SPACER
         }
     }
 
@@ -43,7 +43,7 @@ class EmojiAdapter(
                 onEmojiClicked
             )
             VIEW_TYPE_SPACER -> SpacerViewHolder.create(parent)
-            else -> throw IllegalArgumentException("Unknown view type") // HeaderViewHolder(parent.inflate(R.layout.item_header))
+            else -> throw IllegalArgumentException("Unknown view type")
         }
     }
 
@@ -52,7 +52,7 @@ class EmojiAdapter(
         when (holder) {
             is HeaderViewHolder -> holder.bind(item as EmojiListItem.Header)
             is EmojiViewHolder -> holder.bind(item as EmojiListItem.EmojiKey)
-            SpacerViewHolder -> { /* Do nothing */ }
+            is SpacerViewHolder -> holder.bind(item as EmojiListItem.Spacer)
         }
     }
 }

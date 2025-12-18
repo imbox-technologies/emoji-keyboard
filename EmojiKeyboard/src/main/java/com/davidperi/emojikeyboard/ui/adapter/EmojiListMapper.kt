@@ -1,7 +1,8 @@
 package com.davidperi.emojikeyboard.ui.adapter
 
+import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.model.Category
-import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
+import com.davidperi.emojikeyboard.model.Emoji
 
 object EmojiListMapper {
     // Transform from List<Category> to List<EmojiListItem>
@@ -16,7 +17,8 @@ object EmojiListMapper {
     fun map(
         categories: List<Category>,
         isVertical: Boolean,
-        spanCount: Int
+        spanCount: Int,
+        includeHeader: Boolean = true
     ): Result {
         val list = mutableListOf<EmojiListItem>()
         val ranges = mutableListOf<IntRange>()
@@ -25,7 +27,7 @@ object EmojiListMapper {
             val startIndex = list.size
 
             // In vertical mode, category names are displayed
-            if (isVertical) {
+            if (isVertical && includeHeader) {
                 list.add(EmojiListItem.Header(category))
             }
 
@@ -41,8 +43,11 @@ object EmojiListMapper {
                 if (remainder != 0) {
                     val spacersNeeded = spanCount - remainder
                     repeat(spacersNeeded) {
-                        list.add(EmojiListItem.Spacer)
+                        list.add(EmojiListItem.Spacer(true))
                     }
+                }
+                repeat(spanCount) {
+                    list.add(EmojiListItem.Spacer(false))
                 }
             }
 
@@ -51,5 +56,26 @@ object EmojiListMapper {
         }
 
         return Result(list, ranges)
+    }
+
+    fun mapRecents(
+        unicodes: List<String>,
+        isVertical: Boolean,
+        spanCount: Int
+    ): Result {
+        val emojiItems = unicodes.map { Emoji(it) }
+
+        if (emojiItems.isEmpty()) {
+            return Result(emptyList(), emptyList())
+        }
+
+        val recentsCategory = Category(
+            id = "recents",
+            name = "Recents",
+            icon = R.drawable.clock,
+            emojis = emojiItems
+        )
+
+        return map(listOf(recentsCategory), isVertical, spanCount, false)
     }
 }
