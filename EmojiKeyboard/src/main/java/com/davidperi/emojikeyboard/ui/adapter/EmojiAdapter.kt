@@ -15,6 +15,8 @@ class EmojiAdapter(
 
     private lateinit var cachedTypeface: Typeface
 
+    var isHorizontalLayout: Boolean = false
+
     companion object {
         const val VIEW_TYPE_HEADER = 0
         const val VIEW_TYPE_EMOJI = 1
@@ -40,6 +42,7 @@ class EmojiAdapter(
             VIEW_TYPE_EMOJI -> EmojiViewHolder(
                 parent.inflate(R.layout.item_emoji),
                 cachedTypeface,
+                isHorizontalLayout,
                 onEmojiClicked
             )
             VIEW_TYPE_SPACER -> SpacerViewHolder.create(parent)

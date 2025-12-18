@@ -17,6 +17,7 @@ import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
@@ -32,6 +33,7 @@ import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
+import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -163,6 +165,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 // Recycler
                 set.connect(binding.rvEmojis.id, ConstraintSet.TOP, binding.searchBar.root.id, ConstraintSet.BOTTOM)
                 set.connect(binding.rvEmojis.id, ConstraintSet.BOTTOM, binding.topBar.id, ConstraintSet.TOP)
+                binding.rvEmojis.updatePadding(top = 5.dp, bottom = 5.dp)
                 // set.constrainHeight(binding.rvEmojis.id, ConstraintSet.WRAP_CONTENT)
             }
         }
@@ -171,6 +174,10 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun setupEmojisAdapter() {
+        // Configure flag
+        emojisAdapter.isHorizontalLayout = !isVerticalLayout
+        recentAdapter.isHorizontalLayout = !isVerticalLayout
+
         // Setup GridLayoutManager
         val orientation = if (isVerticalLayout) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
         val gridManager = GridLayoutManager(context, spanCount, orientation, false)
@@ -237,6 +244,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private fun setupSearchAdapter() {
         // Connect Recycler with Adapter and LinearLayoutManager
+        searchAdapter.isHorizontalLayout = true
         binding.rvSearch.apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = searchAdapter
@@ -414,6 +422,25 @@ class EmojiKeyboardView @JvmOverloads constructor(
         }
     }
 
+    internal fun getSearchContentHeight(): Int {
+        val searchBarHeight = binding.searchBar.root.measuredHeight
+        val searchBarMarginTop = (binding.searchBar.root.layoutParams as MarginLayoutParams).topMargin
+        val recyclerHeight = binding.searchResults.layoutParams.height
+
+        return searchBarMarginTop + searchBarHeight + recyclerHeight
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        val searchHeight = if (isVerticalLayout) {
+            measuredWidth / VERTICAL_SPAN_COUNT
+        } else {
+            binding.rvEmojis.height / HORIZONTAL_SPAN_COUNT
+        }
+
+        binding.searchResults.updateLayoutParams { height = searchHeight }
+    }
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         targetEditText = null

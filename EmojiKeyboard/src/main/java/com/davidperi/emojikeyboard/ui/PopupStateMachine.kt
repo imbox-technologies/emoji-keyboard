@@ -104,7 +104,8 @@ internal class PopupStateMachine(
             }
 
             SEARCHING -> {
-                animateSize(keyboardHeight + EXTENSION_HEIGHT.dp)
+                val targetHeight = emojiKeyboard.getSearchContentHeight()
+                animateSize(keyboardHeight + targetHeight) // (keyboardHeight + EXTENSION_HEIGHT.dp)
                 emojiKeyboard.searchBar.showKeyboard()
                 emojiKeyboard.topBar.isVisible = false
                 emojiKeyboard.rvKeyboard.isVisible = false

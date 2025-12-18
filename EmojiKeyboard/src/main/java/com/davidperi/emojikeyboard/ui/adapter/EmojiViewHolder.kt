@@ -6,16 +6,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.databinding.ItemEmojiBinding
 import com.davidperi.emojikeyboard.model.Emoji
 
-class EmojiViewHolder(itemView: View, typeface: Typeface, onClick: (Emoji) -> Unit) : RecyclerView.ViewHolder(itemView) {
+class EmojiViewHolder(
+    itemView: View,
+    typeface: Typeface,
+    isHorizontalLayout: Boolean,
+    onClick: (Emoji) -> Unit
+) : RecyclerView.ViewHolder(itemView) {
 
     private val binding = ItemEmojiBinding.bind(itemView)
     private var currentEmoji: Emoji? = null
 
     init {
+        binding.tvEmoji.isHorizontalMode = isHorizontalLayout
         binding.tvEmoji.typeface = typeface
-        binding.tvEmoji.setOnClickListener {
-            currentEmoji?.let { onClick(it) }
-        }
+        binding.tvEmoji.setOnClickListener { currentEmoji?.let { onClick(it) } }
     }
 
     fun bind(item: EmojiListItem.EmojiKey) {
