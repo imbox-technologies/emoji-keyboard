@@ -19,6 +19,7 @@ import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.SEARCHING
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
+import com.davidperi.emojikeyboard.utils.PrefsManager
 
 internal class PopupStateMachine(
     private val emojiKeyboard: EmojiKeyboardView,
@@ -28,7 +29,9 @@ internal class PopupStateMachine(
     var state: PopupState = COLLAPSED
     var onStateChanged: (PopupState) -> Unit = {}
 
-    private var keyboardHeight = DEFAULT_HEIGHT.dp
+    private val prefs = PrefsManager(emojiKeyboard.context)
+
+    private var keyboardHeight = prefs.lastKeyboardHeight
     private var currentAnimator: ValueAnimator? = null
     private var shouldMimicIme = true
 
@@ -118,8 +121,11 @@ internal class PopupStateMachine(
             val effectiveHeight = (imeInset - navInset).coerceAtLeast(0)
 
             if (effectiveHeight > 0) {  // ime up
-                keyboardHeight = effectiveHeight
-                emojiKeyboard.setInternalContentHeight(keyboardHeight)
+                if (keyboardHeight != effectiveHeight) {
+                    keyboardHeight = effectiveHeight
+                    prefs.lastKeyboardHeight = effectiveHeight
+                    emojiKeyboard.setInternalContentHeight(keyboardHeight)
+                }
 
                 when (state) {
                     COLLAPSED -> transitionTo(BEHIND)

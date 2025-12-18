@@ -2,6 +2,7 @@ package com.davidperi.emojikeyboard.ui
 
 import android.content.Context
 import androidx.core.content.edit
+import com.davidperi.emojikeyboard.utils.PrefsManager.Companion.PREFS_KEY
 import java.util.LinkedList
 
 class RecentEmojiManager(context: Context) {
@@ -9,7 +10,6 @@ class RecentEmojiManager(context: Context) {
     private var recentUnicodes: LinkedList<String> = LinkedList()
 
     companion object {
-        private const val PREFS_KEY = "emoji_keyboard_prefs"
         private const val PREFS_RECENTS_KEY = "emoji_keyboard_recent_emojis_unicode"
         private const val MAX_RECENTS = 36
     }
