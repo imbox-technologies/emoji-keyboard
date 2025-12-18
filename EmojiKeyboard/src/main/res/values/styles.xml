@@ -30,8 +30,8 @@
 
     <!-- CLEAN -->
     <style name="SearchBarText">
-        <item name="android:textColorHint">@color/gray</item>
-        <item name="android:textColor">@color/black</item>
+        <item name="android:textColorHint">@color/emoji_keyboard_gray</item>
+        <item name="android:textColor">@color/emoji_keyboard_black</item>
         <item name="android:textSize">18sp</item>
         <item name="android:background">@null</item>
     </style>
@@ -39,7 +39,7 @@
     <style name="SearchBarBackground">
         <item name="cardCornerRadius">20dp</item>
         <item name="cardElevation">0dp</item>
-        <item name="cardBackgroundColor">@color/white</item>
+        <item name="cardBackgroundColor">@color/emoji_keyboard_white</item>
     </style>
 
 </resources>

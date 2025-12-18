@@ -19,10 +19,10 @@ object AssetEmojiProvider : EmojiProvider {
         "faces" to R.drawable.smile,
         "nature" to R.drawable.dog,
         "food" to R.drawable.apple,
-        "activities" to R.drawable.volleyball,
+        "activities" to R.drawable.emoji_keyboard_volleyball,
         "travel" to R.drawable.car_front,
         "objects" to R.drawable.lightbulb,
-        "symbols" to R.drawable.heart,
+        "symbols" to R.drawable.emoji_keyboard_heart,
         "flags" to R.drawable.flag
     )
 

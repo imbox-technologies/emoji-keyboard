@@ -260,7 +260,7 @@ object DefaultEmojiProvider : EmojiProvider {
             Category("faces", "Smileys & People", R.drawable.smile, faces),
             Category("nature", "Animals & Nature", R.drawable.dog, nature),
             Category("food", "Food & Drink", R.drawable.coffee, food),
-            Category("activity", "Activities", R.drawable.volleyball, activity),
+            Category("activity", "Activities", R.drawable.emoji_keyboard_volleyball, activity),
             Category("travel", "Travel & Places", R.drawable.car_front, travel),
             Category("objects", "Objects", R.drawable.lightbulb, objects),
             Category("symbols", "Symbols", R.drawable.square_radical, symbols),

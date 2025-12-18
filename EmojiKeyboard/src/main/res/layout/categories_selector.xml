@@ -42,7 +42,7 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/category_sports"
                 style="@style/EmojiCategoryButtonStyle"
-                android:src="@drawable/volleyball" />
+                android:src="@drawable/emoji_keyboard_volleyball" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/category_transport"
