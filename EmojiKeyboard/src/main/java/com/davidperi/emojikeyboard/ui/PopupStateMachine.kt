@@ -3,6 +3,8 @@ package com.davidperi.emojikeyboard.ui
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.EditText
 import androidx.core.view.ViewCompat
@@ -34,11 +36,14 @@ internal class PopupStateMachine(
     private var keyboardHeight = prefs.lastKeyboardHeight
     private var currentAnimator: ValueAnimator? = null
     private var shouldMimicIme = true
+    private var isDetectingKeyboardHeight = false
+    private var pendingState: PopupState? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     companion object {
-        private const val DEFAULT_HEIGHT = 300
         private const val EXTENSION_HEIGHT = 150
         private const val ANIMATION_DURATION = 250L
+        private const val KEYBOARD_DETECTION_DELAY = 100L
     }
 
     init {
@@ -71,6 +76,16 @@ internal class PopupStateMachine(
         if (state == newState) return
 
         val oldState = state
+
+        val defaultHeight = PrefsManager.DEFAULT_HEIGHT_DP.dp
+        if (newState == FOCUSED && keyboardHeight == defaultHeight && !isDetectingKeyboardHeight) {
+            isDetectingKeyboardHeight = true
+            pendingState = newState
+            editText.requestFocus()
+            editText.showKeyboard()
+            return
+        }
+
         state = newState
         onStateChanged(newState)
 
@@ -106,7 +121,7 @@ internal class PopupStateMachine(
 
             SEARCHING -> {
                 val targetHeight = emojiKeyboard.getSearchContentHeight()
-                animateSize(keyboardHeight + targetHeight) // (keyboardHeight + EXTENSION_HEIGHT.dp)
+                animateSize(keyboardHeight + targetHeight)
                 emojiKeyboard.searchBar.showKeyboard()
                 emojiKeyboard.topBar.isVisible = false
                 emojiKeyboard.rvKeyboard.isVisible = false
@@ -129,20 +144,39 @@ internal class PopupStateMachine(
                     emojiKeyboard.setInternalContentHeight(keyboardHeight)
                 }
 
-                when (state) {
-                    COLLAPSED -> transitionTo(BEHIND)
-                    FOCUSED -> {
-                        if (editText.hasFocus()) transitionTo(BEHIND)
-                        else if (emojiKeyboard.searchBar.hasFocus()) transitionTo(SEARCHING)
+                if (isDetectingKeyboardHeight) {
+                    handler.removeCallbacksAndMessages(null)
+                    handler.postDelayed({
+                        editText.hideKeyboard()
+                    }, KEYBOARD_DETECTION_DELAY)
+                }else{
+                    when (state) {
+                        COLLAPSED -> transitionTo(BEHIND)
+                        FOCUSED -> {
+                            if (editText.hasFocus()) transitionTo(BEHIND)
+                            else if (emojiKeyboard.searchBar.hasFocus()) transitionTo(SEARCHING)
+                        }
+                        else -> {}
                     }
-                    else -> {}
                 }
-
             } else {  // ime down
-                when (state) {
-                    BEHIND -> transitionTo(COLLAPSED)
-                    SEARCHING -> transitionTo(FOCUSED)
-                    else -> {}
+                if (isDetectingKeyboardHeight) {
+                    isDetectingKeyboardHeight = false
+                    pendingState?.let { targetState ->
+                        val savedState = targetState
+                        pendingState = null
+                        handler.postDelayed({
+                            if (keyboardHeight > 0 && keyboardHeight != PrefsManager.DEFAULT_HEIGHT_DP.dp) {
+                                transitionTo(savedState)
+                            }
+                        }, 100)
+                    }
+                }else {
+                    when (state) {
+                        BEHIND -> transitionTo(COLLAPSED)
+                        SEARCHING -> transitionTo(FOCUSED)
+                        else -> {}
+                    }
                 }
             }
 
