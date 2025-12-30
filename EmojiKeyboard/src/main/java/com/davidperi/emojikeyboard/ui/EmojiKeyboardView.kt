@@ -452,6 +452,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        recentManager.forcePersist()
         targetEditText = null
         viewScope.cancel()
     }

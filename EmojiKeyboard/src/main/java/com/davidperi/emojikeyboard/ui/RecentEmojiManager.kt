@@ -1,6 +1,8 @@
 package com.davidperi.emojikeyboard.ui
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.core.content.edit
 import com.davidperi.emojikeyboard.utils.PrefsManager.Companion.PREFS_KEY
 import java.util.LinkedList
@@ -8,10 +10,13 @@ import java.util.LinkedList
 class RecentEmojiManager(context: Context) {
     private val prefs = context.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
     private var recentUnicodes: LinkedList<String> = LinkedList()
+    private val handler = Handler(Looper.getMainLooper())
+    private var persistRunnable: Runnable? = null
 
     companion object {
         private const val PREFS_RECENTS_KEY = "emoji_keyboard_recent_emojis_unicode"
         private const val MAX_RECENTS = 36
+        private const val PERSIST_DELAY_MS = 1000L
     }
 
     init {
@@ -36,6 +41,21 @@ class RecentEmojiManager(context: Context) {
         if (recentUnicodes.size > MAX_RECENTS) {
             recentUnicodes.removeLast()
         }
+        schedulePersist()
+    }
+
+    private fun schedulePersist() {
+        persistRunnable?.let { handler.removeCallbacks(it) }
+        persistRunnable = Runnable {
+            persist()
+            persistRunnable = null
+        }
+        handler.postDelayed(persistRunnable!!, PERSIST_DELAY_MS)
+    }
+
+    fun forcePersist() {
+        persistRunnable?.let { handler.removeCallbacks(it) }
+        persistRunnable = null
         persist()
     }
 
