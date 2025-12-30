@@ -293,10 +293,15 @@ class EmojiKeyboardView @JvmOverloads constructor(
             binding.searchBar.searchBar.text.clear()
         }
 
-        binding.searchBar.searchBar.addTextChangedListener { s ->
-            val query = s?.toString() ?: ""
-            binding.searchBar.icClear.isVisible = query.isNotEmpty()
-            performSearch(query)
+        binding.searchBar.searchBar.apply {
+            setOnEditorActionListener { _, _, _ ->
+                true
+            }
+            addTextChangedListener { s ->
+                val query = s?.toString() ?: ""
+                binding.searchBar.icClear.isVisible = query.isNotEmpty()
+                performSearch(query)
+            }
         }
     }
 
