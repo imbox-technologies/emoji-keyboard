@@ -38,12 +38,14 @@ internal class PopupStateMachine(
     private var shouldMimicIme = true
     private var isDetectingKeyboardHeight = false
     private var pendingState: PopupState? = null
+    private var keyboardHeightDetected = false
     private val handler = Handler(Looper.getMainLooper())
 
     companion object {
         private const val EXTENSION_HEIGHT = 150
         private const val ANIMATION_DURATION = 250L
-        private const val KEYBOARD_DETECTION_DELAY = 100L
+        private const val KEYBOARD_DETECTION_DELAY = 200L
+        private const val KEYBOARD_CLOSE_DELAY = 150L
     }
 
     init {
@@ -80,6 +82,7 @@ internal class PopupStateMachine(
         val defaultHeight = PrefsManager.DEFAULT_HEIGHT_DP.dp
         if (newState == FOCUSED && keyboardHeight == defaultHeight && !isDetectingKeyboardHeight) {
             isDetectingKeyboardHeight = true
+            keyboardHeightDetected = false
             pendingState = newState
             editText.requestFocus()
             editText.showKeyboard()
@@ -144,12 +147,17 @@ internal class PopupStateMachine(
                     emojiKeyboard.setInternalContentHeight(keyboardHeight)
                 }
 
-                if (isDetectingKeyboardHeight) {
+                if (isDetectingKeyboardHeight && effectiveHeight > 0) {
+                    keyboardHeightDetected = true
                     handler.removeCallbacksAndMessages(null)
                     handler.postDelayed({
+                        editText.clearFocus()
                         editText.hideKeyboard()
                     }, KEYBOARD_DETECTION_DELAY)
-                }else{
+                    return@setOnApplyWindowInsetsListener insets
+                }
+
+                if (!isDetectingKeyboardHeight) {
                     when (state) {
                         COLLAPSED -> transitionTo(BEHIND)
                         FOCUSED -> {
@@ -160,18 +168,25 @@ internal class PopupStateMachine(
                     }
                 }
             } else {  // ime down
-                if (isDetectingKeyboardHeight) {
+                if (isDetectingKeyboardHeight && keyboardHeightDetected) {
+                    handler.removeCallbacksAndMessages(null)
                     isDetectingKeyboardHeight = false
+                    keyboardHeightDetected = false
                     pendingState?.let { targetState ->
                         val savedState = targetState
                         pendingState = null
                         handler.postDelayed({
                             if (keyboardHeight > 0 && keyboardHeight != PrefsManager.DEFAULT_HEIGHT_DP.dp) {
-                                transitionTo(savedState)
+                                emojiKeyboard.post {
+                                    transitionTo(savedState)
+                                }
                             }
-                        }, 100)
+                        }, KEYBOARD_CLOSE_DELAY)
                     }
-                }else {
+                    return@setOnApplyWindowInsetsListener insets
+                }
+
+                if (!isDetectingKeyboardHeight) {
                     when (state) {
                         BEHIND -> transitionTo(COLLAPSED)
                         SEARCHING -> transitionTo(FOCUSED)
