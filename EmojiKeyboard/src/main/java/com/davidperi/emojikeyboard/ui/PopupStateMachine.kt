@@ -114,8 +114,13 @@ internal class PopupStateMachine(
             FOCUSED -> {
                 if (oldState == BEHIND) shouldMimicIme = false
                 animateSize(keyboardHeight)
-                editText.requestFocus()
-                editText.hideKeyboard()
+                if (oldState != SEARCHING){
+                    editText.requestFocus()
+                    editText.hideKeyboard()
+                }else{
+                    silentRequestFocus()
+                }
+
                 emojiKeyboard.topBar.isVisible = true
                 emojiKeyboard.rvKeyboard.isVisible = true
                 emojiKeyboard.searchResults.isVisible = false
@@ -294,6 +299,13 @@ internal class PopupStateMachine(
         if (size > 0 && !emojiKeyboard.isVisible) {
             emojiKeyboard.isVisible = true
         }
+    }
+
+    private fun silentRequestFocus() {
+        editText.postDelayed({
+            editText.requestFocus()
+            //editText.hideKeyboard()
+        }, 250)
     }
 
 }
