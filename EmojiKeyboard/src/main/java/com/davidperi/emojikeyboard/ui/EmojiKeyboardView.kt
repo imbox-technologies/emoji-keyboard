@@ -122,6 +122,12 @@ class EmojiKeyboardView @JvmOverloads constructor(
         stateMachine?.onStateChanged = callback
     }
 
+    internal fun refreshRecentsIfNeeded(state: PopupState) {
+        if (state == PopupState.FOCUSED) {
+            refreshRecentList()
+        }
+    }
+
 
     // CONFIGURATION (One-time or with dynamic Config changes)
     private fun applyConfig() {
@@ -210,6 +216,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
                 recentAdapter,
                 emojisAdapter
             )
+            itemAnimator = null
             setHasFixedSize(true)
         }
 
@@ -366,6 +373,8 @@ class EmojiKeyboardView @JvmOverloads constructor(
     private fun refreshRecentList() {
         val recents = recentManager.getRecentUnicodes()
         val recentsItem = EmojiListMapper.mapRecents(recents, isVerticalLayout, spanCount)
+
+        binding.rvEmojis.itemAnimator = null
         recentAdapter.submitList(recentsItem.items)
         searchAdapter.submitList(recentsItem.items)
         recentsCache = recentsItem.items

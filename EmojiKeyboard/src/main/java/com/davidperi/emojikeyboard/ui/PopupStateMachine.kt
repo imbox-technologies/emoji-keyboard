@@ -101,6 +101,7 @@ internal class PopupStateMachine(
                 emojiKeyboard.topBar.isVisible = true
                 emojiKeyboard.rvKeyboard.isVisible = true
                 emojiKeyboard.searchResults.isVisible = false
+                emojiKeyboard.refreshRecentsIfNeeded(newState)
             }
 
             SEARCHING -> {
