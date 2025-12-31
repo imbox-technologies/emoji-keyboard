@@ -11,6 +11,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.model.Category
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
@@ -68,6 +69,41 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
         this.config = config
         setupLayout()
         loadData()
+    }
+
+    fun onStateChanged(state: PopupState) {
+        when (state) {
+            PopupState.COLLAPSED,
+            PopupState.BEHIND,
+            PopupState.FOCUSED -> {
+                categoryBar.isVisible = true
+                backspace.isVisible = true
+                emojiGrid.isVisible = true
+                searchResults.isVisible = false
+                searchBar.isVisible = true
+
+                if (state == PopupState.FOCUSED) {
+                    refreshRecents()
+                }
+            }
+            PopupState.SEARCHING -> {
+                categoryBar.isVisible = false
+                backspace.isVisible = false
+                emojiGrid.isVisible = false
+                searchResults.isVisible = true
+                searchBar.isVisible = true
+            }
+        }
+    }
+
+    fun getSearchContentHeight(): Int {
+        return 60.dp + 50.dp
+    }
+
+    fun setInternalContentHeight(newHeight: Int) {
+        this.updateLayoutParams {
+            height = newHeight
+        }
     }
 
 

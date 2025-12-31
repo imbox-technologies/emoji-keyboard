@@ -13,25 +13,24 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.COLLAPSED
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.BEHIND
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.FOCUSED
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView.PopupState.SEARCHING
+import com.davidperi.emojikeyboard.ui.PopupState.COLLAPSED
+import com.davidperi.emojikeyboard.ui.PopupState.BEHIND
+import com.davidperi.emojikeyboard.ui.PopupState.FOCUSED
+import com.davidperi.emojikeyboard.ui.PopupState.SEARCHING
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
 import com.davidperi.emojikeyboard.utils.PrefsManager
 
 internal class PopupStateMachine(
-    private val emojiKeyboard: EmojiKeyboardView,
+    private val popup: EmojiPopup,
     private val editText: EditText,
 ) {
 
     var state: PopupState = COLLAPSED
     var onStateChanged: (PopupState) -> Unit = {}
 
-    private val prefs = PrefsManager(emojiKeyboard.context)
+    private val prefs = PrefsManager(popup.context)
 
     private var keyboardHeight = prefs.lastKeyboardHeight
     private var currentAnimator: ValueAnimator? = null
@@ -42,15 +41,14 @@ internal class PopupStateMachine(
     private val handler = Handler(Looper.getMainLooper())
 
     companion object {
-        private const val EXTENSION_HEIGHT = 150
         private const val ANIMATION_DURATION = 250L
         private const val KEYBOARD_DETECTION_DELAY = 200L
         private const val KEYBOARD_CLOSE_DELAY = 150L
     }
 
     init {
-        emojiKeyboard.layoutParams.height = 0
-        emojiKeyboard.isVisible = false
+        popup.updatePopupLayoutHeight(0)
+        popup.isVisible = false
 
         setupStaticInsetsListener()
         setupAnimatedInsetsListener()
@@ -91,24 +89,19 @@ internal class PopupStateMachine(
 
         state = newState
         onStateChanged(newState)
+        popup.notifyStateChanged(newState)
 
         when (newState) {
             COLLAPSED -> {
                 if (oldState == FOCUSED) animateSize(0)
                 editText.requestFocus()
-                emojiKeyboard.hideKeyboard()
-                emojiKeyboard.topBar.isVisible = true
-                emojiKeyboard.rvKeyboard.isVisible = true
-                emojiKeyboard.searchResults.isVisible = false
+                popup.hideKeyboard()
             }
 
             BEHIND -> {
                 if (oldState == FOCUSED) shouldMimicIme = false
                 if (oldState != COLLAPSED) animateSize(keyboardHeight)
                 editText.showKeyboard()
-                emojiKeyboard.topBar.isVisible = true
-                emojiKeyboard.rvKeyboard.isVisible = true
-                emojiKeyboard.searchResults.isVisible = false
             }
 
             FOCUSED -> {
@@ -120,27 +113,18 @@ internal class PopupStateMachine(
                 }else{
                     silentRequestFocus()
                 }
-
-                emojiKeyboard.topBar.isVisible = true
-                emojiKeyboard.rvKeyboard.isVisible = true
-                emojiKeyboard.searchResults.isVisible = false
-                emojiKeyboard.refreshRecentsIfNeeded(newState)
             }
 
             SEARCHING -> {
-                val targetHeight = emojiKeyboard.getSearchContentHeight()
+                val targetHeight = popup.getSearchContentHeight()
                 animateSize(keyboardHeight + targetHeight)
-                emojiKeyboard.searchBar.showKeyboard()
-                emojiKeyboard.topBar.isVisible = false
-                emojiKeyboard.rvKeyboard.isVisible = false
-                emojiKeyboard.searchResults.isVisible = true
             }
         }
     }
 
 
     private fun setupStaticInsetsListener() {
-        ViewCompat.setOnApplyWindowInsetsListener(emojiKeyboard) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(popup) { v, insets ->
             val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
             val effectiveHeight = (imeInset - navInset).coerceAtLeast(0)
@@ -149,29 +133,28 @@ internal class PopupStateMachine(
                 if (keyboardHeight != effectiveHeight) {
                     keyboardHeight = effectiveHeight
                     prefs.lastKeyboardHeight = effectiveHeight
-                    emojiKeyboard.setInternalContentHeight(keyboardHeight)
+                    popup.setInternalHeight(keyboardHeight)
                 }
 
-                if (isDetectingKeyboardHeight && effectiveHeight > 0) {
+                if (isDetectingKeyboardHeight) {
                     keyboardHeightDetected = true
                     handler.removeCallbacksAndMessages(null)
                     handler.postDelayed({
                         editText.clearFocus()
                         editText.hideKeyboard()
                     }, KEYBOARD_DETECTION_DELAY)
-                    return@setOnApplyWindowInsetsListener insets
-                }
 
-                if (!isDetectingKeyboardHeight) {
+                } else {
                     when (state) {
                         COLLAPSED -> transitionTo(BEHIND)
                         FOCUSED -> {
                             if (editText.hasFocus()) transitionTo(BEHIND)
-                            else if (emojiKeyboard.searchBar.hasFocus()) transitionTo(SEARCHING)
+                            // else if (popup.searchBar.hasFocus()) transitionTo(SEARCHING)
                         }
                         else -> {}
                     }
                 }
+
             } else {  // ime down
                 if (isDetectingKeyboardHeight && keyboardHeightDetected) {
                     handler.removeCallbacksAndMessages(null)
@@ -181,14 +164,9 @@ internal class PopupStateMachine(
                         val savedState = targetState
                         pendingState = null
                         handler.postDelayed({
-                            if (keyboardHeight > 0 && keyboardHeight != PrefsManager.DEFAULT_HEIGHT_DP.dp) {
-                                emojiKeyboard.post {
-                                    transitionTo(savedState)
-                                }
-                            }
+                            if (keyboardHeight > 0) transitionTo(savedState)
                         }, KEYBOARD_CLOSE_DELAY)
                     }
-                    return@setOnApplyWindowInsetsListener insets
                 }
 
                 if (!isDetectingKeyboardHeight) {
@@ -206,7 +184,7 @@ internal class PopupStateMachine(
 
     private fun setupAnimatedInsetsListener() {
         ViewCompat.setWindowInsetsAnimationCallback(
-            emojiKeyboard, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+            popup, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
                 override fun onProgress(
                     insets: WindowInsetsCompat,
                     runningAnimations: List<WindowInsetsAnimationCompat?>
@@ -248,11 +226,11 @@ internal class PopupStateMachine(
     private fun animateSize(targetHeight: Int) {
         currentAnimator?.cancel()
 
-        val currentHeight = emojiKeyboard.layoutParams.height
+        val currentHeight = popup.layoutParams.height
         if (currentHeight == targetHeight) return
 
         if (targetHeight > 0) {
-            emojiKeyboard.setInternalContentHeight(targetHeight)
+            popup.setInternalHeight(targetHeight)
         }
 
         currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
@@ -261,17 +239,17 @@ internal class PopupStateMachine(
 
             addUpdateListener { animation ->
                 val value = animation.animatedValue as Int
-                emojiKeyboard.updateLayoutParams { height = value }
+                popup.updatePopupLayoutHeight(value)
 
-                if (value > 0 && !emojiKeyboard.isVisible) {
-                    emojiKeyboard.isVisible = true
+                if (value > 0 && !popup.isVisible) {
+                    popup.isVisible = true
                 }
             }
 
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     if (targetHeight == 0) {
-                        emojiKeyboard.isVisible = false
+                        popup.isVisible = false
                     }
                     currentAnimator = null
                 }
@@ -285,19 +263,19 @@ internal class PopupStateMachine(
         currentAnimator?.cancel()
 
         if (size > 0) {
-            emojiKeyboard.setInternalContentHeight(maxOf(size, keyboardHeight))
+            popup.setInternalHeight(maxOf(size, keyboardHeight))
         }
 
         if (size == 0) {
-            emojiKeyboard.isVisible = false
+            popup.isVisible = false
         }
 
-        if (emojiKeyboard.layoutParams.height != size){
-            emojiKeyboard.updateLayoutParams { height = size }
+        if (popup.layoutParams.height != size){
+            popup.updatePopupLayoutHeight(size)
         }
 
-        if (size > 0 && !emojiKeyboard.isVisible) {
-            emojiKeyboard.isVisible = true
+        if (size > 0 && !popup.isVisible) {
+            popup.isVisible = true
         }
     }
 

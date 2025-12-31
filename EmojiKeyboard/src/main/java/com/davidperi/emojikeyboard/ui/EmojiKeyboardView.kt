@@ -106,7 +106,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     fun setupWith(editText: EditText) {
         this.targetEditText = editText
-        stateMachine = PopupStateMachine(this, editText)
+        // stateMachine = PopupStateMachine(this, editText)
     }
 
     fun configure(newConfig: EmojiKeyboardConfig) {
@@ -119,7 +119,7 @@ class EmojiKeyboardView @JvmOverloads constructor(
     fun state() = stateMachine?.state
 
     fun onStateChangedListener(callback: (PopupState) -> Unit) {
-        stateMachine?.onStateChanged = callback
+        // stateMachine?.onStateChanged = callback
     }
 
     internal fun refreshRecentsIfNeeded(state: PopupState) {
