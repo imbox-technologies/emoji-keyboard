@@ -30,6 +30,7 @@ class EmojiCellView(context: Context) : AppCompatTextView(context) {
         val size = when {
             widthMode == MeasureSpec.EXACTLY -> widthSize
             heightMode == MeasureSpec.EXACTLY -> heightSize
+            widthMode == MeasureSpec.UNSPECIFIED && heightMode == MeasureSpec.AT_MOST -> heightSize
             else -> min(widthSize, heightSize)
         }
 

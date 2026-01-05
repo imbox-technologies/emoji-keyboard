@@ -78,4 +78,8 @@ object EmojiListMapper {
 
         return map(listOf(recentsCategory), isVertical, spanCount, false)
     }
+
+    fun mapSuggestions(unicodes: List<String>): List<EmojiListItem> {
+        return unicodes.map { EmojiListItem.EmojiKey(Emoji(it)) }
+    }
 }

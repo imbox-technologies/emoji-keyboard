@@ -99,6 +99,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
                 emojiGrid.isVisible = false
                 searchResults.isVisible = true
                 searchBar.isVisible = true
+                onQueryChanged("")
             }
         }
     }
@@ -176,7 +177,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     }
 
     private fun addSearchResults() {
-        addView(searchResults, LayoutParams(LayoutParams.MATCH_PARENT, calculateEmojiRowHeight()))
+        addView(searchResults, LayoutParams(LayoutParams.MATCH_PARENT, 50.dp))
         searchResults.isVisible = false
     }
 
@@ -273,7 +274,8 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     override fun onQueryChanged(query: String) {
         searchJob?.cancel()
         if (query.isBlank()) {
-            searchResults.isVisible = false
+            val recentUnicodes = recentManager.getRecentUnicodes()
+            searchResults.setResults(EmojiListMapper.mapSuggestions(recentUnicodes))
             return
         }
 
@@ -302,7 +304,6 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
         } else {
             emojiGrid.measuredHeight / 4
         }
-
     }
 
 

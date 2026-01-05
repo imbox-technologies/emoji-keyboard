@@ -49,8 +49,9 @@ internal class SearchResults(context: Context, private val delegate: EmojiDelega
         } else {
             emptyTextView.isVisible = false
             recyclerView.isVisible = true
-            adapter.submitList(emojis)
-            recyclerView.scrollToPosition(0)
+            adapter.submitList(emojis) {
+                recyclerView.scrollToPosition(0)
+            }
         }
     }
 
