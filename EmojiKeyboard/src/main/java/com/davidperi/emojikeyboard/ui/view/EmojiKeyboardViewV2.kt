@@ -14,6 +14,7 @@ import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.EmojiLayoutMode
+import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.logic.EmojiSearchEngine
 import com.davidperi.emojikeyboard.ui.state.PopupState
@@ -50,6 +51,7 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
     // Logic
     private val searchEngine = EmojiSearchEngine()
     private val recentManager = RecentEmojiManager(context)
+    private val prefs = PrefsManager(context)
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
     private var searchJob: Job? = null
 
@@ -89,10 +91,8 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
                 emojiGrid.isVisible = true
                 searchResults.isVisible = false
                 searchBar.isVisible = true
-
-                if (state == PopupState.FOCUSED) {
-                    refreshRecents()
-                }
+                searchBar.clearInput()
+                refreshRecents()
             }
             PopupState.SEARCHING -> {
                 categoryBar.isVisible = false
@@ -105,13 +105,27 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
     }
 
     fun getSearchContentHeight(): Int {
-        return 60.dp + 50.dp
+        val resultsHeight = calculateEmojiRowHeight()
+
+        MeasureSpec.makeMeasureSpec(resources.displayMetrics.widthPixels, MeasureSpec.AT_MOST)
+        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        val searchBarHeight = searchBar.measuredHeight
+
+        val params = searchBar.layoutParams as? MarginLayoutParams
+        val marginTop = params?.topMargin ?: 0
+        val marginBottom = params?.bottomMargin ?: 0
+
+        return marginTop + searchBarHeight + marginBottom + resultsHeight
     }
 
     fun setInternalContentHeight(newHeight: Int) {
         this.updateLayoutParams {
             height = newHeight
         }
+    }
+
+    fun isSearchFocused(): Boolean {
+        return searchBar.isInputFocused()
     }
 
 
@@ -157,13 +171,13 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
 
     private fun addSearchBar() {
         val params = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-            setMargins(8.dp, 8.dp, 8.dp, 0)
+            setMargins(8.dp, 8.dp, 8.dp, 8.dp)
         }
         addView(searchBar, params)
     }
 
     private fun addSearchResults() {
-        addView(searchResults, LayoutParams(LayoutParams.MATCH_PARENT, 50.dp))
+        addView(searchResults, LayoutParams(LayoutParams.MATCH_PARENT, calculateEmojiRowHeight()))
         searchResults.isVisible = false
     }
 
@@ -241,7 +255,6 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
         editText.text.replace(min(start, end), max(start, end), spannable)
 
         recentManager.addEmoji(unicode)
-        refreshRecents()
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
@@ -277,6 +290,20 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
         val event = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
         targetEditText?.dispatchKeyEvent(event)
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+
+    // AUXILIARY
+    private fun calculateEmojiRowHeight(): Int {
+        val isVertical = config.layoutMode == EmojiLayoutMode.ROBOT
+
+        return if (isVertical) {
+            val totalWidth = if (width > 0) width else resources.displayMetrics.widthPixels
+            totalWidth / 9
+        } else {
+            emojiGrid.measuredHeight / 4
+        }
+
     }
 
 

@@ -145,7 +145,7 @@ internal class PopupStateMachine(
                         PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
                         PopupState.FOCUSED -> {
                             if (editText.hasFocus()) transitionTo(PopupState.BEHIND)
-                            // else if (popup.searchBar.hasFocus()) transitionTo(SEARCHING)
+                            else if (popup.isSearchFocused()) transitionTo(PopupState.SEARCHING)
                         }
                         else -> {}
                     }

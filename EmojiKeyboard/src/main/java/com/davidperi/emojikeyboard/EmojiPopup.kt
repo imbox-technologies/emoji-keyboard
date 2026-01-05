@@ -63,4 +63,8 @@ class EmojiPopup @JvmOverloads constructor(
         this.updateLayoutParams { height = newHeight }
     }
 
+    internal fun isSearchFocused(): Boolean {
+        return keyboardView.isSearchFocused()
+    }
+
 }

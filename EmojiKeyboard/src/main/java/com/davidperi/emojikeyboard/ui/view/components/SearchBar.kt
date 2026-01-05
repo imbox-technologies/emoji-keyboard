@@ -53,6 +53,16 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
     }
 
 
+    // Public (internal) API
+    fun isInputFocused(): Boolean {
+        return editText.hasFocus()
+    }
+
+    fun clearInput() {
+        editText.text.clear()
+    }
+
+
     // Component builders
     private fun buildRootLayout(): LinearLayout {
         return LinearLayout(context).apply {
