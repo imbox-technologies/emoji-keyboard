@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.view.components
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,6 +7,7 @@ import android.os.Looper
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
 import com.davidperi.emojikeyboard.R
+import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
 @SuppressLint("ClickableViewAccessibility")

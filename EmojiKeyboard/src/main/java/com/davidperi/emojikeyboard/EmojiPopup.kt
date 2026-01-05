@@ -1,13 +1,14 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
+import com.davidperi.emojikeyboard.ui.state.PopupState
+import com.davidperi.emojikeyboard.ui.state.PopupStateMachine
+import com.davidperi.emojikeyboard.ui.view.EmojiKeyboardViewV2
 
 class EmojiPopup @JvmOverloads constructor(
     context: Context,
@@ -19,7 +20,7 @@ class EmojiPopup @JvmOverloads constructor(
 
 
     init {
-        addView(keyboardView, LayoutParams(MATCH_PARENT,  MATCH_PARENT))
+        addView(keyboardView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
         this.isVisible = false
     }
 

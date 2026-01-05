@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.view.components
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -10,19 +10,17 @@ import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.ViewConfiguration
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatImageView
-import com.davidperi.emojikeyboard.R
-import com.davidperi.emojikeyboard.model.Category
-import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
-import kotlin.apply
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.children
 import androidx.core.view.isEmpty
+import com.davidperi.emojikeyboard.R
+import com.davidperi.emojikeyboard.data.model.Category
+import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
+import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import kotlin.math.abs
 
 internal class CategoryBar(context: Context, private val delegate: EmojiDelegate) :
@@ -38,7 +36,7 @@ internal class CategoryBar(context: Context, private val delegate: EmojiDelegate
 
     init {
         orientation = HORIZONTAL
-        layoutParams = LayoutParams(MATCH_PARENT, 45.dp)
+        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 45.dp)
     }
 
 
@@ -54,7 +52,7 @@ internal class CategoryBar(context: Context, private val delegate: EmojiDelegate
         categories.forEachIndexed { index, category ->
             // Frame Layout that wraps each category icon
             val itemContainer = FrameLayout(context).apply {
-                layoutParams = LayoutParams(0, WRAP_CONTENT, 1f)
+                layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
                 setPadding(2.dp, 2.dp, 2.dp, 2.dp)
             }
 

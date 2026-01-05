@@ -7,10 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView
-import com.davidperi.emojikeyboard.ui.PopupState
-import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
-import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
+import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {

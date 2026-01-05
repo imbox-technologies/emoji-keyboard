@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.state
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -11,23 +11,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.davidperi.emojikeyboard.ui.PopupState.COLLAPSED
-import com.davidperi.emojikeyboard.ui.PopupState.BEHIND
-import com.davidperi.emojikeyboard.ui.PopupState.FOCUSED
-import com.davidperi.emojikeyboard.ui.PopupState.SEARCHING
+import com.davidperi.emojikeyboard.EmojiPopup
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
-import com.davidperi.emojikeyboard.utils.PrefsManager
+import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 
 internal class PopupStateMachine(
     private val popup: EmojiPopup,
     private val editText: EditText,
 ) {
 
-    var state: PopupState = COLLAPSED
+    var state: PopupState = PopupState.COLLAPSED
     var onStateChanged: (PopupState) -> Unit = {}
 
     private val prefs = PrefsManager(popup.context)
@@ -57,17 +53,17 @@ internal class PopupStateMachine(
 
 
     fun hide() {
-        if (state == FOCUSED) {
-            transitionTo(COLLAPSED)
+        if (state == PopupState.FOCUSED) {
+            transitionTo(PopupState.COLLAPSED)
         }
     }
 
     fun toggle() {
         when (state) {
-            COLLAPSED -> transitionTo(FOCUSED)
-            BEHIND -> transitionTo(FOCUSED)
-            FOCUSED -> transitionTo(BEHIND)
-            SEARCHING -> transitionTo(BEHIND)
+            PopupState.COLLAPSED -> transitionTo(PopupState.FOCUSED)
+            PopupState.BEHIND -> transitionTo(PopupState.FOCUSED)
+            PopupState.FOCUSED -> transitionTo(PopupState.BEHIND)
+            PopupState.SEARCHING -> transitionTo(PopupState.BEHIND)
         }
     }
 
@@ -77,8 +73,8 @@ internal class PopupStateMachine(
 
         val oldState = state
 
-        val defaultHeight = PrefsManager.DEFAULT_HEIGHT_DP.dp
-        if (newState == FOCUSED && keyboardHeight == defaultHeight && !isDetectingKeyboardHeight) {
+        val defaultHeight = PrefsManager.Companion.DEFAULT_HEIGHT_DP.dp
+        if (newState == PopupState.FOCUSED && keyboardHeight == defaultHeight && !isDetectingKeyboardHeight) {
             isDetectingKeyboardHeight = true
             keyboardHeightDetected = false
             pendingState = newState
@@ -92,22 +88,22 @@ internal class PopupStateMachine(
         popup.notifyStateChanged(newState)
 
         when (newState) {
-            COLLAPSED -> {
-                if (oldState == FOCUSED) animateSize(0)
+            PopupState.COLLAPSED -> {
+                if (oldState == PopupState.FOCUSED) animateSize(0)
                 editText.requestFocus()
                 popup.hideKeyboard()
             }
 
-            BEHIND -> {
-                if (oldState == FOCUSED) shouldMimicIme = false
-                if (oldState != COLLAPSED) animateSize(keyboardHeight)
+            PopupState.BEHIND -> {
+                if (oldState == PopupState.FOCUSED) shouldMimicIme = false
+                if (oldState != PopupState.COLLAPSED) animateSize(keyboardHeight)
                 editText.showKeyboard()
             }
 
-            FOCUSED -> {
-                if (oldState == BEHIND) shouldMimicIme = false
+            PopupState.FOCUSED -> {
+                if (oldState == PopupState.BEHIND) shouldMimicIme = false
                 animateSize(keyboardHeight)
-                if (oldState != SEARCHING){
+                if (oldState != PopupState.SEARCHING){
                     editText.requestFocus()
                     editText.hideKeyboard()
                 }else{
@@ -115,7 +111,7 @@ internal class PopupStateMachine(
                 }
             }
 
-            SEARCHING -> {
+            PopupState.SEARCHING -> {
                 val targetHeight = popup.getSearchContentHeight()
                 animateSize(keyboardHeight + targetHeight)
             }
@@ -146,9 +142,9 @@ internal class PopupStateMachine(
 
                 } else {
                     when (state) {
-                        COLLAPSED -> transitionTo(BEHIND)
-                        FOCUSED -> {
-                            if (editText.hasFocus()) transitionTo(BEHIND)
+                        PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
+                        PopupState.FOCUSED -> {
+                            if (editText.hasFocus()) transitionTo(PopupState.BEHIND)
                             // else if (popup.searchBar.hasFocus()) transitionTo(SEARCHING)
                         }
                         else -> {}
@@ -171,8 +167,8 @@ internal class PopupStateMachine(
 
                 if (!isDetectingKeyboardHeight) {
                     when (state) {
-                        BEHIND -> transitionTo(COLLAPSED)
-                        SEARCHING -> transitionTo(FOCUSED)
+                        PopupState.BEHIND -> transitionTo(PopupState.COLLAPSED)
+                        PopupState.SEARCHING -> transitionTo(PopupState.FOCUSED)
                         else -> {}
                     }
                 }
@@ -199,8 +195,8 @@ internal class PopupStateMachine(
                         val effectiveHeight = (imeHeight - navInset).coerceAtLeast(0)
 
                         when (state) {
-                            COLLAPSED -> changeSize(effectiveHeight)
-                            BEHIND -> changeSize(effectiveHeight)
+                            PopupState.COLLAPSED -> changeSize(effectiveHeight)
+                            PopupState.BEHIND -> changeSize(effectiveHeight)
                             else -> {}
                         }
                     }
@@ -216,8 +212,8 @@ internal class PopupStateMachine(
 
     private fun setupMsgFocusListener() {
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && state == SEARCHING) {
-                transitionTo(BEHIND)
+            if (hasFocus && state == PopupState.SEARCHING) {
+                transitionTo(PopupState.BEHIND)
             }
         }
     }

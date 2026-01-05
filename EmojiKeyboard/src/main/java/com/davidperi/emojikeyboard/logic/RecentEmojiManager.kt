@@ -1,14 +1,14 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.logic
 
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.core.content.edit
-import com.davidperi.emojikeyboard.utils.PrefsManager.Companion.PREFS_KEY
+import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import java.util.LinkedList
 
 class RecentEmojiManager(context: Context) {
-    private val prefs = context.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences(PrefsManager.Companion.PREFS_KEY, Context.MODE_PRIVATE)
     private var recentUnicodes: LinkedList<String> = LinkedList()
     private val handler = Handler(Looper.getMainLooper())
     private var persistRunnable: Runnable? = null

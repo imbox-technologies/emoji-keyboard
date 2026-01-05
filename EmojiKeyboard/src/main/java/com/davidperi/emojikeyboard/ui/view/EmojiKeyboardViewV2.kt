@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.view
 
 import android.content.Context
 import android.text.Spannable
@@ -6,19 +6,26 @@ import android.text.SpannableString
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.davidperi.emojikeyboard.R
-import com.davidperi.emojikeyboard.model.Category
+import com.davidperi.emojikeyboard.data.model.Category
+import com.davidperi.emojikeyboard.EmojiKeyboardConfig
+import com.davidperi.emojikeyboard.EmojiLayoutMode
+import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
+import com.davidperi.emojikeyboard.logic.EmojiSearchEngine
+import com.davidperi.emojikeyboard.ui.state.PopupState
+import com.davidperi.emojikeyboard.logic.RecentEmojiManager
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
-import com.davidperi.emojikeyboard.ui.model.EmojiKeyboardConfig
-import com.davidperi.emojikeyboard.ui.model.EmojiLayoutMode
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
+import com.davidperi.emojikeyboard.ui.view.components.Backspace
+import com.davidperi.emojikeyboard.ui.view.components.CategoryBar
+import com.davidperi.emojikeyboard.ui.view.components.EmojiGrid
+import com.davidperi.emojikeyboard.ui.view.components.SearchBar
+import com.davidperi.emojikeyboard.ui.view.components.SearchResults
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import kotlinx.coroutines.CoroutineScope
@@ -139,29 +146,29 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
             setPadding(8.dp, 4.dp, 8.dp, 4.dp)
         }
 
-        val catParams = LayoutParams(0, WRAP_CONTENT, 1f)
+        val catParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
         container.addView(categoryBar, catParams)
 
         val backParams = LayoutParams(48.dp, 48.dp)
         container.addView(backspace, backParams)
 
-        addView(container, LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        addView(container, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
     }
 
     private fun addSearchBar() {
-        val params = LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+        val params = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
             setMargins(8.dp, 8.dp, 8.dp, 0)
         }
         addView(searchBar, params)
     }
 
     private fun addSearchResults() {
-        addView(searchResults, LayoutParams(MATCH_PARENT, 50.dp))
+        addView(searchResults, LayoutParams(LayoutParams.MATCH_PARENT, 50.dp))
         searchResults.isVisible = false
     }
 
     private fun addEmojiGrid() {
-        val params = LayoutParams(MATCH_PARENT, 0, 1f)
+        val params = LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f)
         addView(emojiGrid, params)
     }
 

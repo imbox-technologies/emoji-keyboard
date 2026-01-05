@@ -1,18 +1,17 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.view.components
 
 import android.content.Context
 import android.text.InputType
 import android.view.Gravity
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.LinearLayout.HORIZONTAL
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.cardview.widget.CardView
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.davidperi.emojikeyboard.R
+import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
 internal class SearchBar(context: Context, private val delegate: EmojiDelegate) :
@@ -37,7 +36,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
 
         // Layout
         rootLayout.addView(searchIcon)
-        rootLayout.addView(editText, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
+        rootLayout.addView(editText, LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
         rootLayout.addView(clearButton)
         addView(rootLayout)
 
@@ -53,7 +52,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
     // Component builders
     private fun buildRootLayout(): LinearLayout {
         return LinearLayout(context).apply {
-            orientation = HORIZONTAL
+            orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(8.dp, 8.dp, 8.dp, 8.dp)
         }

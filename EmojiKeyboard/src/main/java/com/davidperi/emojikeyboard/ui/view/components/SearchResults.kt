@@ -1,14 +1,14 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.view.components
 
 import android.content.Context
 import android.view.Gravity
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.R
+import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
@@ -21,7 +21,7 @@ internal class SearchResults(context: Context, private val delegate: EmojiDelega
     private val adapter = EmojiAdapter { delegate.onEmojiClicked(it.unicode) }
 
     init {
-        layoutParams = LayoutParams(MATCH_PARENT, 50.dp)
+        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 50.dp)
 
         recyclerView = RecyclerView(context).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
@@ -36,8 +36,8 @@ internal class SearchResults(context: Context, private val delegate: EmojiDelega
             isVisible = false
         }
 
-        addView(recyclerView, LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        addView(emptyTextView, LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        addView(recyclerView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        addView(emptyTextView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
 
 

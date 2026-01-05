@@ -3,8 +3,8 @@ package com.davidperi.emojikeyboard.ui.adapter
 import android.graphics.Typeface
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.davidperi.emojikeyboard.model.Emoji
-import com.davidperi.emojikeyboard.ui.EmojiCellView
+import com.davidperi.emojikeyboard.data.model.Emoji
+import com.davidperi.emojikeyboard.ui.view.components.EmojiCellView
 
 class EmojiViewHolder(
     itemView: View,

@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.ui.view
 
 interface EmojiDelegate {
     fun onCategorySelected(index: Int, progress: Float)  // Category Bar
