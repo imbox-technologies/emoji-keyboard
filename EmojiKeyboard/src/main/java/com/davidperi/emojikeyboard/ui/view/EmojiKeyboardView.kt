@@ -15,7 +15,6 @@ import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.EmojiLayoutMode
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager
-import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.logic.EmojiSearchEngine
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboard.logic.RecentEmojiManager
@@ -39,7 +38,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
-internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), EmojiDelegate {
+internal class EmojiKeyboardView(context: Context) : LinearLayout(context), EmojiDelegate {
 
     // Components
     private val categoryBar = CategoryBar(context, this)

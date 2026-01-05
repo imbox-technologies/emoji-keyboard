@@ -8,14 +8,14 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboard.ui.state.PopupStateMachine
-import com.davidperi.emojikeyboard.ui.view.EmojiKeyboardViewV2
+import com.davidperi.emojikeyboard.ui.view.EmojiKeyboardView
 
 class EmojiPopup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ) : FrameLayout(context, attrs) {
 
-    private val keyboardView = EmojiKeyboardViewV2(context)
+    private val keyboardView = EmojiKeyboardView(context)
     private var stateMachine: PopupStateMachine? = null
 
 
