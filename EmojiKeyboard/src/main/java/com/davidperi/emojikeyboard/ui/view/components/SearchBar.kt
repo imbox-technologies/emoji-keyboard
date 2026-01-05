@@ -1,6 +1,7 @@
 package com.davidperi.emojikeyboard.ui.view.components
 
 import android.content.Context
+import android.graphics.Color
 import android.text.InputType
 import android.view.Gravity
 import android.view.inputmethod.EditorInfo
@@ -12,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
+import com.davidperi.emojikeyboard.utils.DisplayUtils.debugBorder
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
 internal class SearchBar(context: Context, private val delegate: EmojiDelegate) :
@@ -23,10 +25,12 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
 
     init {
         // Styling
-        radius = 8.dp.toFloat()
-        cardElevation = 2.dp.toFloat()
+        radius = 20.dp.toFloat()
+        cardElevation = 0f // 2.dp.toFloat()
         setCardBackgroundColor(context.getColor(R.color.emoji_keyboard_white))
-        useCompatPadding = true
+
+        preventCornerOverlap = false
+        useCompatPadding = false
 
         // Components
         val rootLayout = buildRootLayout()
@@ -54,7 +58,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
         return LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(8.dp, 8.dp, 8.dp, 8.dp)
+            setPadding(8.dp, 0, 8.dp, 0)
         }
     }
 
@@ -65,6 +69,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
             inputType = InputType.TYPE_CLASS_TEXT
             maxLines = 1
             isSingleLine = true
+            includeFontPadding = false
             imeOptions = EditorInfo.IME_ACTION_NONE
             setTextColor(context.getColor(R.color.emoji_keyboard_black))
             setHintTextColor(context.getColor(R.color.emoji_keyboard_gray))
@@ -87,7 +92,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
         return AppCompatImageView(context).apply {
             setImageResource(R.drawable.search)
             imageTintList = context.getColorStateList(R.color.emoji_keyboard_gray)
-            layoutParams = LinearLayout.LayoutParams(20.dp, 20.dp).apply {
+            layoutParams = LinearLayout.LayoutParams(24.dp, 24.dp).apply {
                 marginStart = 4.dp
                 marginEnd = 8.dp
             }

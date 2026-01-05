@@ -2,6 +2,8 @@ package com.davidperi.emojikeyboard.utils
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,6 +41,12 @@ object DisplayUtils {
         val regex = "\\p{InCombiningDiacriticalMarks}+".toRegex()
         val temp = Normalizer.normalize(this, Normalizer.Form.NFD)
         return regex.replace(temp, "")
+    }
+
+    fun View.debugBorder(color: Int = Color.RED) {
+        val border = GradientDrawable()
+        border.setStroke(4, color)
+        this.background = border
     }
 
 }
