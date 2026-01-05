@@ -21,7 +21,6 @@ class EmojiPopup @JvmOverloads constructor(
     init {
         addView(keyboardView, LayoutParams(MATCH_PARENT,  MATCH_PARENT))
         this.isVisible = false
-        this.updateLayoutParams { height = 0 }
     }
 
 
