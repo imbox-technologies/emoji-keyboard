@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
+import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
@@ -97,6 +98,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
                 categoryBar.isVisible = false
                 backspace.isVisible = false
                 emojiGrid.isVisible = false
+                searchResults.updateLayoutParams { height = calculateEmojiRowHeight() }
                 searchResults.isVisible = true
                 searchBar.isVisible = true
                 onQueryChanged("")
@@ -107,15 +109,16 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     fun getSearchContentHeight(): Int {
         val resultsHeight = calculateEmojiRowHeight()
 
-        MeasureSpec.makeMeasureSpec(resources.displayMetrics.widthPixels, MeasureSpec.AT_MOST)
-        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
-        val searchBarHeight = searchBar.measuredHeight
+//        MeasureSpec.makeMeasureSpec(resources.displayMetrics.widthPixels, MeasureSpec.AT_MOST)
+//        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
 
+        val searchBarHeight = searchBar.measuredHeight
         val params = searchBar.layoutParams as? MarginLayoutParams
         val marginTop = params?.topMargin ?: 0
         val marginBottom = params?.bottomMargin ?: 0
+        val resultsMarginBottom = (searchResults.layoutParams as? MarginLayoutParams)?.bottomMargin ?: 0
 
-        return marginTop + searchBarHeight + marginBottom + resultsHeight
+        return marginTop + searchBarHeight + marginBottom + resultsHeight + resultsMarginBottom
     }
 
     fun setInternalContentHeight(newHeight: Int) {
@@ -177,7 +180,10 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     }
 
     private fun addSearchResults() {
-        addView(searchResults, LayoutParams(LayoutParams.MATCH_PARENT, 50.dp))
+        val params = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            setMargins(0, 0, 0, 8.dp)
+        }
+        addView(searchResults, params)
         searchResults.isVisible = false
     }
 
@@ -302,7 +308,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
             val totalWidth = if (width > 0) width else resources.displayMetrics.widthPixels
             totalWidth / 9
         } else {
-            emojiGrid.measuredHeight / 4
+            emojiGrid.height / 4
         }
     }
 
