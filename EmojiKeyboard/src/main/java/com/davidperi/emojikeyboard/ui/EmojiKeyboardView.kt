@@ -180,10 +180,6 @@ class EmojiKeyboardView @JvmOverloads constructor(
     }
 
     private fun setupEmojisAdapter() {
-        // Configure flag
-        emojisAdapter.isHorizontalLayout = !isVerticalLayout
-        recentAdapter.isHorizontalLayout = !isVerticalLayout
-
         // Setup GridLayoutManager
         val orientation = if (isVerticalLayout) RecyclerView.VERTICAL else RecyclerView.HORIZONTAL
         val gridManager = GridLayoutManager(context, spanCount, orientation, false)
@@ -251,7 +247,6 @@ class EmojiKeyboardView @JvmOverloads constructor(
 
     private fun setupSearchAdapter() {
         // Connect Recycler with Adapter and LinearLayoutManager
-        searchAdapter.isHorizontalLayout = true
         binding.rvSearch.apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = searchAdapter

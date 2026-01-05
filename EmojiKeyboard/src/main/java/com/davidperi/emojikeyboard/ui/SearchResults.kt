@@ -23,7 +23,6 @@ internal class SearchResults(context: Context, private val delegate: EmojiDelega
     init {
         layoutParams = LayoutParams(MATCH_PARENT, 50.dp)
 
-        adapter.isHorizontalLayout = true
         recyclerView = RecyclerView(context).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             adapter = this@SearchResults.adapter

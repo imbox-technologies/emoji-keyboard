@@ -1,41 +1,39 @@
 package com.davidperi.emojikeyboard.ui
 
 import android.content.Context
-import android.icu.util.Measure
-import android.util.AttributeSet
+import android.graphics.Color
 import android.util.TypedValue
+import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import kotlin.math.min
 
-class EmojiCellView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
-) : AppCompatTextView(context, attrs) {
+class EmojiCellView(context: Context) : AppCompatTextView(context) {
 
-    var isHorizontalMode: Boolean = false
-        set(value) {
-            if (field != value) {
-                field = value
-                requestLayout()
-            }
-        }
+    init {
+        gravity = Gravity.CENTER
+        includeFontPadding = false
+        setTextColor(Color.BLACK)
+
+        val outValue = TypedValue()
+        context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+        setBackgroundResource(outValue.resourceId)
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
 
-        val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
-        val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        val finalSize: Int = if (isHorizontalMode) {
-            parentHeight // measuredHeight
-        } else {
-            parentWidth // measuredWidth
+        val size = when {
+            widthMode == MeasureSpec.EXACTLY -> widthSize
+            heightMode == MeasureSpec.EXACTLY -> heightSize
+            else -> min(widthSize, heightSize)
         }
 
-        val squareSpec = MeasureSpec.makeMeasureSpec(finalSize, MeasureSpec.EXACTLY)
+        val squareSpec = MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY)
         super.onMeasure(squareSpec, squareSpec)
-
-        setMeasuredDimension(finalSize, finalSize)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

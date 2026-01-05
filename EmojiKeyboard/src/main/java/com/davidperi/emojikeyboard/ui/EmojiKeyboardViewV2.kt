@@ -57,6 +57,7 @@ internal class EmojiKeyboardViewV2(context: Context) : LinearLayout(context), Em
         orientation = VERTICAL
         setBackgroundColor(context.getColor(R.color.emoji_keyboard_gray_background))
         setupLayout()
+        loadData()
     }
 
 
