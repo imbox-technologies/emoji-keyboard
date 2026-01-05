@@ -2,12 +2,12 @@ package com.davidperi.emojikeyboard.ui.adapter
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.davidperi.emojikeyboard.databinding.ItemHeaderBinding
+import com.davidperi.emojikeyboard.ui.view.components.EmojiHeaderItem
 
 class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val binding = ItemHeaderBinding.bind(itemView)
+    private val headerItem = itemView as EmojiHeaderItem
 
     fun bind(item: EmojiListItem.Header) {
-        binding.tvCategoryName.text = item.category.name
+        headerItem.text = item.category.name
     }
 }

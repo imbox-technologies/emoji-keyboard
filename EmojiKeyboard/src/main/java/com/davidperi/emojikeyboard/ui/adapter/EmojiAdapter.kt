@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Emoji
 import com.davidperi.emojikeyboard.ui.view.components.EmojiCellView
+import com.davidperi.emojikeyboard.ui.view.components.EmojiHeaderItem
 import com.davidperi.emojikeyboard.utils.DisplayUtils.inflate
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 
@@ -37,7 +38,7 @@ class EmojiAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            VIEW_TYPE_HEADER -> HeaderViewHolder(parent.inflate(R.layout.item_header))
+            VIEW_TYPE_HEADER -> HeaderViewHolder(EmojiHeaderItem(parent.context))
             VIEW_TYPE_EMOJI -> EmojiViewHolder(EmojiCellView(parent.context), cachedTypeface, onEmojiClicked)
             VIEW_TYPE_SPACER -> SpacerViewHolder.create(parent)
             else -> throw IllegalArgumentException("Unknown view type")
