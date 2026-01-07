@@ -7,12 +7,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.davidperi.emojikeyboard.EmojiPopup
+import com.davidperi.emojikeyboard.EmojiPopupV2
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var emojiPopup: EmojiPopupV2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,20 +38,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
+        setupEmojiPopup()
         setupListeners()
-        setupEmojiKeyboard()
         setupBackHandling()
     }
 
     private fun setupListeners() {
+//        binding.ivToggleEmojiKeyboard.setOnClickListener {
+//            binding.emojiKeyboard.toggle()
+//        }
+
         binding.ivToggleEmojiKeyboard.setOnClickListener {
-            binding.emojiKeyboard.toggle()
+            emojiPopup.toggle()
         }
+
+        emojiPopup.setOnStateChangedListener { state -> updateIcon(state) }
     }
 
-    private fun setupEmojiKeyboard() {
-        binding.emojiKeyboard.setupWith(binding.etTest)
-        binding.emojiKeyboard.setOnStateChangedListener { state -> updateIcon(state) }
+    private fun setupEmojiPopup() {
+        emojiPopup = EmojiPopupV2(this)
+        emojiPopup.setupWith(binding.etTest)
+
+//        binding.emojiKeyboard.setupWith(binding.etTest)
+//        binding.emojiKeyboard.setOnStateChangedListener { state -> updateIcon(state) }
 
         // val iosConfig = EmojiKeyboardConfig(layoutMode = EmojiLayoutMode.COOPER)
         // binding.emojiKeyboard.configure(iosConfig)
@@ -57,8 +69,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupBackHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (binding.emojiKeyboard.getState() == PopupState.FOCUSED) {
-                    binding.emojiKeyboard.hide()
+//                if (binding.emojiKeyboard.getState() == PopupState.FOCUSED) {
+//                    binding.emojiKeyboard.hide()
+                if (emojiPopup.getState() == PopupState.FOCUSED) {
+                    emojiPopup.hide()
                 } else {
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
