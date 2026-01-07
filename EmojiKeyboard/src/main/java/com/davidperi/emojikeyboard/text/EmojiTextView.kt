@@ -12,7 +12,7 @@ import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import com.davidperi.emojikeyboard.utils.EmojiUtils
 import com.davidperi.emojikeyboard.utils.EmojiUtils.getEmojiInfo
 
-class EmojiTextView @JvmOverloads constructor(
+open class EmojiTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : AppCompatTextView(context, attrs) {
