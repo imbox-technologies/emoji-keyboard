@@ -1,6 +1,5 @@
 package com.davidperi.emojikeyboard.ui.view.components
 
-import android.R
 import android.content.Context
 import android.graphics.Color
 import android.util.TypedValue
@@ -16,7 +15,7 @@ class EmojiCellView(context: Context) : AppCompatTextView(context) {
         setTextColor(Color.BLACK)
 
         val outValue = TypedValue()
-        context.theme.resolveAttribute(R.attr.selectableItemBackground, outValue, true)
+        context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
         setBackgroundResource(outValue.resourceId)
     }
 

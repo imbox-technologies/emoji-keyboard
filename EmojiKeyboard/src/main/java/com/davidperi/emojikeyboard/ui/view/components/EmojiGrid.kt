@@ -1,5 +1,6 @@
 package com.davidperi.emojikeyboard.ui.view.components
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
@@ -8,6 +9,7 @@ import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 
+@SuppressLint("ViewConstructor")
 internal class EmojiGrid(context: Context, private val delegate: EmojiDelegate) :
     RecyclerView(context) {
 

@@ -10,7 +10,7 @@ import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
-@SuppressLint("ClickableViewAccessibility")
+@SuppressLint("ClickableViewAccessibility", "ViewConstructor")
 internal class Backspace(context: Context, private val delegate: EmojiDelegate) :
     AppCompatImageView(context) {
 
