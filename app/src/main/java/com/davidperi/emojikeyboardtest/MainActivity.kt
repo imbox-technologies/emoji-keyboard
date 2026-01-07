@@ -7,12 +7,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
+import com.davidperi.emojikeyboardtest.model.ChatMessage
+import com.davidperi.emojikeyboardtest.adapter.ChatAdapter
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    private val chatAdapter = ChatAdapter()
+    private val messages = mutableListOf<ChatMessage>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,14 +41,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
+        setupRecyclerView()
         setupListeners()
         setupEmojiKeyboard()
         setupBackHandling()
     }
 
+    private fun setupRecyclerView() {
+        binding.rvChat.apply {
+            adapter = chatAdapter
+            layoutManager = LinearLayoutManager(this@MainActivity).apply {
+                stackFromEnd = true
+            }
+        }
+    }
+
     private fun setupListeners() {
         binding.ivToggleEmojiKeyboard.setOnClickListener {
             binding.emojiKeyboard.toggle()
+        }
+
+        binding.ivSend.setOnClickListener {
+            val text = binding.etTest.text.toString().trim()
+            if (text.isNotEmpty()) {
+                sendMessage(text)
+            }
         }
     }
 
@@ -84,6 +107,21 @@ class MainActivity : AppCompatActivity() {
             PopupState.FOCUSED -> "FOCUSED"
             PopupState.SEARCHING -> "SEARCHING"
         }
+    }
+
+    private fun sendMessage(text: String) {
+        val newMessage = ChatMessage(
+            id = System.currentTimeMillis(),
+            text = text
+        )
+
+        messages.add(newMessage)
+
+        chatAdapter.submitList(messages.toList()) {
+            binding.rvChat.smoothScrollToPosition(messages.lastIndex)
+        }
+
+        binding.etTest.text?.clear()
     }
 
 }

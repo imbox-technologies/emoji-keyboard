@@ -8,48 +8,67 @@
     android:background="#FFFFFF"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/welcome_text"
-        android:layout_width="wrap_content"
+    <!-- Simple header -->
+    <LinearLayout
+        android:id="@+id/header_container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Emoji Keyboard Test"
-        android:textColor="@color/emoji_keyboard_black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/debug_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="COLLAPSED"
-        android:textColor="@color/emoji_keyboard_black"
-        android:textSize="15sp"
+        <TextView
+            android:id="@+id/welcome_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Emoji Keyboard Test"
+            android:textColor="@color/emoji_keyboard_black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/debug_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="COLLAPSED"
+            android:textColor="#8E8E93"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Fake Chat -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_chat"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/input_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/welcome_text" />
+        app:layout_constraintTop_toBottomOf="@id/header_container"
+        app:stackFromEnd="true"
+        tools:listitem="@layout/item_chat_message" />
 
     <!-- Emoji test bar -->
     <androidx.cardview.widget.CardView
         android:id="@+id/input_container"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         app:cardBackgroundColor="@color/emoji_keyboard_white"
         app:cardCornerRadius="20dp"
         app:layout_constraintBottom_toTopOf="@id/emoji_keyboard"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/iv_send"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_goneMarginBottom="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center_vertical"
+            android:gravity="bottom"
             android:orientation="horizontal"
             android:padding="8dp">
 
@@ -73,12 +92,28 @@
                 android:layout_marginEnd="8dp"
                 android:background="@null"
                 android:hint="@string/write_here"
-                android:textColorHint="#9D9D9D"
+                android:includeFontPadding="false"
                 android:textColor="@color/emoji_keyboard_black"
-                android:includeFontPadding="false" />
+                android:textColorHint="#9D9D9D" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+
+    <!-- SendButton -->
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_send"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_send"
+        android:tint="#4CB6C5"
+        app:layout_constraintBottom_toBottomOf="@id/input_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_goneMarginBottom="8dp" />
 
     <!-- Emoji keyboard custom view -->
     <com.davidperi.emojikeyboard.EmojiPopup
