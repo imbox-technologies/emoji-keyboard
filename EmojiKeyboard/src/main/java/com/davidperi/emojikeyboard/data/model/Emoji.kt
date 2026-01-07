@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.model
+package com.davidperi.emojikeyboard.data.model
 
 data class Emoji (
     val unicode: String,

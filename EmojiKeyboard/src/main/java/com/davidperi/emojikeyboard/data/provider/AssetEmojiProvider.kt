@@ -1,8 +1,8 @@
-package com.davidperi.emojikeyboard.provider
+package com.davidperi.emojikeyboard.data.provider
 
 import android.content.Context
 import com.davidperi.emojikeyboard.R
-import com.davidperi.emojikeyboard.model.Category
+import com.davidperi.emojikeyboard.data.model.Category
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json

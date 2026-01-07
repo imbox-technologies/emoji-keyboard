@@ -1,7 +1,6 @@
-package com.davidperi.emojikeyboard.model
+package com.davidperi.emojikeyboard.data.model
 
 import androidx.annotation.DrawableRes
-import com.davidperi.emojikeyboard.model.Emoji
 
 data class Category (
     val id: String,

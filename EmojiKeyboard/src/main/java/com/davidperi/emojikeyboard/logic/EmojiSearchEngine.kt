@@ -1,7 +1,7 @@
-package com.davidperi.emojikeyboard.ui
+package com.davidperi.emojikeyboard.logic
 
-import com.davidperi.emojikeyboard.model.Category
-import com.davidperi.emojikeyboard.model.Emoji
+import com.davidperi.emojikeyboard.data.model.Category
+import com.davidperi.emojikeyboard.data.model.Emoji
 import com.davidperi.emojikeyboard.utils.DisplayUtils.removeAccents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,7 +39,7 @@ class EmojiSearchEngine {
 
         if (queryWords.size == 1) {
             val singleWord = queryWords.first()
-            
+
             if (normalizedKeywords.any { it.equals(singleWord, ignoreCase = true) }) {
                 return 1
             }

@@ -81,7 +81,7 @@
     </androidx.cardview.widget.CardView>
 
     <!-- Emoji keyboard custom view -->
-    <com.davidperi.emojikeyboard.ui.EmojiKeyboardView
+    <com.davidperi.emojikeyboard.EmojiPopup
         android:id="@+id/emoji_keyboard"
         android:layout_width="match_parent"
         android:layout_height="0dp"

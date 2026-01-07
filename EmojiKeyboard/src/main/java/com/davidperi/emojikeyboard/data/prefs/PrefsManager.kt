@@ -1,4 +1,4 @@
-package com.davidperi.emojikeyboard.utils
+package com.davidperi.emojikeyboard.data.prefs
 
 import android.content.Context
 import androidx.core.content.edit

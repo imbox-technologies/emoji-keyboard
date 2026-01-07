@@ -1,8 +1,8 @@
-package com.davidperi.emojikeyboard.ui.model
+package com.davidperi.emojikeyboard
 
 import android.graphics.Typeface
-import com.davidperi.emojikeyboard.provider.AssetEmojiProvider
-import com.davidperi.emojikeyboard.provider.EmojiProvider
+import com.davidperi.emojikeyboard.data.provider.AssetEmojiProvider
+import com.davidperi.emojikeyboard.data.provider.EmojiProvider
 
 enum class EmojiLayoutMode {
     ROBOT,

@@ -3,28 +3,26 @@ package com.davidperi.emojikeyboard.ui.adapter
 import android.graphics.Typeface
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.davidperi.emojikeyboard.databinding.ItemEmojiBinding
-import com.davidperi.emojikeyboard.model.Emoji
+import com.davidperi.emojikeyboard.data.model.Emoji
+import com.davidperi.emojikeyboard.ui.view.components.EmojiCellView
 
 class EmojiViewHolder(
     itemView: View,
-    typeface: Typeface,
-    isHorizontalLayout: Boolean,
-    onClick: (Emoji) -> Unit
+    private val typeface: Typeface,
+    private val onClick: (Emoji) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
-    private val binding = ItemEmojiBinding.bind(itemView)
+    private val emojiCell = itemView as EmojiCellView
     private var currentEmoji: Emoji? = null
 
     init {
-        binding.tvEmoji.isHorizontalMode = isHorizontalLayout
-        binding.tvEmoji.typeface = typeface
-        binding.tvEmoji.setOnClickListener { currentEmoji?.let { onClick(it) } }
+        emojiCell.typeface = typeface
+        emojiCell.setOnClickListener { currentEmoji?.let { onClick(it) } }
     }
 
     fun bind(item: EmojiListItem.EmojiKey) {
         currentEmoji = item.emoji
-        binding.tvEmoji.text = item.emoji.unicode
-        binding.tvEmoji.contentDescription = item.emoji.description
+        emojiCell.text = item.emoji.unicode
+        emojiCell.contentDescription = item.emoji.description
     }
 }

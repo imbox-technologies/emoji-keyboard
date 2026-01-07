@@ -1,6 +1,6 @@
-package com.davidperi.emojikeyboard.provider
+package com.davidperi.emojikeyboard.data.provider
 
-import com.davidperi.emojikeyboard.model.Emoji
+import com.davidperi.emojikeyboard.data.model.Emoji
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

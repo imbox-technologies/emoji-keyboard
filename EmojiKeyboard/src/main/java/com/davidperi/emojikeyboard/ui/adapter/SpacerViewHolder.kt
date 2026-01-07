@@ -4,7 +4,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import com.davidperi.emojikeyboard.ui.EmojiKeyboardView
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
 class SpacerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -21,7 +20,7 @@ class SpacerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(item: EmojiListItem.Spacer) {
         itemView.updateLayoutParams {
             if (!item.isFiller) {
-                width = EmojiKeyboardView.HORIZONTAL_GAP_SIZE.dp
+                width = 40.dp
                 height = ViewGroup.LayoutParams.MATCH_PARENT
             } else {
                 width = 1
