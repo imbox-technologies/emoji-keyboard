@@ -74,7 +74,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
 
     private fun buildEditText(): EditText {
         return EditText(context).apply {
-            hint = "Search emojis"
+            hint = context.getString(R.string.search_bar_edit_text_hint)
             background = null
             inputType = InputType.TYPE_CLASS_TEXT
             maxLines = 1

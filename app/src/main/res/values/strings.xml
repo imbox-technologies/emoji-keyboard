@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">EmojiKeyboardTest</string>
+    <string name="app_name" translatable="false">EmojiKeyboardTest</string>
     <string name="write_here">Write here to test</string>
 </resources>
