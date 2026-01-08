@@ -23,6 +23,7 @@ import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import kotlin.math.abs
 
+@SuppressLint("ViewConstructor")
 internal class CategoryBar(context: Context, private val delegate: EmojiDelegate) :
     LinearLayout(context) {
 

@@ -4,11 +4,9 @@ import android.graphics.Typeface
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Emoji
 import com.davidperi.emojikeyboard.ui.view.components.EmojiCellView
 import com.davidperi.emojikeyboard.ui.view.components.EmojiHeaderItem
-import com.davidperi.emojikeyboard.utils.DisplayUtils.inflate
 import com.davidperi.emojikeyboard.utils.EmojiFontManager
 
 class EmojiAdapter(

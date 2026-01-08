@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SearchBar -->
+    <string name="search_bar_edit_text_hint">Buscar emojis</string>
+
+    <!-- SearchResults -->
+    <string name="search_results_text_no_emojis_found">No se han encontrado emojis</string>
+</resources>

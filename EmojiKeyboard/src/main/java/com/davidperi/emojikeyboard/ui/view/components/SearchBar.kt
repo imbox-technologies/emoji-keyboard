@@ -1,7 +1,7 @@
 package com.davidperi.emojikeyboard.ui.view.components
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.text.InputType
 import android.view.Gravity
 import android.view.inputmethod.EditorInfo
@@ -13,9 +13,9 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
-import com.davidperi.emojikeyboard.utils.DisplayUtils.debugBorder
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
+@SuppressLint("ViewConstructor")
 internal class SearchBar(context: Context, private val delegate: EmojiDelegate) :
     CardView(context) {
 
@@ -74,7 +74,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
 
     private fun buildEditText(): EditText {
         return EditText(context).apply {
-            hint = "Search emojis"
+            hint = context.getString(R.string.search_bar_edit_text_hint)
             background = null
             inputType = InputType.TYPE_CLASS_TEXT
             maxLines = 1

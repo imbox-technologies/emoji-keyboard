@@ -5,7 +5,11 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 
-class EmojiTypefaceSpan(private val typeface: Typeface) : MetricAffectingSpan() {
+class EmojiTypefaceSpan(
+    private val typeface: Typeface,
+    private val sizePx: Float? = null
+) : MetricAffectingSpan() {
+
     override fun updateMeasureState(p0: TextPaint) {
         apply(p0)
     }
@@ -19,5 +23,9 @@ class EmojiTypefaceSpan(private val typeface: Typeface) : MetricAffectingSpan() 
 //        val oldStyle = old?.style ?: 0
 
         paint.typeface = typeface
+
+        if (sizePx != null) {
+            paint.textSize = sizePx
+        }
     }
 }
