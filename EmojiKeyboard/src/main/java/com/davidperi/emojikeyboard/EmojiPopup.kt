@@ -16,8 +16,7 @@ class EmojiPopup @JvmOverloads constructor(
 ) : FrameLayout(context, attrs) {
 
     private val keyboardView = EmojiKeyboardView(context)
-    private var stateMachine: PopupStateMachine? = null
-
+    private var stateMachine = PopupStateMachine(this)
 
     init {
         addView(keyboardView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
@@ -28,21 +27,21 @@ class EmojiPopup @JvmOverloads constructor(
     // PUBLIC (external) API
     fun setupWith(editText: EditText) {
         keyboardView.setupWith(editText)
-        stateMachine = PopupStateMachine(this, editText)
+        stateMachine.setEditText(editText)
     }
 
     fun setConfig(config: EmojiKeyboardConfig) {
         keyboardView.setConfig(config)
     }
 
-    fun toggle() = stateMachine?.toggle()
+    fun toggle() = stateMachine.toggle()
 
-    fun hide() = stateMachine?.hide()
+    fun hide() = stateMachine.hide()
 
-    fun getState() = stateMachine?.state
+    fun getState() = stateMachine.state
 
     fun setOnStateChangedListener(callback: (PopupState) -> Unit) {
-        stateMachine?.onStateChanged = callback
+        stateMachine.onStateChanged = callback
     }
 
 

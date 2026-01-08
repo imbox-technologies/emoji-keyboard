@@ -19,8 +19,7 @@ import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 
 internal class PopupStateMachine(
-    private val popup: EmojiPopup,
-    private val editText: EditText,
+    private val popup: EmojiPopup
 ) {
 
     var state: PopupState = PopupState.COLLAPSED
@@ -28,6 +27,7 @@ internal class PopupStateMachine(
 
     private val prefs = PrefsManager(popup.context)
 
+    private var editText: EditText? = null
     private var keyboardHeight = prefs.lastKeyboardHeight
     private var currentAnimator: ValueAnimator? = null
     private var shouldMimicIme = true
@@ -43,7 +43,6 @@ internal class PopupStateMachine(
     }
 
     init {
-        popup.updatePopupLayoutHeight(0)
         popup.isVisible = false
 
         setupStaticInsetsListener()
@@ -67,6 +66,10 @@ internal class PopupStateMachine(
         }
     }
 
+    fun setEditText(newEditText: EditText) {
+        editText = newEditText
+    }
+
 
     private fun transitionTo(newState: PopupState) {
         if (state == newState) return
@@ -78,8 +81,8 @@ internal class PopupStateMachine(
             isDetectingKeyboardHeight = true
             keyboardHeightDetected = false
             pendingState = newState
-            editText.requestFocus()
-            editText.showKeyboard()
+            editText?.requestFocus()
+            editText?.showKeyboard()
             return
         }
 
@@ -90,22 +93,22 @@ internal class PopupStateMachine(
         when (newState) {
             PopupState.COLLAPSED -> {
                 if (oldState == PopupState.FOCUSED) animateSize(0)
-                editText.requestFocus()
+                editText?.requestFocus()
                 popup.hideKeyboard()
             }
 
             PopupState.BEHIND -> {
                 if (oldState == PopupState.FOCUSED) shouldMimicIme = false
                 if (oldState != PopupState.COLLAPSED) animateSize(keyboardHeight)
-                editText.showKeyboard()
+                editText?.showKeyboard()
             }
 
             PopupState.FOCUSED -> {
                 if (oldState == PopupState.BEHIND) shouldMimicIme = false
                 animateSize(keyboardHeight)
                 if (oldState != PopupState.SEARCHING){
-                    editText.requestFocus()
-                    editText.hideKeyboard()
+                    editText?.requestFocus()
+                    editText?.hideKeyboard()
                 }else{
                     silentRequestFocus()
                 }
@@ -136,15 +139,15 @@ internal class PopupStateMachine(
                     keyboardHeightDetected = true
                     handler.removeCallbacksAndMessages(null)
                     handler.postDelayed({
-                        editText.clearFocus()
-                        editText.hideKeyboard()
+                        editText?.clearFocus()
+                        editText?.hideKeyboard()
                     }, KEYBOARD_DETECTION_DELAY)
 
                 } else {
                     when (state) {
                         PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
                         PopupState.FOCUSED -> {
-                            if (editText.hasFocus()) transitionTo(PopupState.BEHIND)
+                            if (editText?.hasFocus() == true) transitionTo(PopupState.BEHIND)
                             else if (popup.isSearchFocused()) transitionTo(PopupState.SEARCHING)
                         }
                         else -> {}
@@ -211,7 +214,7 @@ internal class PopupStateMachine(
     }
 
     private fun setupMsgFocusListener() {
-        editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+        editText?.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus && state == PopupState.SEARCHING) {
                 transitionTo(PopupState.BEHIND)
             }
@@ -276,9 +279,8 @@ internal class PopupStateMachine(
     }
 
     private fun silentRequestFocus() {
-        editText.postDelayed({
-            editText.requestFocus()
-            //editText.hideKeyboard()
+        editText?.postDelayed({
+            editText?.requestFocus()
         }, 250)
     }
 
