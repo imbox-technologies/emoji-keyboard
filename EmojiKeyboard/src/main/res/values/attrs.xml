@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="EmojiTextView">
+        <attr name="emojiSize" format="dimension" />
+        <attr name="dynamicEmojiSizeEnabled" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="EmojiEditText">
+        <attr name="emojiSize" />
+    </declare-styleable>
+</resources>
