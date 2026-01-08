@@ -4,4 +4,8 @@
         <attr name="emojiSize" format="dimension" />
         <attr name="dynamicEmojiSizeEnabled" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="EmojiEditText">
+        <attr name="emojiSize" />
+    </declare-styleable>
 </resources>

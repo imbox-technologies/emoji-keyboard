@@ -1,6 +1,9 @@
 package com.davidperi.emojikeyboard.utils
 
+import android.content.Context
+import android.text.Spannable
 import com.davidperi.emojikeyboard.data.model.EmojiInfo
+import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
 import java.util.regex.Pattern
 
 object EmojiUtils {
@@ -41,6 +44,27 @@ object EmojiUtils {
             isOnlyEmojis = !hasNonEmojiContent,
             numEmojis = count
         )
+    }
+
+    // TODO: improve or generalize this logic
+    fun replaceEmojis(context: Context, spannable: Spannable?, spanSizePx: Float?) {
+        if (spannable == null) return
+
+        val typeface = EmojiFontManager.getTypeface(context)
+        val existingSpans = spannable.getSpans(0, spannable.length, EmojiTypefaceSpan::class.java)
+        for (span in existingSpans) {
+            spannable.removeSpan(span)
+        }
+
+        val matcher = EMOJI_PATTERN.matcher(spannable)
+        while (matcher.find()) {
+            spannable.setSpan(
+                EmojiTypefaceSpan(typeface, spanSizePx),
+                matcher.start(),
+                matcher.end(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
     }
 
 }

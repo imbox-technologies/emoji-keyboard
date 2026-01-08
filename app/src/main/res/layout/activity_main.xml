@@ -19,11 +19,11 @@
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <com.davidperi.emojikeyboard.text.EmojiTextView
             android:id="@+id/welcome_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Emoji Keyboard Test"
+            android:text="Emoji Keyboard Test 😀"
             android:textColor="@color/emoji_keyboard_black"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -84,7 +84,7 @@
                 tools:visibility="visible" />
 
             <!-- Test edit text -->
-            <androidx.appcompat.widget.AppCompatEditText
+            <com.davidperi.emojikeyboard.text.EmojiEditText
                 android:id="@+id/et_test"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
