@@ -20,6 +20,7 @@
         android:paddingBottom="8dp"
         android:textColor="@android:color/white"
         android:textSize="16sp"
+        app:dynamicEmojiSizeEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
