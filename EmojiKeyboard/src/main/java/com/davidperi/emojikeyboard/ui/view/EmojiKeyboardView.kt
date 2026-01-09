@@ -60,6 +60,9 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     private var categoryRanges: List<IntRange> = emptyList()
     private var recentCount = 0
 
+    // Callbacks for controller (EmojiPopup3)
+    var onSearchBarFocusChange: ((Boolean) -> Unit)? = null
+
 
     init {
         orientation = VERTICAL
@@ -296,6 +299,10 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
         val event = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
         targetEditText?.dispatchKeyEvent(event)
         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    override fun onSearchFocusChange(hasFocus: Boolean) {
+        onSearchBarFocusChange?.invoke(hasFocus)
     }
 
 

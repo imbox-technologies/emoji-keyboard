@@ -5,5 +5,6 @@ interface EmojiDelegate {
     fun onEmojiClicked(unicode: String)  // Emoji Grid + Search Results
     fun onGridScrolled(position: Int)  // Emoji Grid
     fun onQueryChanged(query: String)  // Search Bar
+    fun onSearchFocusChange(hasFocus: Boolean)  // Search Bar
     fun onBackspacePressed()  // Backspace
 }

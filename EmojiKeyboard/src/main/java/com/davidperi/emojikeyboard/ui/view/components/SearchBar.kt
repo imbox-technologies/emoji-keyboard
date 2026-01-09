@@ -22,6 +22,8 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
     private val editText: EditText
     private val clearButton: AppCompatImageView
 
+    var onFocus: (() -> Unit)? = null
+    var onFocusLost: (() -> Unit)? = null
 
     init {
         // Styling
@@ -49,6 +51,10 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
             val query = it?.toString() ?: ""
             clearButton.isVisible = query.isNotEmpty()
             delegate.onQueryChanged(query)
+        }
+
+        editText.setOnFocusChangeListener { _, hasFocus ->
+            delegate.onSearchFocusChange(hasFocus)
         }
     }
 

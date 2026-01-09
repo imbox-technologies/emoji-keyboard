@@ -1,24 +1,27 @@
 package com.davidperi.emojikeyboardtest
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.davidperi.emojikeyboard.EmojiPopup
-import com.davidperi.emojikeyboard.EmojiPopupV2
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.davidperi.emojikeyboard.EmojiPopupV3
+import com.davidperi.emojikeyboard.EmojiPopupV4
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 import com.davidperi.emojikeyboardtest.model.ChatMessage
 import com.davidperi.emojikeyboardtest.adapter.ChatAdapter
+import java.util.logging.Logger
+import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var emojiPopup: EmojiPopupV2
+    private lateinit var emojiPopup: EmojiPopupV4
 
     private val chatAdapter = ChatAdapter()
     private val messages = mutableListOf<ChatMessage>()
@@ -31,8 +34,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            v.setPadding(sysInsets.left, sysInsets.top, sysInsets.right, max(sysInsets.bottom, imeInsets.bottom))
             insets
         }
 
@@ -60,10 +65,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-//        binding.ivToggleEmojiKeyboard.setOnClickListener {
-//            binding.emojiKeyboard.toggle()
-//        }
-
         binding.ivToggleEmojiKeyboard.setOnClickListener {
             emojiPopup.toggle()
         }
@@ -75,26 +76,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        emojiPopup.setOnStateChangedListener { state -> updateIcon(state) }
+        // emojiPopup.setOnStateChangedListener { state -> updateIcon(state) }
+        emojiPopup.setOnPopupStateChangedListener { state -> updateIcon(state) }
     }
 
     private fun setupEmojiPopup() {
-        emojiPopup = EmojiPopupV2(this)
-        emojiPopup.setupWith(binding.etTest)
-
-//        binding.emojiKeyboard.setupWith(binding.etTest)
-//        binding.emojiKeyboard.setOnStateChangedListener { state -> updateIcon(state) }
-
-        // val iosConfig = EmojiKeyboardConfig(layoutMode = EmojiLayoutMode.COOPER)
-        // binding.emojiKeyboard.configure(iosConfig)
+        emojiPopup = EmojiPopupV4(this)
+        emojiPopup.bindTo(binding.etTest)
+        // emojiPopup.setupWith(binding.etTest)
     }
 
     private fun setupBackHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-//                if (binding.emojiKeyboard.getState() == PopupState.FOCUSED) {
-//                    binding.emojiKeyboard.hide()
-                if (emojiPopup.getState() == PopupState.FOCUSED) {
+                if (emojiPopup.state == PopupState.FOCUSED) {
                     emojiPopup.hide()
                 } else {
                     isEnabled = false
@@ -102,6 +97,23 @@ class MainActivity : AppCompatActivity() {
                     isEnabled = true
                 }
             }
+
+//                if (emojiPopup.debugIsShow) {
+//                    emojiPopup.toggle()
+//                } else {
+//                    isEnabled = false
+//                    onBackPressedDispatcher.onBackPressed()
+//                    isEnabled = true
+//                }
+//            }
+//                if (emojiPopup.isShowing()) {
+//                    emojiPopup.hide()
+//                } else {
+//                    isEnabled = false
+//                    onBackPressedDispatcher.onBackPressed()
+//                    isEnabled = true
+//                }
+//            }
         })
     }
 
