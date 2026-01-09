@@ -5,6 +5,10 @@ plugins {
     id("maven-publish")
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 android {
     namespace = "com.davidperi.emojikeyboard"
     compileSdk = 36
