@@ -3,6 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 android {
     namespace = "com.davidperi.emojikeyboardtest"
     compileSdk = 36
