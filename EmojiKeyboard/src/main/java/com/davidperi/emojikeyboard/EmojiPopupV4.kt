@@ -76,10 +76,10 @@ class EmojiPopupV4(
             Log.d("EMOJI", "insets intercepted")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
 
             val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-            stateMachine.onImeVisibilityChanged(imeVisible)
+            if (imeVisible) stateMachine.imeUp()
+            else stateMachine.imeDown()
 
             val newInsets: WindowInsetsCompat
 
@@ -91,7 +91,7 @@ class EmojiPopupV4(
                     newInsets = insets
                 }
                 PopupState.FOCUSED -> {
-                    emojiKeyboard.updatePadding(bottom = sysInsets.bottom)
+                    popupContainer.updatePadding(bottom = sysInsets.bottom)
                     val newSysInsets = Insets.of(sysInsets.left, sysInsets.top, sysInsets.right, 0)
                     newInsets = WindowInsetsCompat.Builder(insets)
                         .setInsets(WindowInsetsCompat.Type.systemBars(), newSysInsets)
@@ -135,7 +135,6 @@ class EmojiPopupV4(
 
     internal fun showKeyboard() { targetEditText?.showKeyboard() }
     internal fun hideKeyboard() { targetEditText?.hideKeyboard() }
-
 
     private fun findActivity(): Activity? {
         var currentContext = context
