@@ -55,7 +55,7 @@ class EmojiPopup @JvmOverloads constructor(
     }
 
     internal fun setInternalHeight(height: Int) {
-        keyboardView.setInternalContentHeight(height)
+        keyboardView.updateContentHeight(height)
     }
 
     internal fun updatePopupLayoutHeight(newHeight: Int) {

@@ -123,9 +123,9 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
         return marginTop + searchBarHeight + marginBottom + resultsHeight + resultsMarginBottom
     }
 
-    fun setInternalContentHeight(newHeight: Int) {
-        this.updateLayoutParams {
-            height = newHeight
+    fun updateContentHeight(newHeight: Int) {
+        if (height != newHeight) {
+            updateLayoutParams { height = newHeight }
         }
     }
 

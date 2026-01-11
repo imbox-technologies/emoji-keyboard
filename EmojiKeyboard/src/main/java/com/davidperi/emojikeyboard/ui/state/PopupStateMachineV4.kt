@@ -2,7 +2,6 @@ package com.davidperi.emojikeyboard.ui.state
 
 import android.util.Log
 import com.davidperi.emojikeyboard.EmojiPopupV4
-import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 
 class PopupStateMachineV4(
     private val popup: EmojiPopupV4
@@ -40,9 +39,16 @@ class PopupStateMachineV4(
         }
     }
 
+    fun write() {
+        Log.i("EMOJI", "write() with state=$_state")
+        if (_state == PopupState.SEARCHING) {
+            transitionTo(PopupState.BEHIND)
+        }
+    }
+
     fun imeUp() {
-        Log.i("EMOJI", "imeUp() with state=$_state")
         if (!currentIme) {
+            Log.i("EMOJI", "imeUp() with state=$_state")
             currentIme = true
             when (_state) {
                 PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
@@ -53,8 +59,8 @@ class PopupStateMachineV4(
     }
 
     fun imeDown() {
-        Log.i("EMOJI", "imeDown() with state=$_state")
         if (currentIme) {
+            Log.i("EMOJI", "imeDown() with state=$_state")
             currentIme = false
             when (_state) {
                 PopupState.BEHIND -> if (expectedIme) transitionTo(PopupState.COLLAPSED)
@@ -87,60 +93,15 @@ class PopupStateMachineV4(
             PopupState.FOCUSED -> {
                 expectedIme = false
                 popup.hideKeyboard()
-                popup.updatePopupHeight(965)
+                popup.updatePopupHeight(popup.getKeyboardStandardHeight())
             }
 
             PopupState.SEARCHING -> {
                 expectedIme = true
                 popup.showKeyboard()
-                popup.updatePopupHeight(1265)
+                popup.updatePopupHeight(popup.getKeyboardStandardHeight() + popup.getSearchContentHeight())
             }
         }
-
-
-//        when (newState) {
-//            PopupState.COLLAPSED -> {
-//                expectedImeVisibility = null
-//            }
-//            PopupState.BEHIND -> {
-//                if (!isAutomatic) {
-//                    expectedImeVisibility = true
-//                } else {
-//                    expectedImeVisibility = null
-//                }
-//            }
-//            PopupState.FOCUSED -> {
-//                expectedImeVisibility = false
-//            }
-//            PopupState.SEARCHING -> {
-//                expectedImeVisibility = true
-//            }
-//        }
-//
-//        changeState(newState)
-//
-//        when (newState) {
-//            PopupState.COLLAPSED -> {
-//                popup.updatePopupHeight(0)
-//            }
-//            PopupState.BEHIND -> {
-//                popup.updatePopupHeight(0)
-//                if (!isAutomatic) {
-//                    popup.showKeyboard()
-//                } else {
-//                    currentImeVisibility = true
-//                }
-//            }
-//            PopupState.FOCUSED -> {
-//                popup.updatePopupHeight(300.dp)
-//                popup.hideKeyboard()
-//                currentImeVisibility = false
-//            }
-//            PopupState.SEARCHING -> {
-//                popup.updatePopupHeight(60.dp)
-//                popup.showKeyboard()
-//            }
-//        }
     }
 
     private fun changeState(newState: PopupState) {

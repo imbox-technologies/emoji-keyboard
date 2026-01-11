@@ -13,7 +13,6 @@ import androidx.activity.ComponentActivity
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -75,7 +74,7 @@ class EmojiPopupV2(activity: ComponentActivity) {
     }
 
     internal fun setInternalHeight(height: Int) {
-        keyboardView.setInternalContentHeight(height)
+        keyboardView.updateContentHeight(height)
     }
 
     internal fun isSearchFocused(): Boolean {
