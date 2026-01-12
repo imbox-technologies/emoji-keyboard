@@ -1,5 +1,8 @@
 package com.davidperi.emojikeyboard
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -15,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager.Companion.DEFAULT_HEIGHT_DP
 import com.davidperi.emojikeyboard.ui.state.PopupState
@@ -35,6 +39,7 @@ class EmojiPopupV4(
     private val emojiKeyboard = EmojiKeyboardView(context)
     private val stateMachine = PopupStateMachineV4(this)
     private val prefs = PrefsManager(context)
+    private var currentAnimator: ValueAnimator? = null
 
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
     private var targetEditText: EditText? = null
@@ -147,10 +152,14 @@ class EmojiPopupV4(
 
 
     // INTERNAL API
-    internal fun updatePopupHeight(newHeight: Int) {
+    internal fun updatePopupHeight(newHeight: Int, animate: Boolean = false) {
         if (popupContainer.height != newHeight) {
-            popupContainer.updateLayoutParams { height = newHeight }
-            ViewCompat.requestApplyInsets(wrapper)
+            if (animate) {
+                animateHeight(newHeight)
+            } else {
+                popupContainer.updateLayoutParams { height = newHeight }
+                ViewCompat.requestApplyInsets(wrapper)
+            }
         }
     }
 
@@ -190,6 +199,37 @@ class EmojiPopupV4(
 
 
     // AUX
+    private fun animateHeight(targetHeight: Int) {
+        currentAnimator?.cancel()
+
+        val currentHeight = popupContainer.height
+
+        currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
+            duration = 250L
+            interpolator = FastOutSlowInInterpolator()
+
+            addUpdateListener { animation ->
+                val value = animation.animatedValue as Int
+                popupContainer.updateLayoutParams { height = value }
+            }
+
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator) {
+                }
+
+                override fun onAnimationEnd(animation: Animator) {
+                    currentAnimator = null
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                    currentAnimator = null
+                }
+            })
+
+            start()
+        }
+    }
+
     private fun findActivity(): Activity? {
         var currentContext = context
         while (currentContext is ContextWrapper) {
