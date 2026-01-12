@@ -6,30 +6,29 @@ import android.animation.ValueAnimator
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.EditText
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import android.widget.EditText
-import com.davidperi.emojikeyboard.EmojiPopupV2
-import com.davidperi.emojikeyboard.data.prefs.PrefsManager
+import com.davidperi.emojikeyboard.EmojiPopupOld
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
+import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 
-internal class PopupStateMachineV2(
-    private val popup: EmojiPopupV2,
-    private val editText: EditText,
+internal class PopupStateMachineOld(
+    private val popup: EmojiPopupOld
 ) {
 
     var state: PopupState = PopupState.COLLAPSED
     var onStateChanged: (PopupState) -> Unit = {}
 
-    private val prefs = PrefsManager(editText.context)
+    private val prefs = PrefsManager(popup.context)
 
+    private var editText: EditText? = null
     private var keyboardHeight = prefs.lastKeyboardHeight
-    private var lastAppliedHeight = 0
-
     private var currentAnimator: ValueAnimator? = null
     private var shouldMimicIme = true
     private var isDetectingKeyboardHeight = false
@@ -44,12 +43,13 @@ internal class PopupStateMachineV2(
     }
 
     init {
-        updateHeight(0)
+        popup.isVisible = false
 
         setupStaticInsetsListener()
         setupAnimatedInsetsListener()
         setupMsgFocusListener()
     }
+
 
     fun hide() {
         if (state == PopupState.FOCUSED) {
@@ -66,18 +66,23 @@ internal class PopupStateMachineV2(
         }
     }
 
+    fun setEditText(newEditText: EditText) {
+        editText = newEditText
+    }
+
+
     private fun transitionTo(newState: PopupState) {
         if (state == newState) return
 
         val oldState = state
-        val defaultHeight = PrefsManager.Companion.DEFAULT_HEIGHT_DP.dp
 
+        val defaultHeight = PrefsManager.Companion.DEFAULT_HEIGHT_DP.dp
         if (newState == PopupState.FOCUSED && keyboardHeight == defaultHeight && !isDetectingKeyboardHeight) {
             isDetectingKeyboardHeight = true
             keyboardHeightDetected = false
             pendingState = newState
-            editText.requestFocus()
-            editText.showKeyboard()
+            editText?.requestFocus()
+            editText?.showKeyboard()
             return
         }
 
@@ -88,23 +93,23 @@ internal class PopupStateMachineV2(
         when (newState) {
             PopupState.COLLAPSED -> {
                 if (oldState == PopupState.FOCUSED) animateSize(0)
-                editText.requestFocus()
-                editText.hideKeyboard()
+                editText?.requestFocus()
+                popup.hideKeyboard()
             }
 
             PopupState.BEHIND -> {
                 if (oldState == PopupState.FOCUSED) shouldMimicIme = false
                 if (oldState != PopupState.COLLAPSED) animateSize(keyboardHeight)
-                editText.showKeyboard()
+                editText?.showKeyboard()
             }
 
             PopupState.FOCUSED -> {
                 if (oldState == PopupState.BEHIND) shouldMimicIme = false
                 animateSize(keyboardHeight)
                 if (oldState != PopupState.SEARCHING){
-                    editText.requestFocus()
-                    editText.hideKeyboard()
-                } else {
+                    editText?.requestFocus()
+                    editText?.hideKeyboard()
+                }else{
                     silentRequestFocus()
                 }
             }
@@ -116,8 +121,9 @@ internal class PopupStateMachineV2(
         }
     }
 
+
     private fun setupStaticInsetsListener() {
-        ViewCompat.setOnApplyWindowInsetsListener(editText) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(popup) { v, insets ->
             val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
             val effectiveHeight = (imeInset - navInset).coerceAtLeast(0)
@@ -133,15 +139,15 @@ internal class PopupStateMachineV2(
                     keyboardHeightDetected = true
                     handler.removeCallbacksAndMessages(null)
                     handler.postDelayed({
-                        editText.clearFocus()
-                        editText.hideKeyboard()
+                        editText?.clearFocus()
+                        editText?.hideKeyboard()
                     }, KEYBOARD_DETECTION_DELAY)
 
                 } else {
                     when (state) {
                         PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
                         PopupState.FOCUSED -> {
-                            if (editText.hasFocus()) transitionTo(PopupState.BEHIND)
+                            if (editText?.hasFocus() == true) transitionTo(PopupState.BEHIND)
                             else if (popup.isSearchFocused()) transitionTo(PopupState.SEARCHING)
                         }
                         else -> {}
@@ -177,7 +183,7 @@ internal class PopupStateMachineV2(
 
     private fun setupAnimatedInsetsListener() {
         ViewCompat.setWindowInsetsAnimationCallback(
-            editText, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+            popup, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
                 override fun onProgress(
                     insets: WindowInsetsCompat,
                     runningAnimations: List<WindowInsetsAnimationCompat?>
@@ -208,17 +214,18 @@ internal class PopupStateMachineV2(
     }
 
     private fun setupMsgFocusListener() {
-        editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+        editText?.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus && state == PopupState.SEARCHING) {
                 transitionTo(PopupState.BEHIND)
             }
         }
     }
 
+
     private fun animateSize(targetHeight: Int) {
         currentAnimator?.cancel()
 
-        val currentHeight = lastAppliedHeight
+        val currentHeight = popup.layoutParams.height
         if (currentHeight == targetHeight) return
 
         if (targetHeight > 0) {
@@ -231,11 +238,18 @@ internal class PopupStateMachineV2(
 
             addUpdateListener { animation ->
                 val value = animation.animatedValue as Int
-                updateHeight(value)
+                popup.updatePopupLayoutHeight(value)
+
+                if (value > 0 && !popup.isVisible) {
+                    popup.isVisible = true
+                }
             }
 
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    if (targetHeight == 0) {
+                        popup.isVisible = false
+                    }
                     currentAnimator = null
                 }
             })
@@ -251,19 +265,23 @@ internal class PopupStateMachineV2(
             popup.setInternalHeight(maxOf(size, keyboardHeight))
         }
 
-        if (lastAppliedHeight != size){
-            updateHeight(size)
+        if (size == 0) {
+            popup.isVisible = false
+        }
+
+        if (popup.layoutParams.height != size){
+            popup.updatePopupLayoutHeight(size)
+        }
+
+        if (size > 0 && !popup.isVisible) {
+            popup.isVisible = true
         }
     }
 
-    private fun updateHeight(height: Int) {
-        lastAppliedHeight = height
-        popup.updatePopupLayoutHeight(height)
-    }
-
     private fun silentRequestFocus() {
-        editText.postDelayed({
-            editText.requestFocus()
+        editText?.postDelayed({
+            editText?.requestFocus()
         }, 250)
     }
+
 }

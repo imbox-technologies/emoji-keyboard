@@ -1,64 +1,23 @@
 package com.davidperi.emojikeyboard.ui.state
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
-import android.os.Handler
-import android.os.Looper
-import android.view.View
-import android.widget.EditText
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsAnimationCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import android.util.Log
 import com.davidperi.emojikeyboard.EmojiPopup
-import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
-import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
-import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
-import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 
-internal class PopupStateMachine(
+class PopupStateMachine(
     private val popup: EmojiPopup
 ) {
 
-    var state: PopupState = PopupState.COLLAPSED
-    var onStateChanged: (PopupState) -> Unit = {}
+    private var _state: PopupState = PopupState.COLLAPSED
+    val state: PopupState get() = _state
 
-    private val prefs = PrefsManager(popup.context)
-
-    private var editText: EditText? = null
-    private var keyboardHeight = prefs.lastKeyboardHeight
-    private var currentAnimator: ValueAnimator? = null
-    private var shouldMimicIme = true
-    private var isDetectingKeyboardHeight = false
-    private var pendingState: PopupState? = null
-    private var keyboardHeightDetected = false
-    private val handler = Handler(Looper.getMainLooper())
-
-    companion object {
-        private const val ANIMATION_DURATION = 250L
-        private const val KEYBOARD_DETECTION_DELAY = 200L
-        private const val KEYBOARD_CLOSE_DELAY = 150L
-    }
-
-    init {
-        popup.isVisible = false
-
-        setupStaticInsetsListener()
-        setupAnimatedInsetsListener()
-        setupMsgFocusListener()
-    }
+    private var expectedIme: Boolean = false  // true=UP, false=DOWN
+    private var currentIme: Boolean = false
 
 
-    fun hide() {
-        if (state == PopupState.FOCUSED) {
-            transitionTo(PopupState.COLLAPSED)
-        }
-    }
-
+    // Events (user actions & system reactions)
     fun toggle() {
-        when (state) {
+        Log.i("EMOJI", "toggle() with state=$_state")
+        when (_state) {
             PopupState.COLLAPSED -> transitionTo(PopupState.FOCUSED)
             PopupState.BEHIND -> transitionTo(PopupState.FOCUSED)
             PopupState.FOCUSED -> transitionTo(PopupState.BEHIND)
@@ -66,222 +25,89 @@ internal class PopupStateMachine(
         }
     }
 
-    fun setEditText(newEditText: EditText) {
-        editText = newEditText
+    fun hide() {
+        Log.i("EMOJI", "hide() with state=$_state")
+        if (state == PopupState.FOCUSED) {
+            transitionTo(PopupState.COLLAPSED)
+        }
+    }
+
+    fun search() {
+        Log.i("EMOJI", "search() with state=$_state")
+        if (_state == PopupState.FOCUSED) {
+            transitionTo(PopupState.SEARCHING)
+        }
+    }
+
+    fun write() {
+        Log.i("EMOJI", "write() with state=$_state")
+        if (_state == PopupState.SEARCHING) {
+            transitionTo(PopupState.BEHIND)
+        }
+    }
+
+    fun imeUp() {
+        if (!currentIme) {
+            Log.i("EMOJI", "imeUp() with state=$_state")
+            currentIme = true
+            when (_state) {
+                PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
+                PopupState.FOCUSED -> if (!expectedIme) transitionTo(PopupState.BEHIND)
+                else -> { /* IME is supposed to be up in BEHIND and SEARCHING */ }
+            }
+        }
+    }
+
+    fun imeDown() {
+        if (currentIme) {
+            Log.i("EMOJI", "imeDown() with state=$_state")
+            currentIme = false
+            when (_state) {
+                PopupState.BEHIND -> if (expectedIme) transitionTo(PopupState.COLLAPSED)
+                PopupState.SEARCHING -> transitionTo(PopupState.FOCUSED)
+                else -> { /* IME is supposed to be down in COLLAPSED and FOCUSED */ }
+            }
+        }
     }
 
 
+    // State controller
     private fun transitionTo(newState: PopupState) {
-        if (state == newState) return
-
-        val oldState = state
-
-        val defaultHeight = PrefsManager.Companion.DEFAULT_HEIGHT_DP.dp
-        if (newState == PopupState.FOCUSED && keyboardHeight == defaultHeight && !isDetectingKeyboardHeight) {
-            isDetectingKeyboardHeight = true
-            keyboardHeightDetected = false
-            pendingState = newState
-            editText?.requestFocus()
-            editText?.showKeyboard()
-            return
-        }
-
-        state = newState
-        onStateChanged(newState)
-        popup.notifyStateChanged(newState)
+        Log.v("EMOJI", "transitioning $_state -> $newState")
+        if (_state == newState) return
+        changeState(newState)
 
         when (newState) {
             PopupState.COLLAPSED -> {
-                if (oldState == PopupState.FOCUSED) animateSize(0)
-                editText?.requestFocus()
+                expectedIme = false
                 popup.hideKeyboard()
+                popup.updatePopupHeight(0)
             }
 
             PopupState.BEHIND -> {
-                if (oldState == PopupState.FOCUSED) shouldMimicIme = false
-                if (oldState != PopupState.COLLAPSED) animateSize(keyboardHeight)
-                editText?.showKeyboard()
+                expectedIme = true
+                popup.showKeyboard()
+                popup.updatePopupHeight(0)
             }
 
             PopupState.FOCUSED -> {
-                if (oldState == PopupState.BEHIND) shouldMimicIme = false
-                animateSize(keyboardHeight)
-                if (oldState != PopupState.SEARCHING){
-                    editText?.requestFocus()
-                    editText?.hideKeyboard()
-                }else{
-                    silentRequestFocus()
-                }
+                expectedIme = false
+                popup.hideKeyboard()
+                popup.updatePopupHeight(popup.getKeyboardStandardHeight())
             }
 
             PopupState.SEARCHING -> {
-                val targetHeight = popup.getSearchContentHeight()
-                animateSize(keyboardHeight + targetHeight)
+                expectedIme = true
+                popup.showKeyboard()
+                popup.updatePopupHeight(popup.getKeyboardStandardHeight() + popup.getSearchContentHeight())
             }
         }
     }
 
-
-    private fun setupStaticInsetsListener() {
-        ViewCompat.setOnApplyWindowInsetsListener(popup) { v, insets ->
-            val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-            val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-            val effectiveHeight = (imeInset - navInset).coerceAtLeast(0)
-
-            if (effectiveHeight > 0) {  // ime up
-                if (keyboardHeight != effectiveHeight) {
-                    keyboardHeight = effectiveHeight
-                    prefs.lastKeyboardHeight = effectiveHeight
-                    popup.setInternalHeight(keyboardHeight)
-                }
-
-                if (isDetectingKeyboardHeight) {
-                    keyboardHeightDetected = true
-                    handler.removeCallbacksAndMessages(null)
-                    handler.postDelayed({
-                        editText?.clearFocus()
-                        editText?.hideKeyboard()
-                    }, KEYBOARD_DETECTION_DELAY)
-
-                } else {
-                    when (state) {
-                        PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
-                        PopupState.FOCUSED -> {
-                            if (editText?.hasFocus() == true) transitionTo(PopupState.BEHIND)
-                            else if (popup.isSearchFocused()) transitionTo(PopupState.SEARCHING)
-                        }
-                        else -> {}
-                    }
-                }
-
-            } else {  // ime down
-                if (isDetectingKeyboardHeight && keyboardHeightDetected) {
-                    handler.removeCallbacksAndMessages(null)
-                    isDetectingKeyboardHeight = false
-                    keyboardHeightDetected = false
-                    pendingState?.let { targetState ->
-                        val savedState = targetState
-                        pendingState = null
-                        handler.postDelayed({
-                            if (keyboardHeight > 0) transitionTo(savedState)
-                        }, KEYBOARD_CLOSE_DELAY)
-                    }
-                }
-
-                if (!isDetectingKeyboardHeight) {
-                    when (state) {
-                        PopupState.BEHIND -> transitionTo(PopupState.COLLAPSED)
-                        PopupState.SEARCHING -> transitionTo(PopupState.FOCUSED)
-                        else -> {}
-                    }
-                }
-            }
-
-            insets
-        }
-    }
-
-    private fun setupAnimatedInsetsListener() {
-        ViewCompat.setWindowInsetsAnimationCallback(
-            popup, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
-                override fun onProgress(
-                    insets: WindowInsetsCompat,
-                    runningAnimations: List<WindowInsetsAnimationCompat?>
-                ): WindowInsetsCompat {
-                    val imeAnimation = runningAnimations.find {
-                        it?.typeMask?.and(WindowInsetsCompat.Type.ime()) != 0
-                    }
-
-                    if (imeAnimation != null && shouldMimicIme) {
-                        val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-                        val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-                        val effectiveHeight = (imeHeight - navInset).coerceAtLeast(0)
-
-                        when (state) {
-                            PopupState.COLLAPSED -> changeSize(effectiveHeight)
-                            PopupState.BEHIND -> changeSize(effectiveHeight)
-                            else -> {}
-                        }
-                    }
-
-                    return insets
-                }
-
-                override fun onEnd(animation: WindowInsetsAnimationCompat) {
-                    shouldMimicIme = true
-                }
-            })
-    }
-
-    private fun setupMsgFocusListener() {
-        editText?.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && state == PopupState.SEARCHING) {
-                transitionTo(PopupState.BEHIND)
-            }
-        }
-    }
-
-
-    private fun animateSize(targetHeight: Int) {
-        currentAnimator?.cancel()
-
-        val currentHeight = popup.layoutParams.height
-        if (currentHeight == targetHeight) return
-
-        if (targetHeight > 0) {
-            popup.setInternalHeight(targetHeight)
-        }
-
-        currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
-            duration = ANIMATION_DURATION
-            interpolator = FastOutSlowInInterpolator()
-
-            addUpdateListener { animation ->
-                val value = animation.animatedValue as Int
-                popup.updatePopupLayoutHeight(value)
-
-                if (value > 0 && !popup.isVisible) {
-                    popup.isVisible = true
-                }
-            }
-
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    if (targetHeight == 0) {
-                        popup.isVisible = false
-                    }
-                    currentAnimator = null
-                }
-            })
-
-            start()
-        }
-    }
-
-    private fun changeSize(size: Int) {
-        currentAnimator?.cancel()
-
-        if (size > 0) {
-            popup.setInternalHeight(maxOf(size, keyboardHeight))
-        }
-
-        if (size == 0) {
-            popup.isVisible = false
-        }
-
-        if (popup.layoutParams.height != size){
-            popup.updatePopupLayoutHeight(size)
-        }
-
-        if (size > 0 && !popup.isVisible) {
-            popup.isVisible = true
-        }
-    }
-
-    private fun silentRequestFocus() {
-        editText?.postDelayed({
-            editText?.requestFocus()
-        }, 250)
+    private fun changeState(newState: PopupState) {
+        if (_state == newState) return
+        _state = newState
+        popup.popupStateChanged(_state)
     }
 
 }

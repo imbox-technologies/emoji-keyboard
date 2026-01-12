@@ -116,7 +116,7 @@
         app:layout_goneMarginBottom="8dp" />
 
     <!-- Emoji keyboard custom view -->
-<!--    <com.davidperi.emojikeyboard.EmojiPopup-->
+<!--    <com.davidperi.emojikeyboard.EmojiPopupOld-->
 <!--        android:id="@+id/emoji_keyboard"-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="0dp"-->
