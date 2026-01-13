@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.davidperi.emojikeyboard.EmojiPopup
+import com.davidperi.emojikeyboard.PopupApi
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 import com.davidperi.emojikeyboardtest.model.ChatMessage
@@ -19,7 +20,7 @@ import kotlin.math.max
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var emojiPopup: EmojiPopup
+    private lateinit var emojiPopup: PopupApi
 
     private val chatAdapter = ChatAdapter()
     private val messages = mutableListOf<ChatMessage>()
@@ -74,25 +75,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // emojiPopup.setOnStateChangedListener { state -> updateIcon(state) }
         emojiPopup.setOnPopupStateChangedListener { state -> updateIcon(state) }
     }
 
     private fun setupEmojiPopup() {
         emojiPopup = EmojiPopup(this)
         emojiPopup.bindTo(binding.etTest)
-        // emojiPopup.setupWith(binding.etTest)
     }
 
     private fun setupBackHandling() {
-//        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                Log.d("EMOJI", "Back in Activity")
-//                isEnabled = false
-//                onBackPressedDispatcher.onBackPressed()
-//                isEnabled = true
-//            }
-//        })
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Log.d("EMOJI", "Back in Activity")
+                if (emojiPopup.state == PopupState.FOCUSED) {
+                    emojiPopup.hide()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
     }
 
     private fun updateIcon(state: PopupState) {

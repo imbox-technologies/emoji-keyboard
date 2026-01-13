@@ -1,8 +1,5 @@
 package com.davidperi.emojikeyboard
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -18,7 +15,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager.Companion.DEFAULT_HEIGHT_DP
 import com.davidperi.emojikeyboard.ui.state.PopupState
@@ -28,9 +24,15 @@ import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
 
-class EmojiPopup(
+class EmojiPopup private constructor(
     private val context: Context,
-) {
+) : PopupApi, InternalPopup {
+
+    companion object {
+        operator fun invoke(context: Context): PopupApi {
+            return EmojiPopup(context)
+        }
+    }
 
     private class Wrapper(context: Context) : LinearLayout(context)  // wraps activity + popup
     private lateinit var wrapper: Wrapper
@@ -39,7 +41,6 @@ class EmojiPopup(
     private val emojiKeyboard = EmojiKeyboardView(context)
     private val stateMachine = PopupStateMachine(this)
     private val prefs = PrefsManager(context)
-    private var currentAnimator: ValueAnimator? = null
 
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
     private var targetEditText: EditText? = null
@@ -143,36 +144,32 @@ class EmojiPopup(
 
 
     // PUBLIC API
-    val state: PopupState get() = stateMachine.state
-    fun bindTo(editText: EditText) { targetEditText = editText }
-    fun setConfig(config: EmojiKeyboardConfig) { emojiKeyboard.setConfig(config) }
-    fun toggle() = stateMachine.toggle()
-    fun hide() = stateMachine.hide()
-    fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
+    override val state: PopupState get() = stateMachine.state
+    override fun bindTo(editText: EditText) { targetEditText = editText }
+    override fun setConfig(config: EmojiKeyboardConfig) { emojiKeyboard.setConfig(config) }
+    override fun toggle() = stateMachine.toggle()
+    override fun hide() = stateMachine.hide()
+    override fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
 
 
     // INTERNAL API
-    internal fun updatePopupHeight(newHeight: Int, animate: Boolean = false) {
-        if (popupContainer.height != newHeight) {
-            if (animate) {
-                animateHeight(newHeight)
-            } else {
-                popupContainer.updateLayoutParams { height = newHeight }
-                ViewCompat.requestApplyInsets(wrapper)
-            }
+    override fun updatePopupHeight(height: Int) {
+        if (popupContainer.height != height) {
+            popupContainer.updateLayoutParams { this.height = height }
+            ViewCompat.requestApplyInsets(wrapper)
         }
     }
 
-    internal fun popupStateChanged(state: PopupState) {
+    override fun popupStateChanged(state: PopupState) {
         emojiKeyboard.onStateChanged(state)
         onPopupStateChange?.invoke(state)
     }
 
-    internal fun getSearchContentHeight(): Int {
+    override fun getSearchContentHeight(): Int {
         return emojiKeyboard.getSearchContentHeight()
     }
 
-    internal fun getKeyboardStandardHeight(): Int {
+    override fun getKeyboardStandardHeight(): Int {
         return if (prefs.lastKeyboardHeight != -1) {
             emojiKeyboard.updateContentHeight(prefs.lastKeyboardHeight)
             prefs.lastKeyboardHeight
@@ -182,13 +179,13 @@ class EmojiPopup(
         }
     }
 
-    internal fun showKeyboard() {
+    override fun showKeyboard() {
         if (state != PopupState.SEARCHING) {
             targetEditText?.showKeyboard()
         }
     }
 
-    internal fun hideKeyboard() {
+    override fun hideKeyboard() {
         targetEditText?.hideKeyboard()
 
         val originalSetting = targetEditText?.showSoftInputOnFocus ?: true
@@ -199,37 +196,6 @@ class EmojiPopup(
 
 
     // AUX
-    private fun animateHeight(targetHeight: Int) {
-        currentAnimator?.cancel()
-
-        val currentHeight = popupContainer.height
-
-        currentAnimator = ValueAnimator.ofInt(currentHeight, targetHeight).apply {
-            duration = 250L
-            interpolator = FastOutSlowInInterpolator()
-
-            addUpdateListener { animation ->
-                val value = animation.animatedValue as Int
-                popupContainer.updateLayoutParams { height = value }
-            }
-
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator) {
-                }
-
-                override fun onAnimationEnd(animation: Animator) {
-                    currentAnimator = null
-                }
-
-                override fun onAnimationCancel(animation: Animator) {
-                    currentAnimator = null
-                }
-            })
-
-            start()
-        }
-    }
-
     private fun findActivity(): Activity? {
         var currentContext = context
         while (currentContext is ContextWrapper) {
