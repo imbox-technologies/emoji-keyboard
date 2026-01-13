@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            Log.d("EMOJI", "insets in activity")
+            Log.d("EMOJI Activ", "insets in activity")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupBackHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                Log.d("EMOJI", "Back in Activity")
+                Log.d("EMOJI Activ", "back in activity")
                 if (emojiPopup.state == PopupState.FOCUSED) {
                     emojiPopup.hide()
                 } else {

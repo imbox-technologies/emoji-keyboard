@@ -17,7 +17,7 @@ internal class PopupStateMachine(
 
     // Events (user actions & system reactions)
     fun toggle() {
-        Log.i("EMOJI", "toggle() with state=$_state")
+        Log.v("EMOJI StMch", "toggle() with state=$_state")
         when (_state) {
             PopupState.COLLAPSED -> transitionTo(PopupState.FOCUSED)
             PopupState.BEHIND -> transitionTo(PopupState.FOCUSED)
@@ -27,21 +27,21 @@ internal class PopupStateMachine(
     }
 
     fun hide() {
-        Log.i("EMOJI", "hide() with state=$_state")
+        Log.v("EMOJI StMch", "hide() with state=$_state")
         if (state == PopupState.FOCUSED) {
             transitionTo(PopupState.COLLAPSED)
         }
     }
 
     fun search() {
-        Log.i("EMOJI", "search() with state=$_state")
+        Log.v("EMOJI StMch", "search() with state=$_state")
         if (_state == PopupState.FOCUSED) {
             transitionTo(PopupState.SEARCHING)
         }
     }
 
     fun write() {
-        Log.i("EMOJI", "write() with state=$_state")
+        Log.v("EMOJI StMch", "write() with state=$_state")
         if (_state == PopupState.SEARCHING) {
             transitionTo(PopupState.BEHIND)
         }
@@ -49,7 +49,7 @@ internal class PopupStateMachine(
 
     fun imeUp() {
         if (!currentIme) {
-            Log.i("EMOJI", "imeUp() with state=$_state")
+            Log.v("EMOJI StMch", "imeUp() with state=$_state")
             currentIme = true
             when (_state) {
                 PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
@@ -61,7 +61,7 @@ internal class PopupStateMachine(
 
     fun imeDown() {
         if (currentIme) {
-            Log.i("EMOJI", "imeDown() with state=$_state")
+            Log.v("EMOJI StMch", "imeDown() with state=$_state")
             currentIme = false
             when (_state) {
                 PopupState.BEHIND -> if (expectedIme) transitionTo(PopupState.COLLAPSED)
@@ -74,7 +74,7 @@ internal class PopupStateMachine(
 
     // State controller
     private fun transitionTo(newState: PopupState) {
-        Log.v("EMOJI", "transitioning $_state -> $newState")
+        Log.e("EMOJI StMch", "transitioning $_state -> $newState")
         if (_state == newState) return
         changeState(newState)
 

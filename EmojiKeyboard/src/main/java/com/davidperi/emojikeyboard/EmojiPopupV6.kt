@@ -84,7 +84,7 @@ class EmojiPopupV6 private constructor(
     private fun setupInsetsListener() {
         if (contentView == null) return
         ViewCompat.setOnApplyWindowInsetsListener(contentView) { view, insets ->
-            Log.d("EMOJI", "insets intercepted")
+            Log.i("EMOJI Popup", "insets intercepted with state=$state")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
@@ -146,6 +146,7 @@ class EmojiPopupV6 private constructor(
     // INTERNAL API
     override fun updatePopupHeight(height: Int) {
         if (popupContainer.height != height) {
+            Log.i("EMOJI Popup", "updating height")
             currentHeight = height
             popupContainer.updateLayoutParams { this.height = height }
             contentView?.let { ViewCompat.requestApplyInsets(contentView) }
@@ -173,11 +174,13 @@ class EmojiPopupV6 private constructor(
 
     override fun showKeyboard() {
         if (state != PopupState.SEARCHING) {
+            Log.i("EMOJI Popup", "showing ime")
             targetEditText?.showKeyboard()
         }
     }
 
     override fun hideKeyboard() {
+        Log.i("EMOJI Popup", "hiding ime")
         targetEditText?.hideKeyboard()
 
         val originalSetting = targetEditText?.showSoftInputOnFocus ?: true
