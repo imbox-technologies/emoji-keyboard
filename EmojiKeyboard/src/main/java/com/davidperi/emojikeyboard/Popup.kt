@@ -1,6 +1,7 @@
 package com.davidperi.emojikeyboard
 
 import android.widget.EditText
+import androidx.core.graphics.Insets
 import com.davidperi.emojikeyboard.ui.state.PopupState
 
 internal interface InternalPopup {

@@ -9,7 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.davidperi.emojikeyboard.EmojiPopup
+import com.davidperi.emojikeyboard.EmojiPopupV6
 import com.davidperi.emojikeyboard.PopupApi
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            Log.d("EMOJI", "insets in activity")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
@@ -79,7 +80,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupEmojiPopup() {
-        emojiPopup = EmojiPopup(this)
+        emojiPopup = EmojiPopupV6(this)
         emojiPopup.bindTo(binding.etTest)
     }
 
