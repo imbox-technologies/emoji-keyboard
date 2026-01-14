@@ -2,8 +2,8 @@ package com.davidperi.emojikeyboard
 
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.util.Log
+import android.view.Gravity
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.children
 import androidx.core.view.isEmpty
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
@@ -24,24 +25,21 @@ import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
 import com.davidperi.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.davidperi.emojikeyboard.utils.DisplayUtils.showKeyboard
 
-class EmojiPopup private constructor(
-    private val context: Context,
-) : PopupApi, InternalPopup {
+class EmojiPopup(private val rootView: ViewGroup) {
 
-    companion object {
-        operator fun invoke(context: Context): PopupApi {
-            return EmojiPopup(context)
-        }
-    }
+    constructor(activity: Activity) : this(
+        activity.findViewById<ViewGroup>(android.R.id.content)
+    )
 
-    private class Wrapper(context: Context) : LinearLayout(context)  // wraps activity + popup
-    private lateinit var wrapper: Wrapper
-    private val popupContainer = FrameLayout(context)
-
+    private class PopupContainer(context: Context): FrameLayout(context)
+    private val context = rootView.context
+    private val popupContainer = PopupContainer(context)
     private val emojiKeyboard = EmojiKeyboardView(context)
     private val stateMachine = PopupStateMachine(this)
     private val prefs = PrefsManager(context)
 
+    private var isInstalled = false
+    private var currentHeight = 0
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
     private var targetEditText: EditText? = null
         set(value) {
@@ -65,33 +63,23 @@ class EmojiPopup private constructor(
 
 
     private fun setupLayout() {
-        val activity = findActivity()
-        val content = activity?.findViewById<ViewGroup>(android.R.id.content) ?: return
-        if (content.isEmpty()) return
+        if (rootView.isEmpty()) return
 
-        val originalContent = content.getChildAt(0)
-        if (originalContent is Wrapper) return  // Safeguard: already added
-
-        content.removeView(originalContent)
+        rootView.children.forEach { child ->
+            if (child is PopupContainer) {
+                return
+            }
+        }
 
         popupContainer.apply {
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, prefs.lastKeyboardHeight, Gravity.BOTTOM)
             addView(emojiKeyboard, LinearLayout.LayoutParams(MATCH_PARENT, 0))
         }
-
-        wrapper = Wrapper(context).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-
-            addView(originalContent, LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f))
-            addView(popupContainer, LinearLayout.LayoutParams(MATCH_PARENT, 0))
-        }
-
-        content.addView(wrapper)
     }
 
     private fun setupInsetsListener() {
-        ViewCompat.setOnApplyWindowInsetsListener(wrapper) { view, insets ->
-            Log.d("EMOJI", "insets intercepted")
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { view, insets ->
+            Log.i("EMOJI Popup", "insets intercepted with state=$state")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
@@ -114,17 +102,15 @@ class EmojiPopup private constructor(
                 }
                 PopupState.FOCUSED -> {
                     emojiKeyboard.updatePadding(bottom = sysInsets.bottom)
-                    val newSysInsets = Insets.of(sysInsets.left, sysInsets.top, sysInsets.right, 0)
+                    val newImeInsets = Insets.of(imeInsets.left, imeInsets.top, imeInsets.right, currentHeight)
                     newInsets = WindowInsetsCompat.Builder(insets)
-                        .setInsets(WindowInsetsCompat.Type.systemBars(), newSysInsets)
+                        .setInsets(WindowInsetsCompat.Type.ime(), newImeInsets)
                         .build()
                 }
                 PopupState.SEARCHING -> {
                     emojiKeyboard.updatePadding(bottom = 0)
-                    val newSysInsets = Insets.of(sysInsets.left, sysInsets.top, sysInsets.right, 0)
-                    val newImeInsets = Insets.of(imeInsets.left, imeInsets.top, imeInsets.right, 0)
+                    val newImeInsets = Insets.of(imeInsets.left, imeInsets.top, imeInsets.right, currentHeight)
                     newInsets = WindowInsetsCompat.Builder(insets)
-                        .setInsets(WindowInsetsCompat.Type.systemBars(), newSysInsets)
                         .setInsets(WindowInsetsCompat.Type.ime(), newImeInsets)
                         .build()
                 }
@@ -144,32 +130,40 @@ class EmojiPopup private constructor(
 
 
     // PUBLIC API
-    override val state: PopupState get() = stateMachine.state
-    override fun bindTo(editText: EditText) { targetEditText = editText }
-    override fun setConfig(config: EmojiKeyboardConfig) { emojiKeyboard.setConfig(config) }
-    override fun toggle() = stateMachine.toggle()
-    override fun hide() = stateMachine.hide()
-    override fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
+    val state: PopupState get() = stateMachine.state
+    fun bindTo(editText: EditText) { targetEditText = editText }
+    fun setConfig(config: EmojiKeyboardConfig) { emojiKeyboard.setConfig(config) }
+    fun toggle() {
+        if (!isInstalled) {
+            isInstalled = true
+            rootView.addView(popupContainer)
+        }
+        stateMachine.toggle()
+    }
+    fun hide() = stateMachine.hide()
+    fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
 
 
     // INTERNAL API
-    override fun updatePopupHeight(height: Int) {
+    internal fun updatePopupHeight(height: Int) {
         if (popupContainer.height != height) {
+            Log.i("EMOJI Popup", "updating height")
+            currentHeight = height
             popupContainer.updateLayoutParams { this.height = height }
-            ViewCompat.requestApplyInsets(wrapper)
+            ViewCompat.requestApplyInsets(rootView)
         }
     }
 
-    override fun popupStateChanged(state: PopupState) {
+    internal fun popupStateChanged(state: PopupState) {
         emojiKeyboard.onStateChanged(state)
         onPopupStateChange?.invoke(state)
     }
 
-    override fun getSearchContentHeight(): Int {
+    internal fun getSearchContentHeight(): Int {
         return emojiKeyboard.getSearchContentHeight()
     }
 
-    override fun getKeyboardStandardHeight(): Int {
+    internal fun getKeyboardStandardHeight(): Int {
         return if (prefs.lastKeyboardHeight != -1) {
             emojiKeyboard.updateContentHeight(prefs.lastKeyboardHeight)
             prefs.lastKeyboardHeight
@@ -179,32 +173,21 @@ class EmojiPopup private constructor(
         }
     }
 
-    override fun showKeyboard() {
+    internal fun showKeyboard() {
         if (state != PopupState.SEARCHING) {
+            Log.i("EMOJI Popup", "showing ime")
             targetEditText?.showKeyboard()
         }
     }
 
-    override fun hideKeyboard() {
+    internal fun hideKeyboard() {
+        Log.i("EMOJI Popup", "hiding ime")
         targetEditText?.hideKeyboard()
 
         val originalSetting = targetEditText?.showSoftInputOnFocus ?: true
         targetEditText?.showSoftInputOnFocus = false
         targetEditText?.requestFocus()
         targetEditText?.showSoftInputOnFocus = originalSetting
-    }
-
-
-    // AUX
-    private fun findActivity(): Activity? {
-        var currentContext = context
-        while (currentContext is ContextWrapper) {
-            if (currentContext is Activity) {
-                return currentContext
-            }
-            currentContext = currentContext.baseContext
-        }
-        return null
     }
 
 }

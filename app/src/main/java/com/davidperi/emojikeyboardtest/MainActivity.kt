@@ -9,8 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.davidperi.emojikeyboard.EmojiPopupV6
-import com.davidperi.emojikeyboard.PopupApi
+import com.davidperi.emojikeyboard.EmojiPopup
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 import com.davidperi.emojikeyboardtest.model.ChatMessage
@@ -20,7 +19,7 @@ import kotlin.math.max
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var emojiPopup: PopupApi
+    private lateinit var emojiPopup: EmojiPopup
 
     private val chatAdapter = ChatAdapter()
     private val messages = mutableListOf<ChatMessage>()
@@ -80,7 +79,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupEmojiPopup() {
-        emojiPopup = EmojiPopupV6(this)
+        emojiPopup = EmojiPopup(this)
         emojiPopup.bindTo(binding.etTest)
     }
 

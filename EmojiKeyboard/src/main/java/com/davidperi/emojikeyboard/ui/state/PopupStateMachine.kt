@@ -2,10 +2,9 @@ package com.davidperi.emojikeyboard.ui.state
 
 import android.util.Log
 import com.davidperi.emojikeyboard.EmojiPopup
-import com.davidperi.emojikeyboard.InternalPopup
 
 internal class PopupStateMachine(
-    private val popup: InternalPopup
+    private val popup: EmojiPopup
 ) {
 
     private var _state: PopupState = PopupState.COLLAPSED
