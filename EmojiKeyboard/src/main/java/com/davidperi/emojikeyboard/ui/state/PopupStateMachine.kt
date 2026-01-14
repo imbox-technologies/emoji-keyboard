@@ -28,7 +28,7 @@ internal class PopupStateMachine(
 
     fun hide() {
         Log.v("EMOJI StMch", "hide() with state=$_state")
-        if (state == PopupState.FOCUSED) {
+        if (state == PopupState.FOCUSED || state == PopupState.SEARCHING) {
             transitionTo(PopupState.COLLAPSED)
         }
     }

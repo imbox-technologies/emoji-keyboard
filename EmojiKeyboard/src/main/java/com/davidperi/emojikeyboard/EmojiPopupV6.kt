@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
@@ -13,6 +14,7 @@ import android.widget.LinearLayout
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.children
 import androidx.core.view.isEmpty
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
@@ -28,15 +30,32 @@ import kotlin.contracts.contract
 
 class EmojiPopupV6 private constructor(
     private val context: Context,
+    private val rootView: ViewGroup
 ) : PopupApi, InternalPopup {
 
     companion object {
+        operator fun invoke(context: Context, rootView: ViewGroup): PopupApi {
+            return EmojiPopupV6(context, rootView)
+        }
+
         operator fun invoke(context: Context): PopupApi {
-            return EmojiPopupV6(context)
+            val activity = findActivity(context)
+            val contentView = activity?.findViewById<ViewGroup>(android.R.id.content)
+                ?: throw IllegalStateException("Activity content not found.")
+            return EmojiPopupV6(context, contentView)
+        }
+
+        private fun findActivity(context: Context): Activity? {
+            var currentContext = context
+            while (currentContext is ContextWrapper) {
+                if (currentContext is Activity) {
+                    return currentContext
+                }
+                currentContext = currentContext.baseContext
+            }
+            return null
         }
     }
-
-    private val contentView = findActivity()?.findViewById<ViewGroup>(android.R.id.content)
 
     private class PopupContainer(context: Context): FrameLayout(context)
     private val popupContainer = PopupContainer(context)
@@ -44,6 +63,7 @@ class EmojiPopupV6 private constructor(
     private val stateMachine = PopupStateMachine(this)
     private val prefs = PrefsManager(context)
 
+    private var isInstalled = false
     private var currentHeight = 0
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
     private var targetEditText: EditText? = null
@@ -68,22 +88,22 @@ class EmojiPopupV6 private constructor(
 
 
     private fun setupLayout() {
-        if (contentView == null || contentView.isEmpty()) return
+        if (rootView.isEmpty()) return
 
-        val originalContent = contentView.getChildAt(0)
-        if (originalContent is PopupContainer) return  // Safeguard: already added
+        rootView.children.forEach { child ->
+            if (child is PopupContainer) {
+                return
+            }
+        }
 
         popupContainer.apply {
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, prefs.lastKeyboardHeight, Gravity.BOTTOM)
             addView(emojiKeyboard, LinearLayout.LayoutParams(MATCH_PARENT, 0))
         }
-
-        contentView.addView(popupContainer)
     }
 
     private fun setupInsetsListener() {
-        if (contentView == null) return
-        ViewCompat.setOnApplyWindowInsetsListener(contentView) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { view, insets ->
             Log.i("EMOJI Popup", "insets intercepted with state=$state")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -138,7 +158,13 @@ class EmojiPopupV6 private constructor(
     override val state: PopupState get() = stateMachine.state
     override fun bindTo(editText: EditText) { targetEditText = editText }
     override fun setConfig(config: EmojiKeyboardConfig) { emojiKeyboard.setConfig(config) }
-    override fun toggle() = stateMachine.toggle()
+    override fun toggle() {
+        if (!isInstalled) {
+            isInstalled = true
+            rootView.addView(popupContainer)
+        }
+        stateMachine.toggle()
+    }
     override fun hide() = stateMachine.hide()
     override fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
 
@@ -149,7 +175,7 @@ class EmojiPopupV6 private constructor(
             Log.i("EMOJI Popup", "updating height")
             currentHeight = height
             popupContainer.updateLayoutParams { this.height = height }
-            contentView?.let { ViewCompat.requestApplyInsets(contentView) }
+            ViewCompat.requestApplyInsets(rootView)
         }
     }
 
@@ -187,19 +213,6 @@ class EmojiPopupV6 private constructor(
         targetEditText?.showSoftInputOnFocus = false
         targetEditText?.requestFocus()
         targetEditText?.showSoftInputOnFocus = originalSetting
-    }
-
-
-    // AUX
-    private fun findActivity(): Activity? {
-        var currentContext = context
-        while (currentContext is ContextWrapper) {
-            if (currentContext is Activity) {
-                return currentContext
-            }
-            currentContext = currentContext.baseContext
-        }
-        return null
     }
 
 }
