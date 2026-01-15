@@ -37,6 +37,9 @@ object DisplayUtils {
     val Int.dp: Int
         get() = (this * Resources.getSystem().displayMetrics.density + 0.5f).toInt()
 
+    val Int.px: Int
+        get() = (this / Resources.getSystem().displayMetrics.density + 0.5f).toInt()
+
     fun String.removeAccents(): String {
         val regex = "\\p{InCombiningDiacriticalMarks}+".toRegex()
         val temp = Normalizer.normalize(this, Normalizer.Form.NFD)
