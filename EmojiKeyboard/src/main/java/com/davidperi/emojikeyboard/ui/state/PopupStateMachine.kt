@@ -74,32 +74,39 @@ internal class PopupStateMachine(
     // State controller
     private fun transitionTo(newState: PopupState) {
         Log.e("EMOJI StMch", "transitioning $_state -> $newState")
-        if (_state == newState) return
+        val oldState = _state
+        if (oldState == newState) return
         changeState(newState)
 
         when (newState) {
             PopupState.COLLAPSED -> {
+                val animate = oldState in listOf(PopupState.FOCUSED, PopupState.SEARCHING)
                 expectedIme = false
                 popup.hideKeyboard()
-                popup.updatePopupHeight(0)
+                popup.updatePopupHeight(0, animate)
             }
 
             PopupState.BEHIND -> {
+                val animate = oldState in listOf(PopupState.SEARCHING)
                 expectedIme = true
                 popup.showKeyboard()
-                popup.updatePopupHeight(0)
+                if (oldState !in listOf(PopupState.FOCUSED)) {
+                    popup.updatePopupHeight(0, animate)
+                }
             }
 
             PopupState.FOCUSED -> {
+                val animate = oldState in listOf(PopupState.COLLAPSED, PopupState.SEARCHING)
                 expectedIme = false
                 popup.hideKeyboard()
-                popup.updatePopupHeight(popup.getKeyboardStandardHeight())
+                popup.updatePopupHeight(popup.getKeyboardStandardHeight(), animate)
             }
 
             PopupState.SEARCHING -> {
+                val animate = oldState in listOf(PopupState.FOCUSED)
                 expectedIme = true
                 popup.showKeyboard()
-                popup.updatePopupHeight(popup.getKeyboardStandardHeight() + popup.getSearchContentHeight())
+                popup.updatePopupHeight(popup.getKeyboardStandardHeight() + popup.getSearchContentHeight(), animate)
             }
         }
     }

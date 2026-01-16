@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupAnimations() {
         val viewList = listOf(binding.ivSend, binding.rvChat, binding.inputContainer)
         binding.root.setupKeyboardAnimation(viewList)
-        emojiPopup.setupEmojiPopupAnimation(viewList)
+        binding.root.setupEmojiPopupAnimation(emojiPopup, viewList)
     }
 
     private fun setupBackHandling() {

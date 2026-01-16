@@ -19,6 +19,7 @@ import androidx.core.view.updatePadding
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager.Companion.DEFAULT_HEIGHT_DP
 import com.davidperi.emojikeyboard.ui.anim.EmojiWindowAnimationCallback
+import com.davidperi.emojikeyboard.ui.anim.PopupAnimator
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboard.ui.state.PopupStateMachine
 import com.davidperi.emojikeyboard.ui.view.EmojiKeyboardView
@@ -37,12 +38,13 @@ class EmojiPopup(private val rootView: ViewGroup) {
     private val popupContainer = PopupContainer(context)
     private val emojiKeyboard = EmojiKeyboardView(context)
     private val stateMachine = PopupStateMachine(this)
+    private val animator = PopupAnimator(this)
     private val prefs = PrefsManager(context)
 
     private var isInstalled = false
     private var currentHeight = 0
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
-    private var emojiPopupAnimationCallback: EmojiWindowAnimationCallback? = null
+
     private var targetEditText: EditText? = null
         set(value) {
             field = value
@@ -148,17 +150,44 @@ class EmojiPopup(private val rootView: ViewGroup) {
     }
     fun hide() = stateMachine.hide()
     fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
-    fun setEmojiPopupAnimationCallback(callback: EmojiWindowAnimationCallback?) { emojiPopupAnimationCallback = callback }
+    fun setAnimationCallback(callback: EmojiWindowAnimationCallback?) { animator.animationCallback = callback }
     
 
     // INTERNAL API
-    internal fun updatePopupHeight(height: Int) {
-        if (popupContainer.height != height) {
-            Log.i("EMOJI Popup", "updating height")
-            currentHeight = height
-            popupContainer.updateLayoutParams { this.height = height }
-            ViewCompat.requestApplyInsets(rootView)
+    internal fun updatePopupHeight(height: Int, animate: Boolean = false) {
+        Log.i("EMOJI Popup", "called popup height with $height")
+        if (currentHeight == height) return
+
+        if (animate) {
+            if (height > 0) {
+                popupContainer.updateLayoutParams {
+                    Log.d("EMOJI Anim", "updating height to $height")
+                    this.height = height
+                }
+                translatePopupContainer(height - currentHeight)
+                animator.animate(0)
+
+            } else {
+                animator.animate(popupContainer.height)
+            }
+        } else {
+            popupContainer.updateLayoutParams {
+                Log.d("EMOJI Anim", "updating height to $height")
+                this.height = height
+            }
+            translatePopupContainer(0)
         }
+
+        currentHeight = height
+        ViewCompat.requestApplyInsets(rootView)
+    }
+
+    internal fun translatePopupContainer(offset: Int) {
+        popupContainer.translationY = offset.toFloat()
+    }
+
+    internal fun getCurrentOffset(): Float {
+        return popupContainer.translationY
     }
 
     internal fun popupStateChanged(state: PopupState) {
