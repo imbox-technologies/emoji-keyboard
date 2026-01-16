@@ -1,6 +1,5 @@
 package com.davidperi.emojikeyboard.ui.anim
 
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -22,7 +21,6 @@ fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup, viewList: List<Vi
 
         override fun onPrepare() {
             startBottom = targetViews.bottom().toFloat()
-            Log.d("EMOJI Animt", "key start $startBottom")
         }
 
         override fun onStart() {
@@ -33,7 +31,6 @@ fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup, viewList: List<Vi
                     }
 
                     endBottom = targetViews.bottom().toFloat()
-                    Log.d("ANIM", "key end   $endBottom")
 
                     initialTranslation = startBottom - endBottom
                     targetViews.translateY(initialTranslation)
@@ -45,7 +42,6 @@ fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup, viewList: List<Vi
         }
 
         override fun onProgress(fraction: Float) {
-            Log.d("EMOJI Animt", "progress   $fraction")
             val offset = lerp(startBottom - endBottom, 0f, fraction)
             targetViews.translateY(offset)
         }
@@ -56,10 +52,6 @@ fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup, viewList: List<Vi
     }
 
     emojiPopup.setAnimationCallback(callback)
-}
-
-fun ViewGroup.clearEmojiPopupAnimation(emojiPopup: EmojiPopup) {
-    emojiPopup.setAnimationCallback(null)
 }
 
 private fun lerp(start: Float, stop: Float, fraction: Float): Float {

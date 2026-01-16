@@ -1,6 +1,5 @@
 package com.davidperi.emojikeyboard.ui.anim
 
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -20,12 +19,10 @@ fun ViewGroup.setupKeyboardAnimation(viewList: List<View>? = null) {
 
         override fun onPrepare(animation: WindowInsetsAnimationCompat) {
             startBottom = targetViews.bottom().toFloat()
-            Log.d("ANIM", "ime start $startBottom")
         }
 
         override fun onStart(animation: WindowInsetsAnimationCompat, bounds: WindowInsetsAnimationCompat.BoundsCompat): WindowInsetsAnimationCompat.BoundsCompat {
             endBottom = targetViews.bottom().toFloat()
-            Log.d("ANIM", "ime end   $endBottom")
             targetViews.translateY(startBottom - endBottom)
             return bounds
         }
@@ -47,10 +44,6 @@ fun ViewGroup.setupKeyboardAnimation(viewList: List<View>? = null) {
     }
 
     ViewCompat.setWindowInsetsAnimationCallback(this, callback)
-}
-
-fun View.clearKeyboardAnimation() {
-    ViewCompat.setWindowInsetsAnimationCallback(this, null)
 }
 
 private fun lerp(start: Float, stop: Float, fraction: Float): Float {
