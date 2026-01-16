@@ -49,6 +49,10 @@ fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup, viewList: List<Vi
             val offset = lerp(startBottom - endBottom, 0f, fraction)
             targetViews.translateY(offset)
         }
+
+        override fun onEnd() {
+            targetViews.translateY(0f)
+        }
     }
 
     emojiPopup.setAnimationCallback(callback)

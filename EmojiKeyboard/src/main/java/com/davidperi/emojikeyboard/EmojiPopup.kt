@@ -2,6 +2,7 @@ package com.davidperi.emojikeyboard
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
@@ -91,9 +92,12 @@ class EmojiPopup(private val rootView: ViewGroup) {
             if (imeVisible && imeInsets.bottom > 0) {
                 stateMachine.imeUp()
 
-                val imeHeight = imeInsets.bottom
-                if (prefs.lastKeyboardHeight == -1 || imeHeight < prefs.lastKeyboardHeight) {
-                    prefs.lastKeyboardHeight = imeHeight
+                val orientation = context.resources.configuration.orientation
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    val imeHeight = imeInsets.bottom
+                    if (prefs.lastKeyboardHeight == -1 || imeHeight < prefs.lastKeyboardHeight) {
+                        prefs.lastKeyboardHeight = imeHeight
+                    }
                 }
             } else {
                 stateMachine.imeDown()

@@ -40,6 +40,10 @@ fun ViewGroup.setupKeyboardAnimation(viewList: List<View>? = null) {
 
             return insets
         }
+
+        override fun onEnd(animation: WindowInsetsAnimationCompat) {
+            targetViews.translateY(0f)
+        }
     }
 
     ViewCompat.setWindowInsetsAnimationCallback(this, callback)
