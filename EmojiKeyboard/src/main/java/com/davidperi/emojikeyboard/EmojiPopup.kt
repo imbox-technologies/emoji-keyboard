@@ -31,11 +31,6 @@ class EmojiPopup(private val rootView: ViewGroup) {
         activity.findViewById<ViewGroup>(android.R.id.content)
     )
 
-    companion object {
-        private val MIN_KEYBOARD_HEIGHT = 180.dp
-        private val MAX_KEYBOARD_HEIGHT = 350.dp
-    }
-
     private class PopupContainer(context: Context): FrameLayout(context)
     private val context = rootView.context
     private val popupContainer = PopupContainer(context)
@@ -93,7 +88,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
                 stateMachine.imeUp()
 
                 val imeHeight = imeInsets.bottom
-                if (imeHeight in MIN_KEYBOARD_HEIGHT..MAX_KEYBOARD_HEIGHT) {
+                if (prefs.lastKeyboardHeight == -1 || imeHeight < prefs.lastKeyboardHeight) {
                     prefs.lastKeyboardHeight = imeHeight
                 }
             } else {
