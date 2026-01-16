@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.davidperi.emojikeyboard.EmojiPopup
+import com.davidperi.emojikeyboard.ui.anim.setupEmojiPopupAnimation
 import com.davidperi.emojikeyboard.ui.anim.setupKeyboardAnimation
 import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
@@ -88,6 +89,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupAnimations() {
         val viewList = listOf(binding.ivSend, binding.rvChat, binding.inputContainer)
         binding.root.setupKeyboardAnimation(viewList)
+        emojiPopup.setupEmojiPopupAnimation(viewList)
     }
 
     private fun setupBackHandling() {
