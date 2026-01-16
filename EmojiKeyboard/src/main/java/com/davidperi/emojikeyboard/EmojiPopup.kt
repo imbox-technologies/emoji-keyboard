@@ -45,6 +45,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
     private var isInstalled = false
     private var currentHeight = 0
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
+    private var onPopupSizeChange: ((Int) -> Unit)? = null
 
     private var targetEditText: EditText? = null
         set(value) {
@@ -155,7 +156,8 @@ class EmojiPopup(private val rootView: ViewGroup) {
     fun hide() = stateMachine.hide()
     fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
     fun setAnimationCallback(callback: EmojiWindowAnimationCallback?) { animator.animationCallback = callback }
-    
+    fun setOnPopupSizeChangeListener(callback: (Int) -> Unit) { onPopupSizeChange = callback }
+
 
     // INTERNAL API
     internal fun updatePopupHeight(height: Int, animate: Boolean = false) {
@@ -183,6 +185,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
         }
 
         currentHeight = height
+        onPopupSizeChange?.invoke(height)
         ViewCompat.requestApplyInsets(rootView)
     }
 

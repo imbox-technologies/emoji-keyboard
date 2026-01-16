@@ -1,5 +1,6 @@
 package com.davidperi.emojikeyboardtest
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
@@ -16,7 +17,6 @@ import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 import com.davidperi.emojikeyboardtest.model.ChatMessage
 import com.davidperi.emojikeyboardtest.adapter.ChatAdapter
-import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
 
     private val chatAdapter = ChatAdapter()
     private val messages = mutableListOf<ChatMessage>()
+
+    private var currentPopupHeight = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
-            v.setPadding(sysInsets.left, sysInsets.top, sysInsets.right, max(sysInsets.bottom, imeInsets.bottom))
+            v.setPadding(sysInsets.left, sysInsets.top, sysInsets.right, maxOf(sysInsets.bottom, imeInsets.bottom, currentPopupHeight))
             insets
         }
 
@@ -90,6 +92,12 @@ class MainActivity : AppCompatActivity() {
         val viewList = listOf(binding.ivSend, binding.rvChat, binding.inputContainer)
         binding.root.setupKeyboardAnimation(viewList)
         binding.root.setupEmojiPopupAnimation(emojiPopup, viewList)
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            emojiPopup.setOnPopupSizeChangeListener { size ->
+                currentPopupHeight = size
+            }
+        }
     }
 
     private fun setupBackHandling() {
