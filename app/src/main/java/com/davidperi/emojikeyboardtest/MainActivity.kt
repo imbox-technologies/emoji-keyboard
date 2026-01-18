@@ -1,6 +1,5 @@
 package com.davidperi.emojikeyboardtest
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
@@ -17,6 +16,7 @@ import com.davidperi.emojikeyboard.ui.state.PopupState
 import com.davidperi.emojikeyboardtest.databinding.ActivityMainBinding
 import com.davidperi.emojikeyboardtest.model.ChatMessage
 import com.davidperi.emojikeyboardtest.adapter.ChatAdapter
+import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,8 +26,6 @@ class MainActivity : AppCompatActivity() {
     private val chatAdapter = ChatAdapter()
     private val messages = mutableListOf<ChatMessage>()
 
-    private var currentPopupHeight = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -36,11 +34,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            Log.d("EMOJI Activ", "insets in activity")
+            Log.d("EMOJI Activity", "insets in activity")
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val sysInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
-            v.setPadding(sysInsets.left, sysInsets.top, sysInsets.right, maxOf(sysInsets.bottom, imeInsets.bottom, currentPopupHeight))
+            v.setPadding(sysInsets.left, sysInsets.top, sysInsets.right, max(sysInsets.bottom, imeInsets.bottom))
             insets
         }
 
@@ -89,21 +87,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAnimations() {
-        val viewList = listOf(binding.ivSend, binding.rvChat, binding.inputContainer)
-        binding.root.setupKeyboardAnimation(viewList)
-        binding.root.setupEmojiPopupAnimation(emojiPopup, viewList)
-
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-            emojiPopup.setOnPopupSizeChangeListener { size ->
-                currentPopupHeight = size
-            }
-        }
+        binding.root.setupKeyboardAnimation()
+        binding.root.setupEmojiPopupAnimation(emojiPopup)
     }
 
     private fun setupBackHandling() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                Log.d("EMOJI Activ", "back in activity")
+                Log.d("EMOJI Activity", "back in activity")
                 if (emojiPopup.state == PopupState.FOCUSED) {
                     emojiPopup.hide()
                 } else {

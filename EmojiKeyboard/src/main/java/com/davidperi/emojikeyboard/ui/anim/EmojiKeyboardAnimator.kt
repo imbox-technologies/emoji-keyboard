@@ -1,59 +1,41 @@
 package com.davidperi.emojikeyboard.ui.anim
 
-import android.view.View
+import android.util.Log
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.davidperi.emojikeyboard.EmojiPopup
+import com.davidperi.emojikeyboard.utils.lerp
+import kotlin.math.max
 
-fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup, viewList: List<View>? = null) {
-    fun List<View>.bottom() = this.maxOfOrNull { it.bottom } ?: 0
-    fun List<View>.translateY(offset: Float) = this.forEach { it.translationY = offset }
-
-    clipToPadding = false
-    val targetViews = if (viewList.isNullOrEmpty()) listOf(this) else viewList
-
+fun ViewGroup.setupEmojiPopupAnimation(emojiPopup: EmojiPopup) {
     val callback = object : EmojiWindowAnimationCallback {
-        var startBottom = 0f
-        var endBottom = 0f
-        var initialTranslation = 0f
-
-        var isLayoutReadyForAnimation = false
+        var startBottom = 0
+        var endBottom = 0
 
         override fun onPrepare() {
-            startBottom = targetViews.bottom().toFloat()
+            startBottom = paddingBottom
+            Log.e("EMOJI PopupAnimation", "popup onPrepare (start=$startBottom)")
         }
 
-        override fun onStart() {
-            viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-                override fun onPreDraw(): Boolean {
-                    if (viewTreeObserver.isAlive) {
-                        viewTreeObserver.removeOnPreDrawListener(this)
-                    }
-
-                    endBottom = targetViews.bottom().toFloat()
-
-                    initialTranslation = startBottom - endBottom
-                    targetViews.translateY(initialTranslation)
-                    isLayoutReadyForAnimation = true
-
-                    return true
-                }
-            })
+        override fun onStart(targetHeight: Int) {
+            val minBottom = ViewCompat.getRootWindowInsets(this@setupEmojiPopupAnimation)
+                ?.getInsets(WindowInsetsCompat.Type.systemBars())?.bottom ?: 0
+            endBottom = max(targetHeight, minBottom)
+            Log.e("EMOJI PopupAnimation", "popup onStart (end=$endBottom)")
         }
 
         override fun onProgress(fraction: Float) {
-            val offset = lerp(startBottom - endBottom, 0f, fraction)
-            targetViews.translateY(offset)
+            val offset = lerp(startBottom, endBottom, fraction)
+            updatePadding(bottom = offset.toInt())
         }
 
         override fun onEnd() {
-            targetViews.translateY(0f)
+            Log.e("EMOJI PopupAnimation", "popup onEnd ")
+            ViewCompat.requestApplyInsets(rootView)
         }
     }
 
     emojiPopup.setAnimationCallback(callback)
-}
-
-private fun lerp(start: Float, stop: Float, fraction: Float): Float {
-    return (1 - fraction) * start + fraction * stop
 }

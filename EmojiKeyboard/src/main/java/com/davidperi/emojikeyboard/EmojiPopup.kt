@@ -45,7 +45,6 @@ class EmojiPopup(private val rootView: ViewGroup) {
     private var isInstalled = false
     private var currentHeight = 0
     private var onPopupStateChange: ((PopupState) -> Unit)? = null
-    private var onPopupSizeChange: ((Int) -> Unit)? = null
 
     private var targetEditText: EditText? = null
         set(value) {
@@ -156,7 +155,6 @@ class EmojiPopup(private val rootView: ViewGroup) {
     fun hide() = stateMachine.hide()
     fun setOnPopupStateChangedListener(callback: (PopupState) -> Unit) { onPopupStateChange = callback }
     fun setAnimationCallback(callback: EmojiWindowAnimationCallback?) { animator.animationCallback = callback }
-    fun setOnPopupSizeChangeListener(callback: (Int) -> Unit) { onPopupSizeChange = callback }
 
 
     // INTERNAL API
@@ -165,36 +163,21 @@ class EmojiPopup(private val rootView: ViewGroup) {
         if (currentHeight == height) return
 
         if (animate) {
-            if (height > 0) {
-                popupContainer.updateLayoutParams {
-                    Log.d("EMOJI Anim", "updating height to $height")
-                    this.height = height
-                }
-                translatePopupContainer(height - currentHeight)
-                animator.animate(0)
-
-            } else {
-                animator.animate(popupContainer.height)
-            }
+            animator.animate(height)
         } else {
-            popupContainer.updateLayoutParams {
-                Log.d("EMOJI Anim", "updating height to $height")
-                this.height = height
-            }
-            translatePopupContainer(0)
+            popupContainer.updateLayoutParams { this.height = height }
+            ViewCompat.requestApplyInsets(rootView)
         }
 
         currentHeight = height
-        onPopupSizeChange?.invoke(height)
-        ViewCompat.requestApplyInsets(rootView)
     }
 
-    internal fun translatePopupContainer(offset: Int) {
-        popupContainer.translationY = offset.toFloat()
+    internal fun getHeight(): Int {
+        return popupContainer.height
     }
 
-    internal fun getCurrentOffset(): Float {
-        return popupContainer.translationY
+    internal fun setHeight(newHeight: Int) {
+        popupContainer.updateLayoutParams { height = newHeight }
     }
 
     internal fun popupStateChanged(state: PopupState) {

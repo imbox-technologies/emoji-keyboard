@@ -16,7 +16,7 @@ internal class PopupStateMachine(
 
     // Events (user actions & system reactions)
     fun toggle() {
-        Log.v("EMOJI StMch", "toggle() with state=$_state")
+        Log.v("EMOJI StateMachine", "toggle() with state=$_state")
         when (_state) {
             PopupState.COLLAPSED -> transitionTo(PopupState.FOCUSED)
             PopupState.BEHIND -> transitionTo(PopupState.FOCUSED)
@@ -26,21 +26,21 @@ internal class PopupStateMachine(
     }
 
     fun hide() {
-        Log.v("EMOJI StMch", "hide() with state=$_state")
+        Log.v("EMOJI StateMachine", "hide() with state=$_state")
         if (state == PopupState.FOCUSED || state == PopupState.SEARCHING) {
             transitionTo(PopupState.COLLAPSED)
         }
     }
 
     fun search() {
-        Log.v("EMOJI StMch", "search() with state=$_state")
+        Log.v("EMOJI StateMachine", "search() with state=$_state")
         if (_state == PopupState.FOCUSED) {
             transitionTo(PopupState.SEARCHING)
         }
     }
 
     fun write() {
-        Log.v("EMOJI StMch", "write() with state=$_state")
+        Log.v("EMOJI StateMachine", "write() with state=$_state")
         if (_state == PopupState.SEARCHING) {
             transitionTo(PopupState.BEHIND)
         }
@@ -48,7 +48,7 @@ internal class PopupStateMachine(
 
     fun imeUp() {
         if (!currentIme) {
-            Log.v("EMOJI StMch", "imeUp() with state=$_state")
+            Log.v("EMOJI StateMachine", "imeUp() with state=$_state")
             currentIme = true
             when (_state) {
                 PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
@@ -60,7 +60,7 @@ internal class PopupStateMachine(
 
     fun imeDown() {
         if (currentIme) {
-            Log.v("EMOJI StMch", "imeDown() with state=$_state")
+            Log.v("EMOJI StateMachine", "imeDown() with state=$_state")
             currentIme = false
             when (_state) {
                 PopupState.BEHIND -> if (expectedIme) transitionTo(PopupState.COLLAPSED)
@@ -73,7 +73,7 @@ internal class PopupStateMachine(
 
     // State controller
     private fun transitionTo(newState: PopupState) {
-        Log.e("EMOJI StMch", "transitioning $_state -> $newState")
+        Log.v("EMOJI StateMachine", "transitioning $_state -> $newState")
         val oldState = _state
         if (oldState == newState) return
         changeState(newState)

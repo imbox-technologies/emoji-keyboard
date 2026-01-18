@@ -15,28 +15,28 @@ internal class PopupAnimator(
     private var currentAnimator: ValueAnimator? = null
 
     fun animate(target: Int) {
-        animationCallback?.onPrepare()
         currentAnimator?.cancel()
+        animationCallback?.onPrepare()
 
-        val currentOffset = popup.getCurrentOffset()
-        if (currentOffset == target.toFloat()) {
+        val popupHeight = popup.getHeight()
+        if (popupHeight == target) {
             animationCallback?.onEnd()
             return
         }
 
-        currentAnimator = ValueAnimator.ofInt(currentOffset.toInt(), target).apply {
+        currentAnimator = ValueAnimator.ofInt(popupHeight, target).apply {
             duration = 250L
             interpolator = LinearOutSlowInInterpolator()
 
             addUpdateListener { animation ->
                 val value = animation.animatedValue as Int
-                popup.translatePopupContainer(value)
+                popup.setHeight(value)
                 animationCallback?.onProgress(animation.animatedFraction)
             }
 
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator) {
-                    animationCallback?.onStart()
+                    animationCallback?.onStart(target)
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
@@ -46,6 +46,7 @@ internal class PopupAnimator(
 
                 override fun onAnimationCancel(animation: Animator) {
                     animationCallback?.onEnd()
+                    currentAnimator = null
                 }
             })
 
