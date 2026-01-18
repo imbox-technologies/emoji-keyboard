@@ -103,6 +103,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
                 stateMachine.imeDown()
             }
 
+            emojiKeyboard.updatePadding(bottom = sysInsets.bottom)
             val newInsets: WindowInsetsCompat
 
             when (stateMachine.state) {
@@ -113,14 +114,12 @@ class EmojiPopup(private val rootView: ViewGroup) {
                     newInsets = insets
                 }
                 PopupState.FOCUSED -> {
-                    emojiKeyboard.updatePadding(bottom = sysInsets.bottom)
                     val newImeInsets = Insets.of(imeInsets.left, imeInsets.top, imeInsets.right, currentHeight)
                     newInsets = WindowInsetsCompat.Builder(insets)
                         .setInsets(WindowInsetsCompat.Type.ime(), newImeInsets)
                         .build()
                 }
                 PopupState.SEARCHING -> {
-                    emojiKeyboard.updatePadding(bottom = 0)
                     val newImeInsets = Insets.of(imeInsets.left, imeInsets.top, imeInsets.right, currentHeight)
                     newInsets = WindowInsetsCompat.Builder(insets)
                         .setInsets(WindowInsetsCompat.Type.ime(), newImeInsets)
