@@ -60,7 +60,7 @@
         android:layout_margin="8dp"
         app:cardBackgroundColor="@color/emoji_keyboard_white"
         app:cardCornerRadius="20dp"
-        app:layout_constraintBottom_toTopOf="@id/emoji_keyboard"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_send"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_goneMarginBottom="8dp">
@@ -115,10 +115,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_goneMarginBottom="8dp" />
 
-    <!-- Emoji keyboard custom view -->
-    <com.davidperi.emojikeyboard.EmojiPopup
-        android:id="@+id/emoji_keyboard"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.ui.adapter.EmojiAdapter
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
+import com.davidperi.emojikeyboard.utils.DisplayUtils.px
 
 @SuppressLint("ViewConstructor")
 internal class EmojiGrid(context: Context, private val delegate: EmojiDelegate) :
@@ -22,6 +23,10 @@ internal class EmojiGrid(context: Context, private val delegate: EmojiDelegate) 
     )
 
     private var isProgrammaticScroll = false
+    private var currentSpanCount = 0
+    private var isHorizontalMode = false
+
+    var onSpanCountChanged: ((Int) -> Unit)? = null
 
 
     init {
@@ -36,6 +41,9 @@ internal class EmojiGrid(context: Context, private val delegate: EmojiDelegate) 
 
     // Public (internal) API
     fun setup(spanCount: Int, orientation: Int) {
+        isHorizontalMode = orientation == HORIZONTAL
+        currentSpanCount = spanCount
+
         val gridManager = GridLayoutManager(context, spanCount, orientation, false)
 
         gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -50,6 +58,28 @@ internal class EmojiGrid(context: Context, private val delegate: EmojiDelegate) 
         }
 
         layoutManager = gridManager
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+
+        if (!isHorizontalMode || h <= 0) return
+
+        val newSpan = calculateSpanForHeight(h)
+        if (newSpan != currentSpanCount) {
+            currentSpanCount = newSpan
+            onSpanCountChanged?.invoke(newSpan)
+        }
+    }
+
+    private fun calculateSpanForHeight(heightPx: Int): Int {
+        val heightDp = heightPx.px
+        return when {
+            heightDp < 200 -> 3
+            heightDp < 240 -> 4
+            heightDp < 280 -> 5
+            else -> 6
+        }
     }
 
     fun scrollToPosition(position: Int, offset: Int = 0) {

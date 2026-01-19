@@ -8,7 +8,7 @@ class PrefsManager(context: Context) {
     private val prefs = context.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
 
     var lastKeyboardHeight: Int
-        get() = prefs.getInt(KEY_HEIGHT, DEFAULT_HEIGHT_DP.dp)
+        get() = prefs.getInt(KEY_HEIGHT, -1)
         set(value) = prefs.edit { putInt(KEY_HEIGHT, value) }
 
     companion object {
