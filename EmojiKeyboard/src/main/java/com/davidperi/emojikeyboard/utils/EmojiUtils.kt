@@ -2,8 +2,12 @@ package com.davidperi.emojikeyboard.utils
 
 import android.content.Context
 import android.text.Spannable
+import android.util.Log
+import androidx.emoji2.text.EmojiCompat
+import androidx.emoji2.text.EmojiSpan
 import com.davidperi.emojikeyboard.data.model.EmojiInfo
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
+import java.text.BreakIterator
 import java.util.regex.Pattern
 
 object EmojiUtils {
@@ -11,6 +15,31 @@ object EmojiUtils {
     val EMOJI_PATTERN: Pattern = Pattern.compile(
         "(?:[\uD83C\uDF00-\uD83D\uDDFF]|[\uD83E\uDD00-\uD83E\uDDFF]|[\uD83D\uDE00-\uD83D\uDE4F]|[\uD83D\uDE80-\uD83D\uDEFF]|[\u2600-\u26FF]\uFE0F?|[\u2700-\u27BF]\uFE0F?|\u24C2\uFE0F?|[\uD83C\uDDE6-\uD83C\uDDFF]{1,2}|[\uD83C\uDD70-\uD83C\uDD71]\uFE0F?|[\uD83C\uDD7E-\uD83C\uDD7F]\uFE0F?|[\uD83C\uDD8E]\uFE0F?|[\uD83C\uDD91-\uD83C\uDD9A]\uFE0F?|[\uD83C\uDDE6-\uD83C\uDDFF]|[\uD83C\uDE01-\uD83C\uDE02]\uFE0F?|[\uD83C\uDE1A]\uFE0F?|[\uD83C\uDE2F]\uFE0F?|[\uD83C\uDE32-\uD83C\uDE3A]\uFE0F?|[\uD83C\uDE50-\uD83C\uDE51]\uFE0F?|[\u203C\u2049]\uFE0F?|[\u25AA-\u25AB]\uFE0F?|[\u25B6\u25C0]\uFE0F?|[\u25FB-\u25FE]\uFE0F?|[\u00A9\u00AE]\uFE0F?|[\u2122\u2139]\uFE0F?|\uD83C\uDC04\uFE0F?|\uD83C\uDCCF\uFE0F?|[\u231A-\u231B]\uFE0F?|[\u2328]\uFE0F?|[\u23CF]\uFE0F?|[\u23E9-\u23F3]\uFE0F?|[\u23F8-\u23FA]\uFE0F?|\uD83C\uDCCF\uFE0F?)(?:\u200D(?:[\uD83C\uDF00-\uD83D\uDDFF]|[\uD83E\uDD00-\uD83E\uDDFF]|[\uD83D\uDE00-\uD83D\uDE4F]|[\uD83D\uDE80-\uD83D\uDEFF]|[\u2600-\u26FF]\uFE0F?|[\u2700-\u27BF]\uFE0F?|\u24C2\uFE0F?|[\uD83C\uDDE6-\uD83C\uDDFF]{1,2}|[\uD83C\uDD70-\uD83C\uDD71]\uFE0F?|[\uD83C\uDD7E-\uD83C\uDD7F]\uFE0F?|[\uD83C\uDD8E]\uFE0F?|[\uD83C\uDD91-\uD83C\uDD9A]\uFE0F?|[\uD83C\uDDE6-\uD83C\uDDFF]|[\uD83C\uDE01-\uD83C\uDE02]\uFE0F?|[\uD83C\uDE1A]\uFE0F?|[\uD83C\uDE2F]\uFE0F?|[\uD83C\uDE32-\uD83C\uDE3A]\uFE0F?|[\uD83C\uDE50-\uD83C\uDE51]\uFE0F?|[\u203C\u2049]\uFE0F?|[\u25AA-\u25AB]\uFE0F?|[\u25B6\u25C0]\uFE0F?|[\u25FB-\u25FE]\uFE0F?|[\u00A9\u00AE]\uFE0F?|[\u2122\u2139]\uFE0F?|\uD83C\uDC04\uFE0F?|\uD83C\uDCCF\uFE0F?|[\u231A-\u231B]\uFE0F?|[\u2328]\uFE0F?|[\u23CF]\uFE0F?|[\u23E9-\u23F3]\uFE0F?|[\u23F8-\u23FA]\uFE0F?|\uD83C\uDCCF\uFE0F?))*"
     )
+
+    fun isEmoji(chunk: CharSequence): Boolean {
+        return false
+    }
+
+    fun splitByGraphemes(text: CharSequence): List<IntRange> {
+        val result = mutableListOf<IntRange>()
+
+        val boundary = BreakIterator.getCharacterInstance()
+        boundary.setText(text.toString())
+
+        var start = boundary.first()
+        var end = boundary.next()
+
+        while (end != BreakIterator.DONE) {
+            val chunk = text.subSequence(start, end)
+            if (isEmoji(chunk)) {
+                result.add(start until end)
+            }
+            start = end
+            end = boundary.next()
+        }
+
+        return result
+    }
 
     // TODO: optimize this
     fun CharSequence?.getEmojiInfo(): EmojiInfo {
