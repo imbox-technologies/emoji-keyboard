@@ -20,7 +20,6 @@ EmojiKeyboardTest/
 ## Módulo EmojiKeyboard (Biblioteca)
 
 ### Dependencias Principales
-- `androidx.emoji2` - Soporte de emojis modernos
 - `kotlinx.serialization` - Parsing de JSON para datos de emojis
 - Maven Publish plugin - Para publicar como AAR
 
@@ -279,7 +278,7 @@ if (emojiPopup.state == PopupState.FOCUSED) {
 
 1. **El popup se añade lazy**: Solo se añade al rootView la primera vez que se llama `toggle()`
 
-2. **Altura del teclado**: Se detecta automáticamente del IME del sistema y se guarda en SharedPreferences para futuras sesiones
+2. **Altura del teclado**: Se detecta automáticamente del IME del sistema y se guarda en SharedPreferences para futuras sesiones. El popup altera el inset de tipo ime para que quien lo implemente lo perciba como un teclado del sistema.
 
 3. **ViewBinding**: Ambos módulos usan ViewBinding (`buildFeatures { viewBinding = true }`)
 
