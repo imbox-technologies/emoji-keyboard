@@ -34,7 +34,7 @@ internal class SearchResults(context: Context, private val delegate: EmojiDelega
         emptyTextView = TextView(context).apply {
             text = context.getString(R.string.search_results_text_no_emojis_found)
             gravity = Gravity.CENTER
-            setTextColor(context.getColor(R.color.emoji_keyboard_gray))
+            setTextColor(context.getColor(R.color.emjkb_gray))
             isVisible = false
         }
 

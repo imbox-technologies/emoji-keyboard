@@ -16,14 +16,14 @@ object AssetEmojiProvider : EmojiProvider {
     }
 
     private val categoryIcons = mapOf(
-        "faces" to R.drawable.smile,
-        "nature" to R.drawable.dog,
-        "food" to R.drawable.apple,
-        "activities" to R.drawable.emoji_keyboard_volleyball,
-        "travel" to R.drawable.car_front,
-        "objects" to R.drawable.lightbulb,
-        "symbols" to R.drawable.emoji_keyboard_heart,
-        "flags" to R.drawable.flag
+        "faces" to R.drawable.emjkb_smile,
+        "nature" to R.drawable.emjkb_dog,
+        "food" to R.drawable.emjkb_apple,
+        "activities" to R.drawable.emjkb_volleyball,
+        "travel" to R.drawable.emjkb_car,
+        "objects" to R.drawable.emjkb_lightbulb,
+        "symbols" to R.drawable.emjkb_heart,
+        "flags" to R.drawable.emjkb_flag
     )
 
     private var cachedCategories: List<Category>? = null
@@ -41,7 +41,7 @@ object AssetEmojiProvider : EmojiProvider {
                     Category(
                         id = dto.id,
                         name = dto.name,
-                        icon = categoryIcons[dto.id] ?: R.drawable.smile,
+                        icon = categoryIcons[dto.id] ?: R.drawable.emjkb_smile,
                         emojis = dto.emojis.map { it.toDomain() }
                     )
                 }

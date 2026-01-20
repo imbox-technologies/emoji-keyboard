@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Emoji Keyboard Test 😀"
-            android:textColor="@color/emoji_keyboard_black"
+            android:textColor="@color/emjkb_black"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -58,7 +58,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        app:cardBackgroundColor="@color/emoji_keyboard_white"
+        app:cardBackgroundColor="@color/emjkb_white"
         app:cardCornerRadius="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_send"
@@ -78,8 +78,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:src="@drawable/smile"
-                android:tint="@color/emoji_keyboard_black"
+                android:src="@drawable/emjkb_smile"
+                android:tint="@color/emjkb_black"
                 android:visibility="visible"
                 tools:visibility="visible" />
 
@@ -93,7 +93,7 @@
                 android:background="@null"
                 android:hint="@string/write_here"
                 android:includeFontPadding="false"
-                android:textColor="@color/emoji_keyboard_black"
+                android:textColor="@color/emjkb_black"
                 android:textColorHint="#9D9D9D" />
 
         </LinearLayout>

@@ -72,7 +72,7 @@ object EmojiListMapper {
         val recentsCategory = Category(
             id = "recents",
             name = "Recents",
-            icon = R.drawable.clock,
+            icon = R.drawable.emjkb_clock,
             emojis = emojiItems
         )
 

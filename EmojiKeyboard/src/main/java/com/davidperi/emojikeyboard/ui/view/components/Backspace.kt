@@ -28,7 +28,7 @@ internal class Backspace(context: Context, private val delegate: EmojiDelegate) 
 
 
     init {
-        setImageResource(R.drawable.delete)
+        setImageResource(R.drawable.emjkb_delete)
         scaleType = ScaleType.CENTER_INSIDE
         setPadding(12.dp, 12.dp, 12.dp, 12.dp)
         background = createBackspaceBackground(context)
@@ -54,7 +54,7 @@ internal class Backspace(context: Context, private val delegate: EmojiDelegate) 
     private fun createBackspaceBackground(context: Context): StateListDrawable {
         val pressedShape = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(context.getColor(R.color.emoji_keyboard_light_gray))
+            setColor(context.getColor(R.color.emjkb_light_gray))
         }
 
         return StateListDrawable().apply {

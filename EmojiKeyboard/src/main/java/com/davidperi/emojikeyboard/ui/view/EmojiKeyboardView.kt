@@ -64,7 +64,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
 
     init {
         orientation = VERTICAL
-        setBackgroundColor(context.getColor(R.color.emoji_keyboard_gray_background))
+        setBackgroundColor(context.getColor(R.color.emjkb_bg_gray))
         setupLayout()
         loadData()
     }
@@ -214,7 +214,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
             loadedCategories = categories
             categoryRanges = ranges
 
-            val recentCat = Category("recent", "Recents", R.drawable.clock, emptyList())
+            val recentCat = Category("recent", "Recents", R.drawable.emjkb_clock, emptyList())
             categoryBar.setup(listOf(recentCat) + categories)
             categoryBar.setSelectedCategory(0)
 

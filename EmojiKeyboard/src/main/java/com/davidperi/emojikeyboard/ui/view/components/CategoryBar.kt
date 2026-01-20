@@ -135,7 +135,7 @@ internal class CategoryBar(context: Context, private val delegate: EmojiDelegate
     private fun createCategoryBackground(context: Context): StateListDrawable {
         val selectedShape = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(context.getColor(R.color.emoji_keyboard_light_gray))
+            setColor(context.getColor(R.color.emjkb_light_gray))
         }
 
         return StateListDrawable().apply {
@@ -150,8 +150,8 @@ internal class CategoryBar(context: Context, private val delegate: EmojiDelegate
             intArrayOf()
         )
         val colors = intArrayOf(
-            context.getColor(R.color.emoji_keyboard_black),
-            context.getColor(R.color.emoji_keyboard_gray)
+            context.getColor(R.color.emjkb_black),
+            context.getColor(R.color.emjkb_gray)
         )
         return ColorStateList(states, colors)
     }

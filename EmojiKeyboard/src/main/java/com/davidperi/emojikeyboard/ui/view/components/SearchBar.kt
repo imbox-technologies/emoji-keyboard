@@ -29,7 +29,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
         // Styling
         radius = 20.dp.toFloat()
         cardElevation = 0f // 2.dp.toFloat()
-        setCardBackgroundColor(context.getColor(R.color.emoji_keyboard_white))
+        setCardBackgroundColor(context.getColor(R.color.emjkb_white))
 
         preventCornerOverlap = false
         useCompatPadding = false
@@ -87,15 +87,15 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
             isSingleLine = true
             includeFontPadding = false
             imeOptions = EditorInfo.IME_ACTION_NONE
-            setTextColor(context.getColor(R.color.emoji_keyboard_black))
-            setHintTextColor(context.getColor(R.color.emoji_keyboard_gray))
+            setTextColor(context.getColor(R.color.emjkb_black))
+            setHintTextColor(context.getColor(R.color.emjkb_gray))
             textSize = 16f
         }
     }
 
     private fun buildClearButton(): AppCompatImageView {
         return AppCompatImageView(context).apply {
-            setImageResource(R.drawable.cross)
+            setImageResource(R.drawable.emjkb_cross)
             visibility = GONE
             layoutParams = LinearLayout.LayoutParams(24.dp, 24.dp).apply {
                 marginEnd = 2.dp
@@ -106,8 +106,8 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
 
     private fun buildSearchIcon(): AppCompatImageView {
         return AppCompatImageView(context).apply {
-            setImageResource(R.drawable.search)
-            imageTintList = context.getColorStateList(R.color.emoji_keyboard_gray)
+            setImageResource(R.drawable.emjkb_search)
+            imageTintList = context.getColorStateList(R.color.emjkb_gray)
             layoutParams = LinearLayout.LayoutParams(24.dp, 24.dp).apply {
                 marginStart = 4.dp
                 marginEnd = 8.dp
