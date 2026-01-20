@@ -42,7 +42,7 @@ open class EmojiEditText @JvmOverloads constructor(
     @CallSuper
     override fun onTextChanged(text: CharSequence?, start: Int, lengthBefore: Int, lengthAfter: Int) {
         val emojiSpanSize = emojiSize
-        EmojiUtils.replaceEmojis(context, getText(), emojiSpanSize)
+        EmojiUtils.replaceEmojis(getText(), emojiSpanSize)
     }
 
 
@@ -62,7 +62,7 @@ open class EmojiEditText @JvmOverloads constructor(
     private fun getHintSpannable(text: CharSequence?): Spannable? {
         if (text == null) return null
         val spannable = SpannableStringBuilder(text)
-        EmojiUtils.replaceEmojis(context, spannable, emojiSize)
+        EmojiUtils.replaceEmojis(spannable, emojiSize)
         return spannable
     }
 

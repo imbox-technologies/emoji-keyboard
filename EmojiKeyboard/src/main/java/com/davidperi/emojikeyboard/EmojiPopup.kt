@@ -17,7 +17,6 @@ import androidx.core.view.children
 import androidx.core.view.isEmpty
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
-import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager.Companion.DEFAULT_HEIGHT_DP
 import com.davidperi.emojikeyboard.ui.anim.EmojiWindowAnimationCallback
 import com.davidperi.emojikeyboard.ui.anim.PopupAnimator
@@ -40,7 +39,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
     private val emojiKeyboard = EmojiKeyboardView(context)
     private val stateMachine = PopupStateMachine(this)
     private val animator = PopupAnimator(this)
-    private val prefs = PrefsManager(context)
+    private val prefs get() = EmojiManager.getPrefsManager()
 
     private var isInstalled = false
     private var currentHeight = 0
@@ -145,7 +144,6 @@ class EmojiPopup(private val rootView: ViewGroup) {
     // PUBLIC API
     val state: PopupState get() = stateMachine.state
     fun bindTo(editText: EditText) { targetEditText = editText }
-    fun setConfig(config: EmojiKeyboardConfig) { emojiKeyboard.setConfig(config) }
     fun toggle() {
         if (!isInstalled) {
             isInstalled = true

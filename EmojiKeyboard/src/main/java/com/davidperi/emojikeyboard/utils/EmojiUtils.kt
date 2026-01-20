@@ -2,9 +2,7 @@ package com.davidperi.emojikeyboard.utils
 
 import android.content.Context
 import android.text.Spannable
-import android.util.Log
-import androidx.emoji2.text.EmojiCompat
-import androidx.emoji2.text.EmojiSpan
+import com.davidperi.emojikeyboard.EmojiManager
 import com.davidperi.emojikeyboard.data.model.EmojiInfo
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
 import java.text.BreakIterator
@@ -75,11 +73,10 @@ object EmojiUtils {
         )
     }
 
-    // TODO: improve or generalize this logic
-    fun replaceEmojis(context: Context, spannable: Spannable?, spanSizePx: Float?) {
-        if (spannable == null) return
+    fun replaceEmojis(spannable: Spannable?, spanSizePx: Float?) {
+        if (spannable == null || !EmojiManager.isInstalled()) return
 
-        val typeface = EmojiFontManager.getTypeface(context)
+        val typeface = EmojiManager.getTypeface()
         val existingSpans = spannable.getSpans(0, spannable.length, EmojiTypefaceSpan::class.java)
         for (span in existingSpans) {
             spannable.removeSpan(span)
