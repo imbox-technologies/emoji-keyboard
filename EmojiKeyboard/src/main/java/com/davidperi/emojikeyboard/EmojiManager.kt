@@ -2,6 +2,7 @@ package com.davidperi.emojikeyboard
 
 import android.content.Context
 import android.graphics.Typeface
+import com.davidperi.emojikeyboard.data.EmojiIndex
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.data.prefs.PrefsManager
 import com.davidperi.emojikeyboard.logic.RecentEmojiManager
@@ -22,6 +23,7 @@ object EmojiManager {
 
     private var categories: List<Category> = emptyList()
     private var typeface: Typeface? = null
+    private var emojiIndex: EmojiIndex? = null
 
     private val managerScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -83,7 +85,7 @@ object EmojiManager {
         checkInstalled()
         if (categories.isEmpty()) {
             runBlocking {
-                categories = config.provider.getCategories(appContext)
+                loadCategoriesAndBuildIndex()
             }
         }
         return categories
@@ -93,9 +95,22 @@ object EmojiManager {
     suspend fun getCategoriesAsync(): List<Category> {
         checkInstalled()
         if (categories.isEmpty()) {
-            categories = config.provider.getCategories(appContext)
+            loadCategoriesAndBuildIndex()
         }
         return categories
+    }
+
+    @JvmStatic
+    fun getEmojiIndex(): EmojiIndex {
+        checkInstalled()
+        return emojiIndex ?: synchronized(this) {
+            emojiIndex ?: run {
+                if (categories.isEmpty()) {
+                    runBlocking { loadCategoriesAndBuildIndex() }
+                }
+                emojiIndex ?: EmojiIndex.build(categories).also { emojiIndex = it }
+            }
+        }
     }
 
     @JvmStatic
@@ -126,7 +141,16 @@ object EmojiManager {
 
     private fun preloadCategories() {
         managerScope.launch(Dispatchers.IO) {
+            loadCategoriesAndBuildIndex()
+        }
+    }
+
+    private suspend fun loadCategoriesAndBuildIndex() {
+        if (categories.isEmpty()) {
             categories = config.provider.getCategories(appContext)
+        }
+        if (emojiIndex == null && categories.isNotEmpty()) {
+            emojiIndex = EmojiIndex.build(categories)
         }
     }
 
@@ -140,5 +164,6 @@ object EmojiManager {
         installed = false
         categories = emptyList()
         typeface = null
+        emojiIndex = null
     }
 }
