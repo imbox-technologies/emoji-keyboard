@@ -2,10 +2,14 @@ package com.davidperi.emojikeyboard.ui.view.components
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.StateListDrawable
 import android.os.Handler
 import android.os.Looper
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.graphics.drawable.toDrawable
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
@@ -27,7 +31,7 @@ internal class Backspace(context: Context, private val delegate: EmojiDelegate) 
         setImageResource(R.drawable.delete)
         scaleType = ScaleType.CENTER_INSIDE
         setPadding(12.dp, 12.dp, 12.dp, 12.dp)
-        setBackgroundResource(android.R.drawable.list_selector_background)
+        background = createBackspaceBackground(context)
 
         setOnTouchListener { v, event ->
             when (event.action) {
@@ -44,6 +48,18 @@ internal class Backspace(context: Context, private val delegate: EmojiDelegate) 
                 }
             }
             true
+        }
+    }
+
+    private fun createBackspaceBackground(context: Context): StateListDrawable {
+        val pressedShape = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(context.getColor(R.color.emoji_keyboard_light_gray))
+        }
+
+        return StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_pressed), pressedShape)
+            addState(intArrayOf(), Color.TRANSPARENT.toDrawable())
         }
     }
 
