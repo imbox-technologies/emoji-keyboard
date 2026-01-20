@@ -2,6 +2,7 @@ package com.davidperi.emojikeyboard.utils
 
 import android.text.Spannable
 import com.davidperi.emojikeyboard.EmojiManager
+import com.davidperi.emojikeyboard.data.EmojiIndex
 import com.davidperi.emojikeyboard.data.model.EmojiInfo
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
 import java.text.BreakIterator
@@ -17,22 +18,11 @@ object EmojiUtils {
         if (!EmojiManager.isInstalled()) return emptyList()
 
         val result = mutableListOf<IntRange>()
-        val index = EmojiManager.getEmojiIndex()
-        val boundary = BreakIterator.getCharacterInstance()
-        boundary.setText(text.toString())
-
-        var start = boundary.first()
-        var end = boundary.next()
-
-        while (end != BreakIterator.DONE) {
-            val chunk = text.subSequence(start, end).toString()
-            if (index.contains(chunk)) {
+        forEachGrapheme(text, EmojiManager.getEmojiIndex()) { _, start, end, isEmoji ->
+            if (isEmoji) {
                 result.add(start until end)
             }
-            start = end
-            end = boundary.next()
         }
-
         return result
     }
 
@@ -41,25 +31,15 @@ object EmojiUtils {
             return EmojiInfo(isOnlyEmojis = false, numEmojis = 0)
         }
 
-        val index = EmojiManager.getEmojiIndex()
-        val boundary = BreakIterator.getCharacterInstance()
-        boundary.setText(this.toString())
-
         var count = 0
         var hasNonEmojiContent = false
 
-        var start = boundary.first()
-        var end = boundary.next()
-
-        while (end != BreakIterator.DONE) {
-            val chunk = this.subSequence(start, end).toString()
-            if (index.contains(chunk)) {
+        forEachGrapheme(this, EmojiManager.getEmojiIndex()) { grapheme, _, _, isEmoji ->
+            if (isEmoji) {
                 count++
-            } else if (chunk.isNotBlank()) {
+            } else if (grapheme.isNotBlank()) {
                 hasNonEmojiContent = true
             }
-            start = end
-            end = boundary.next()
         }
 
         if (count == 0) {
@@ -76,22 +56,14 @@ object EmojiUtils {
         if (spannable == null || spannable.isEmpty() || !EmojiManager.isInstalled()) return
 
         val typeface = EmojiManager.getTypeface()
-        val index = EmojiManager.getEmojiIndex()
 
         val existingSpans = spannable.getSpans(0, spannable.length, EmojiTypefaceSpan::class.java)
         for (span in existingSpans) {
             spannable.removeSpan(span)
         }
 
-        val boundary = BreakIterator.getCharacterInstance()
-        boundary.setText(spannable.toString())
-
-        var start = boundary.first()
-        var end = boundary.next()
-
-        while (end != BreakIterator.DONE) {
-            val chunk = spannable.subSequence(start, end).toString()
-            if (index.contains(chunk)) {
+        forEachGrapheme(spannable, EmojiManager.getEmojiIndex()) { _, start, end, isEmoji ->
+            if (isEmoji) {
                 spannable.setSpan(
                     EmojiTypefaceSpan(typeface, spanSizePx),
                     start,
@@ -99,6 +71,23 @@ object EmojiUtils {
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
+        }
+    }
+
+    private inline fun forEachGrapheme(
+        text: CharSequence,
+        index: EmojiIndex,
+        action: (grapheme: String, start: Int, end: Int, isEmoji: Boolean) -> Unit
+    ) {
+        val boundary = BreakIterator.getCharacterInstance()
+        boundary.setText(text.toString())
+
+        var start = boundary.first()
+        var end = boundary.next()
+
+        while (end != BreakIterator.DONE) {
+            val grapheme = text.subSequence(start, end).toString()
+            action(grapheme, start, end, index.contains(grapheme))
             start = end
             end = boundary.next()
         }
