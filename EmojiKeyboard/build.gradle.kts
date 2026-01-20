@@ -54,9 +54,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
-    implementation(libs.androidx.emoji2)
-    implementation(libs.androidx.emoji2.views)
-
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.constraintlayout)
