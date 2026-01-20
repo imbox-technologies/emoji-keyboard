@@ -20,7 +20,6 @@ EmojiKeyboardTest/
 ## Módulo EmojiKeyboard (Biblioteca)
 
 ### Dependencias Principales
-- `androidx.emoji2` - Soporte de emojis modernos
 - `kotlinx.serialization` - Parsing de JSON para datos de emojis
 - Maven Publish plugin - Para publicar como AAR
 
@@ -28,9 +27,11 @@ EmojiKeyboardTest/
 
 ```
 EmojiKeyboard/src/main/java/com/davidperi/emojikeyboard/
-├── EmojiPopup.kt           # ⭐ PUNTO DE ENTRADA PRINCIPAL
-├── EmojiKeyboardConfig.kt  # Configuración del teclado
+├── EmojiManager.kt         # ⭐ SINGLETON DE INSTALACIÓN (patrón INSTALLER)
+├── EmojiPopup.kt           # Punto de entrada para el popup
+├── EmojiKeyboardConfig.kt  # EmojiConfig - Configuración del teclado
 ├── data/                   # Capa de datos
+│   ├── EmojiIndex.kt       # Índice HashSet para detección O(1) de emojis
 │   ├── model/              # Modelos de dominio
 │   ├── prefs/              # Persistencia (SharedPreferences)
 │   └── provider/           # Proveedores de emojis
@@ -49,11 +50,37 @@ EmojiKeyboard/src/main/java/com/davidperi/emojikeyboard/
 
 ## Clases Principales
 
-### 1. EmojiPopup (Punto de Entrada)
+### 1. EmojiManager (Singleton de Instalación)
+
+**Archivo:** `EmojiManager.kt`
+
+Es el **singleton central** que debe inicializarse en `Application.onCreate()`. Gestiona:
+- Instalación y configuración global de la biblioteca
+- Precarga de emojis al inicio
+- Tipografía compartida entre componentes
+- Acceso centralizado a gestores (recientes, preferencias)
+
+**API Pública:**
+```kotlin
+object EmojiManager {
+    fun install(context: Context, config: EmojiConfig = EmojiConfig())
+    fun isInstalled(): Boolean
+    fun getConfig(): EmojiConfig
+    fun getTypeface(): Typeface
+    fun getLayoutMode(): EmojiLayoutMode
+    fun getCategories(): List<Category>
+    suspend fun getCategoriesAsync(): List<Category>
+    fun getEmojiIndex(): EmojiIndex       // Índice para detección de emojis O(1)
+    fun getRecentManager(): RecentEmojiManager
+    fun getPrefsManager(): PrefsManager
+}
+```
+
+### 2. EmojiPopup (Vista del Popup)
 
 **Archivo:** `EmojiPopup.kt`
 
-Es la **API pública principal** que los consumidores de la biblioteca usan. Gestiona:
+Es la **API pública** para mostrar el teclado de emojis. Gestiona:
 - El contenedor del popup (FrameLayout)
 - La interacción con WindowInsets del teclado del sistema
 - El ciclo de vida del popup
@@ -62,7 +89,6 @@ Es la **API pública principal** que los consumidores de la biblioteca usan. Ges
 ```kotlin
 val state: PopupState                           // Estado actual
 fun bindTo(editText: EditText)                  // Vincula a un EditText
-fun setConfig(config: EmojiKeyboardConfig)      // Configura el teclado
 fun toggle()                                    // Alterna mostrar/ocultar
 fun hide()                                      // Oculta el popup
 fun setOnPopupStateChangedListener(...)         // Callback de cambio de estado
@@ -70,7 +96,7 @@ fun setAnimationCallback(...)                   // Callback de animaciones
 fun setOnPopupSizeChangeListener(...)           // Callback de cambio de tamaño
 ```
 
-### 2. PopupStateMachine
+### 3. PopupStateMachine
 
 **Archivo:** `ui/state/PopupStateMachine.kt`
 
@@ -96,11 +122,11 @@ COLLAPSED ←→ FOCUSED ←→ SEARCHING
    BEHIND ←------↑
 ```
 
-### 3. EmojiKeyboardView
+### 4. EmojiKeyboardView
 
 **Archivo:** `ui/view/EmojiKeyboardView.kt`
 
-Vista principal del teclado que contiene todos los componentes UI. Implementa `EmojiDelegate` para coordinar eventos entre componentes.
+Vista principal del teclado que contiene todos los componentes UI. Implementa `EmojiDelegate` para coordinar eventos entre componentes. Obtiene configuración y recursos desde `EmojiManager`.
 
 **Componentes internos:**
 - `CategoryBar` - Barra de categorías de emojis
@@ -113,7 +139,7 @@ Vista principal del teclado que contiene todos los componentes UI. Implementa `E
 - `ROBOT` - Grid vertical (9 columnas), barra de categorías arriba
 - `COOPER` - Grid horizontal (4 filas), barra de categorías abajo
 
-### 4. EmojiDelegate (Interface)
+### 5. EmojiDelegate (Interface)
 
 **Archivo:** `ui/view/EmojiDelegate.kt`
 
@@ -155,6 +181,25 @@ data class Emoji(
 )
 ```
 
+### EmojiIndex (Detección de Emojis)
+
+**Archivo:** `data/EmojiIndex.kt`
+
+Índice basado en `HashSet` que permite detectar emojis soportados en O(1):
+- Se construye automáticamente durante `EmojiManager.install()` a partir de las categorías del provider
+- Incluye todos los emojis y sus variantes (~3500 entradas)
+- Usado por `EmojiUtils` para detección precisa (solo detecta emojis que el provider soporta)
+
+```kotlin
+class EmojiIndex {
+    fun contains(unicode: String): Boolean  // O(1) lookup
+    val size: Int
+    companion object {
+        fun build(categories: List<Category>): EmojiIndex
+    }
+}
+```
+
 ### Proveedores de Emojis
 
 **EmojiProvider (Interface):**
@@ -173,11 +218,12 @@ interface EmojiProvider {
 
 **PrefsManager:**
 - Guarda la altura del teclado detectada (`lastKeyboardHeight`)
-- Persiste emojis recientes
+- Accesible via `EmojiManager.getPrefsManager()`
 
 **RecentEmojiManager:**
 - Gestiona la lista de emojis usados recientemente
 - Límite configurable de emojis guardados
+- Accesible via `EmojiManager.getRecentManager()`
 
 ---
 
@@ -198,14 +244,16 @@ El sistema intercepta los WindowInsets del teclado del sistema para:
 
 ## Configuración
 
-**EmojiKeyboardConfig:**
+**EmojiConfig:** (archivo `EmojiKeyboardConfig.kt`)
 ```kotlin
-data class EmojiKeyboardConfig(
+data class EmojiConfig(
     val provider: EmojiProvider = AssetEmojiProvider,  // Fuente de emojis
     val font: Typeface? = null,                        // Fuente personalizada
     val layoutMode: EmojiLayoutMode = COOPER           // Modo de layout
 )
 ```
+
+La configuración se pasa a `EmojiManager.install()` y es accesible globalmente via `EmojiManager.getConfig()`.
 
 ---
 
@@ -214,15 +262,31 @@ data class EmojiKeyboardConfig(
 ### Estructura:
 ```
 app/src/main/java/com/davidperi/emojikeyboardtest/
+├── EmojiKeyboardTestApp.kt   # Application - Instala EmojiManager
 ├── MainActivity.kt           # Activity principal con chat
 ├── adapter/ChatAdapter.kt    # Adapter del RecyclerView de chat
 ├── model/ChatMessage.kt      # Modelo de mensaje
 └── utils/MeasureUtils.kt     # Utilidades de medición
 ```
 
+### Instalación en Application:
+```kotlin
+class EmojiKeyboardTestApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        EmojiManager.install(
+            context = this,
+            config = EmojiConfig(
+                layoutMode = EmojiLayoutMode.COOPER
+            )
+        )
+    }
+}
+```
+
 ### Uso típico en MainActivity:
 ```kotlin
-// 1. Crear el popup
+// 1. Crear el popup (EmojiManager ya está instalado)
 emojiPopup = EmojiPopup(this)
 
 // 2. Vincular a un EditText
@@ -248,12 +312,16 @@ if (emojiPopup.state == PopupState.FOCUSED) {
 ## Flujo de Datos Principal
 
 ```
-1. AssetEmojiProvider carga JSON → List<Category>
-2. EmojiListMapper transforma → List<EmojiListItem>
-3. EmojiAdapter/ViewHolders renderizan el grid
-4. Usuario toca emoji → EmojiDelegate.onEmojiClicked()
-5. EmojiKeyboardView inserta en EditText con TypefaceSpan
-6. RecentEmojiManager guarda el emoji usado
+1. Application.onCreate() → EmojiManager.install()
+2. EmojiManager precarga categorías via EmojiProvider
+3. EmojiManager construye EmojiIndex (HashSet de unicodes soportados)
+4. EmojiKeyboardView obtiene datos de EmojiManager
+5. EmojiListMapper transforma → List<EmojiListItem>
+6. EmojiAdapter/ViewHolders renderizan el grid
+7. Usuario toca emoji → EmojiDelegate.onEmojiClicked()
+8. EmojiKeyboardView inserta en EditText con TypefaceSpan
+9. EmojiUtils detecta emojis via EmojiIndex (O(1) por graphema)
+10. EmojiManager.getRecentManager() guarda el emoji usado
 ```
 
 ---
@@ -262,7 +330,7 @@ if (emojiPopup.state == PopupState.FOCUSED) {
 
 ### Assets:
 - `assets/providers/emojis_en.json` - Base de datos de emojis
-- `assets/NotoColorEmoji.ttf` - Fuente de emojis (opcional)
+- `assets/fonts/Cooper.ttf` - Fuente de emojis por defecto
 
 ### Namespace:
 - Biblioteca: `com.davidperi.emojikeyboard`
@@ -277,12 +345,18 @@ if (emojiPopup.state == PopupState.FOCUSED) {
 
 ## Notas de Implementación
 
-1. **El popup se añade lazy**: Solo se añade al rootView la primera vez que se llama `toggle()`
+1. **Patrón INSTALLER**: La biblioteca usa un singleton `EmojiManager` que debe instalarse en `Application.onCreate()` antes de usar cualquier componente. Esto permite precarga de datos y acceso global a recursos.
 
-2. **Altura del teclado**: Se detecta automáticamente del IME del sistema y se guarda en SharedPreferences para futuras sesiones
+2. **El popup se añade lazy**: Solo se añade al rootView la primera vez que se llama `toggle()`
 
-3. **ViewBinding**: Ambos módulos usan ViewBinding (`buildFeatures { viewBinding = true }`)
+3. **Altura del teclado**: Se detecta automáticamente del IME del sistema y se guarda en SharedPreferences para futuras sesiones. El popup altera el inset de tipo ime para que quien lo implemente lo perciba como un teclado del sistema.
 
-4. **Coroutines**: Se usan para cargas asíncronas de datos y debounce en la búsqueda
+4. **ViewBinding**: Ambos módulos usan ViewBinding (`buildFeatures { viewBinding = true }`)
 
-5. **Publicación Maven**: El módulo EmojiKeyboard está configurado para publicarse como AAR con `maven-publish`
+5. **Coroutines**: Se usan para cargas asíncronas de datos y debounce en la búsqueda
+
+6. **Publicación Maven**: El módulo EmojiKeyboard está configurado para publicarse como AAR con `maven-publish`
+
+7. **Acceso centralizado**: Todos los componentes (EmojiPopup, EmojiTextView, EmojiEditText, etc.) obtienen configuración y recursos desde `EmojiManager` en lugar de crear sus propias instancias.
+
+8. **Detección de emojis**: `EmojiUtils` usa `EmojiIndex` (HashSet) + `BreakIterator` para detectar emojis. Solo detecta emojis que están en el provider, garantizando consistencia visual con la fuente personalizada.

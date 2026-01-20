@@ -10,12 +10,11 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import com.davidperi.emojikeyboard.EmojiKeyboardConfig
 import com.davidperi.emojikeyboard.EmojiLayoutMode
+import com.davidperi.emojikeyboard.EmojiManager
 import com.davidperi.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.logic.EmojiSearchEngine
-import com.davidperi.emojikeyboard.logic.RecentEmojiManager
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListMapper
 import com.davidperi.emojikeyboard.ui.span.EmojiTypefaceSpan
@@ -26,7 +25,6 @@ import com.davidperi.emojikeyboard.ui.view.components.EmojiGrid
 import com.davidperi.emojikeyboard.ui.view.components.SearchBar
 import com.davidperi.emojikeyboard.ui.view.components.SearchResults
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp
-import com.davidperi.emojikeyboard.utils.EmojiFontManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,12 +46,12 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
 
     // Logic
     private val searchEngine = EmojiSearchEngine()
-    private val recentManager = RecentEmojiManager(context)
+    private val recentManager get() = EmojiManager.getRecentManager()
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
     private var searchJob: Job? = null
 
     // Status and Config
-    private var config = EmojiKeyboardConfig()
+    private val config get() = EmojiManager.getConfig()
     private var targetEditText: EditText? = null
     private var categoryRanges: List<IntRange> = emptyList()
     private var recentCount = 0
@@ -75,12 +73,6 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     // Public (internal) API
     fun setupWith(editText: EditText) {
         this.targetEditText = editText
-    }
-
-    fun setConfig(config: EmojiKeyboardConfig) {
-        this.config = config
-        setupLayout()
-        loadData()
     }
 
     fun onStateChanged(state: PopupState) {
@@ -211,7 +203,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
     private fun loadData() {
         viewScope.launch {
             val (categories, items, ranges) = withContext(Dispatchers.IO) {
-                val cats = config.provider.getCategories(context)
+                val cats = EmojiManager.getCategoriesAsync()
                 val isVertical = config.layoutMode == EmojiLayoutMode.ROBOT
                 val (mappedItems, mappedRanges) = EmojiListMapper.map(cats, isVertical, currentSpan)
 
@@ -264,7 +256,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
         val start = max(editText.selectionStart, 0)
         val end = max(editText.selectionEnd, 0)
 
-        val typeface = EmojiFontManager.getTypeface(context)
+        val typeface = EmojiManager.getTypeface()
         val spannable = SpannableString(unicode).apply {
             setSpan(EmojiTypefaceSpan(typeface), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }

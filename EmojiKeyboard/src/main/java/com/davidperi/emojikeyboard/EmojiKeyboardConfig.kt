@@ -9,7 +9,7 @@ enum class EmojiLayoutMode {
     COOPER
 }
 
-data class EmojiKeyboardConfig(
+data class EmojiConfig @JvmOverloads constructor(
     val provider: EmojiProvider = AssetEmojiProvider,
     val font: Typeface? = null,
     val layoutMode: EmojiLayoutMode = EmojiLayoutMode.COOPER,

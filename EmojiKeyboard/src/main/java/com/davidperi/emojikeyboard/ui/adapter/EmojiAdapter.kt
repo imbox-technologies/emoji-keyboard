@@ -4,10 +4,10 @@ import android.graphics.Typeface
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.davidperi.emojikeyboard.EmojiManager
 import com.davidperi.emojikeyboard.data.model.Emoji
 import com.davidperi.emojikeyboard.ui.view.components.EmojiCellView
 import com.davidperi.emojikeyboard.ui.view.components.EmojiHeaderItem
-import com.davidperi.emojikeyboard.utils.EmojiFontManager
 
 class EmojiAdapter(
     private val onEmojiClicked: (Emoji) -> Unit
@@ -23,7 +23,7 @@ class EmojiAdapter(
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        cachedTypeface = EmojiFontManager.getTypeface(recyclerView.context)
+        cachedTypeface = EmojiManager.getTypeface()
     }
 
     override fun getItemViewType(position: Int): Int {

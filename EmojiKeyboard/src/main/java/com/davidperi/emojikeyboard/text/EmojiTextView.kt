@@ -50,7 +50,7 @@ open class EmojiTextView @JvmOverloads constructor(
     override fun setText(text: CharSequence?, type: BufferType?) {
         val builder = SpannableStringBuilder(text ?: "")
         val emojiSpanSize = getEmojiSpanSize(text)
-        EmojiUtils.replaceEmojis(context, builder, emojiSpanSize)
+        EmojiUtils.replaceEmojis(builder, emojiSpanSize)
         super.setText(builder, type)
     }
 
