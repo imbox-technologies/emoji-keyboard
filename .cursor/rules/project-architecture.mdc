@@ -31,6 +31,7 @@ EmojiKeyboard/src/main/java/com/davidperi/emojikeyboard/
 ├── EmojiPopup.kt           # Punto de entrada para el popup
 ├── EmojiKeyboardConfig.kt  # EmojiConfig - Configuración del teclado
 ├── data/                   # Capa de datos
+│   ├── EmojiIndex.kt       # Índice HashSet para detección O(1) de emojis
 │   ├── model/              # Modelos de dominio
 │   ├── prefs/              # Persistencia (SharedPreferences)
 │   └── provider/           # Proveedores de emojis
@@ -69,6 +70,7 @@ object EmojiManager {
     fun getLayoutMode(): EmojiLayoutMode
     fun getCategories(): List<Category>
     suspend fun getCategoriesAsync(): List<Category>
+    fun getEmojiIndex(): EmojiIndex       // Índice para detección de emojis O(1)
     fun getRecentManager(): RecentEmojiManager
     fun getPrefsManager(): PrefsManager
 }
@@ -177,6 +179,25 @@ data class Emoji(
     val keywords: List<String>,
     val variants: List<Emoji>  // Variantes de tono de piel, etc.
 )
+```
+
+### EmojiIndex (Detección de Emojis)
+
+**Archivo:** `data/EmojiIndex.kt`
+
+Índice basado en `HashSet` que permite detectar emojis soportados en O(1):
+- Se construye automáticamente durante `EmojiManager.install()` a partir de las categorías del provider
+- Incluye todos los emojis y sus variantes (~3500 entradas)
+- Usado por `EmojiUtils` para detección precisa (solo detecta emojis que el provider soporta)
+
+```kotlin
+class EmojiIndex {
+    fun contains(unicode: String): Boolean  // O(1) lookup
+    val size: Int
+    companion object {
+        fun build(categories: List<Category>): EmojiIndex
+    }
+}
 ```
 
 ### Proveedores de Emojis
@@ -293,12 +314,14 @@ if (emojiPopup.state == PopupState.FOCUSED) {
 ```
 1. Application.onCreate() → EmojiManager.install()
 2. EmojiManager precarga categorías via EmojiProvider
-3. EmojiKeyboardView obtiene datos de EmojiManager
-4. EmojiListMapper transforma → List<EmojiListItem>
-5. EmojiAdapter/ViewHolders renderizan el grid
-6. Usuario toca emoji → EmojiDelegate.onEmojiClicked()
-7. EmojiKeyboardView inserta en EditText con TypefaceSpan
-8. EmojiManager.getRecentManager() guarda el emoji usado
+3. EmojiManager construye EmojiIndex (HashSet de unicodes soportados)
+4. EmojiKeyboardView obtiene datos de EmojiManager
+5. EmojiListMapper transforma → List<EmojiListItem>
+6. EmojiAdapter/ViewHolders renderizan el grid
+7. Usuario toca emoji → EmojiDelegate.onEmojiClicked()
+8. EmojiKeyboardView inserta en EditText con TypefaceSpan
+9. EmojiUtils detecta emojis via EmojiIndex (O(1) por graphema)
+10. EmojiManager.getRecentManager() guarda el emoji usado
 ```
 
 ---
@@ -335,3 +358,5 @@ if (emojiPopup.state == PopupState.FOCUSED) {
 6. **Publicación Maven**: El módulo EmojiKeyboard está configurado para publicarse como AAR con `maven-publish`
 
 7. **Acceso centralizado**: Todos los componentes (EmojiPopup, EmojiTextView, EmojiEditText, etc.) obtienen configuración y recursos desde `EmojiManager` en lugar de crear sus propias instancias.
+
+8. **Detección de emojis**: `EmojiUtils` usa `EmojiIndex` (HashSet) + `BreakIterator` para detectar emojis. Solo detecta emojis que están en el provider, garantizando consistencia visual con la fuente personalizada.
