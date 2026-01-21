@@ -14,8 +14,6 @@ import kotlinx.coroutines.runBlocking
 
 object EmojiManager {
 
-    private const val DEFAULT_FONT_PATH = "fonts/Cooper.ttf"
-
     @Volatile
     private var installed = false
     private lateinit var appContext: Context
@@ -68,7 +66,7 @@ object EmojiManager {
     fun getTypeface(): Typeface {
         checkInstalled()
         return typeface ?: synchronized(this) {
-            typeface ?: Typeface.createFromAsset(appContext.assets, DEFAULT_FONT_PATH).also {
+            typeface ?: Typeface.DEFAULT.also {
                 typeface = it
             }
         }
@@ -132,11 +130,7 @@ object EmojiManager {
     }
 
     private fun loadTypeface() {
-        typeface = config.font ?: try {
-            Typeface.createFromAsset(appContext.assets, DEFAULT_FONT_PATH)
-        } catch (e: Exception) {
-            null
-        }
+        typeface = config.font ?: Typeface.DEFAULT
     }
 
     private fun preloadCategories() {
