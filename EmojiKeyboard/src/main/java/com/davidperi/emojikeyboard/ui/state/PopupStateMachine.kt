@@ -20,7 +20,7 @@ internal class PopupStateMachine(
         when (_state) {
             PopupState.COLLAPSED -> transitionTo(PopupState.FOCUSED)
             PopupState.BEHIND -> transitionTo(PopupState.FOCUSED)
-            PopupState.FOCUSED -> transitionTo(PopupState.BEHIND)
+            PopupState.FOCUSED -> popup.showKeyboard()
             PopupState.SEARCHING -> transitionTo(PopupState.BEHIND)
         }
     }
@@ -35,7 +35,7 @@ internal class PopupStateMachine(
     fun search() {
         Log.v("EMOJI StMch", "search() with state=$_state")
         if (_state == PopupState.FOCUSED) {
-            transitionTo(PopupState.SEARCHING)
+            expectedIme = true
         }
     }
 
@@ -52,7 +52,10 @@ internal class PopupStateMachine(
             currentIme = true
             when (_state) {
                 PopupState.COLLAPSED -> transitionTo(PopupState.BEHIND)
-                PopupState.FOCUSED -> if (!expectedIme) transitionTo(PopupState.BEHIND)
+                PopupState.FOCUSED -> {
+                    if (!expectedIme) transitionTo(PopupState.BEHIND)
+                    else transitionTo(PopupState.SEARCHING)
+                }
                 else -> { /* IME is supposed to be up in BEHIND and SEARCHING */ }
             }
         }
@@ -90,7 +93,9 @@ internal class PopupStateMachine(
                 val animate = oldState in listOf(PopupState.SEARCHING)
                 expectedIme = true
                 popup.showKeyboard()
-                if (oldState !in listOf(PopupState.FOCUSED)) {
+                if (oldState == PopupState.FOCUSED) {
+                    popup.updatePopupHeight(popup.getKeyboardStandardHeight(), animate)
+                } else {
                     popup.updatePopupHeight(0, animate)
                 }
             }

@@ -90,15 +90,13 @@ class EmojiPopup(private val rootView: ViewGroup) {
 
             val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
             if (imeVisible && imeInsets.bottom > 0) {
-                stateMachine.imeUp()
-
                 val orientation = context.resources.configuration.orientation
                 if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                     val imeHeight = imeInsets.bottom
-                    if (prefs.lastKeyboardHeight == -1 || imeHeight < prefs.lastKeyboardHeight) {
-                        prefs.lastKeyboardHeight = imeHeight
-                    }
+                    prefs.lastKeyboardHeight = imeHeight
                 }
+
+                stateMachine.imeUp()
             } else {
                 stateMachine.imeDown()
             }

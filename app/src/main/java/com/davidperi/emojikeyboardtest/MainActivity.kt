@@ -89,9 +89,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAnimations() {
-        val viewList = listOf(binding.ivSend, binding.rvChat, binding.inputContainer)
-        binding.root.setupKeyboardAnimation(viewList)
-        binding.root.setupEmojiPopupAnimation(emojiPopup, viewList)
+//        val viewList = listOf(binding.ivSend, binding.rvChat, binding.inputContainer)
+//        binding.root.setupKeyboardAnimation(viewList)
+//        binding.root.setupEmojiPopupAnimation(emojiPopup, viewList)
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             emojiPopup.setOnPopupSizeChangeListener { size ->
