@@ -16,7 +16,7 @@
 
 package com.davidperi.emojikeyboard.ui.adapter
 
-import com.davidperi.emojikeyboard.R
+import io.github.davidimbox.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.data.model.Emoji
 

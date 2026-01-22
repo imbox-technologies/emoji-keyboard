@@ -28,7 +28,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.davidperi.emojikeyboard.EmojiLayoutMode
 import com.davidperi.emojikeyboard.EmojiManager
-import com.davidperi.emojikeyboard.R
+import io.github.davidimbox.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.logic.EmojiSearchEngine
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem

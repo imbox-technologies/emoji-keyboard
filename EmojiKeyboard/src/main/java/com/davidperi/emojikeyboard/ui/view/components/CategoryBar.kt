@@ -33,7 +33,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.children
 import androidx.core.view.isEmpty
-import com.davidperi.emojikeyboard.R
+import io.github.davidimbox.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.ui.view.EmojiDelegate
 import com.davidperi.emojikeyboard.utils.DisplayUtils.dp

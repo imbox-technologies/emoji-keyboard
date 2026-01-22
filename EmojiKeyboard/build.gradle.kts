@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlinx.serialization)
-    id("maven-publish")
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
 kotlin {
@@ -14,7 +14,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.davidperi.emojikeyboard"
+    namespace = "io.github.davidimbox.emojikeyboard"
     compileSdk = 36
 
     defaultConfig {
@@ -41,12 +41,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 dependencies {
@@ -62,16 +56,37 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
+val libraryVersion = "0.1.0"
 
-                groupId = "com.davidperi"
-                artifactId = "emojikeyboard"
-                version = "1.0.0-local"
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    coordinates("io.github.davidimbox", "emojikeyboard", libraryVersion)
+
+    pom {
+        name.set("Emoji Keyboard library")
+        description.set("Customizable and easy-to-use emoji keyboard for Android.")
+        inceptionYear.set("2026")
+        url.set("https://github.com/DavidImbox/emoji-keyboard")
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
             }
+        }
+        developers {
+            developer {
+                id.set("DavidImbox")
+                name.set("David Periañez")
+                url.set("https://github.com/DavidImbox")
+            }
+        }
+        scm {
+            url.set("https://github.com/DavidImbox/emoji-keyboard/tree/main")
+            connection.set("scm:git:git://github.com/DavidImbox/emoji-keyboard.git")
+            developerConnection.set("scm:git:ssh://git@github.com/DavidImbox/emoji-keyboard.git")
         }
     }
 }
