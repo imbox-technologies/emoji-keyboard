@@ -22,6 +22,9 @@ captures/
 *.apk
 output-metadata.json
 
+# Cursor IDE
+.cursor/
+
 # IntelliJ
 *.iml
 .idea/
