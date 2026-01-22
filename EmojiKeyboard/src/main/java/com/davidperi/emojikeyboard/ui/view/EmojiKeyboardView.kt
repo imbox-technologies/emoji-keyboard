@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 - David Periañez and contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.davidperi.emojikeyboard.ui.view
 
 import android.content.Context
@@ -12,7 +28,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.davidperi.emojikeyboard.EmojiLayoutMode
 import com.davidperi.emojikeyboard.EmojiManager
-import com.davidperi.emojikeyboard.R
+import io.github.davidimbox.emojikeyboard.R
 import com.davidperi.emojikeyboard.data.model.Category
 import com.davidperi.emojikeyboard.logic.EmojiSearchEngine
 import com.davidperi.emojikeyboard.ui.adapter.EmojiListItem
