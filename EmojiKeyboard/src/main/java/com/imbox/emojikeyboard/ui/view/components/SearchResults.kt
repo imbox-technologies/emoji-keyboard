@@ -24,7 +24,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import me.imbox.emojikeyboard.R
+import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.ui.adapter.EmojiAdapter
 import com.imbox.emojikeyboard.ui.adapter.EmojiListItem

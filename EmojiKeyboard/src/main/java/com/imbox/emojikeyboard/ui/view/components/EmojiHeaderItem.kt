@@ -22,7 +22,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
-import me.imbox.emojikeyboard.R
+import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
 
 class EmojiHeaderItem (context: Context) : AppCompatTextView(context) {

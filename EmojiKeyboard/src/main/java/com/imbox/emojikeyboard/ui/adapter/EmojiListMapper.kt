@@ -16,7 +16,7 @@
 
 package com.imbox.emojikeyboard.ui.adapter
 
-import me.imbox.emojikeyboard.R
+import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.data.model.Category
 import com.imbox.emojikeyboard.data.model.Emoji
 

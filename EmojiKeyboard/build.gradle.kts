@@ -14,7 +14,7 @@ kotlin {
 }
 
 android {
-    namespace = "me.imbox.emojikeyboard"
+    namespace = "com.imbox.emojikeyboard"
     compileSdk = 36
 
     defaultConfig {

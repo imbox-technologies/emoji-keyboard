@@ -21,7 +21,7 @@ import com.imbox.emojikeyboard.data.model.Category
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import me.imbox.emojikeyboard.R
+import com.imbox.emojikeyboard.R
 import java.io.IOException
 
 object AssetEmojiProvider : EmojiProvider {
