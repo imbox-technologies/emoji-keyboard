@@ -11,8 +11,8 @@ Customizable and easy-to-use emoji keyboard library for Android.
 - EmojiEditText and EmojiTextView components to display emojis with selected font
 
 <div align="center">
-  <img src="docs/media/screenshot_cooper.jpeg" alt="Estado del popup" width="45%">
-  <video src="docs/media/video_cooper.mp4" width="45%" controls></video>
+  <img src="docs/media/screenshot_cooper.jpeg" alt="Demo screenshot" width="45%">
+  <img src="docs/media/gif_cooper.gif" alt="Demo gid" width="45%">
 </div>
 
 ## Requirements
