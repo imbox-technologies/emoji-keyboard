@@ -10,6 +10,11 @@ Customizable and easy-to-use emoji keyboard library for Android.
 - Fast and efficient search emojis by keywords
 - EmojiEditText and EmojiTextView components to display emojis with selected font
 
+<div align="center">
+  <img src="docs/media/screenshot_cooper.jpeg" alt="Estado del popup" width="45%">
+  <video src="docs/media/video_cooper.mp4" width="45%" controls></video>
+</div>
+
 ## Requirements
 
 - **minSdk**: 24 (Android 7.0)
