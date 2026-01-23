@@ -18,10 +18,10 @@ package com.imbox.emojikeyboard.data.provider
 
 import android.content.Context
 import com.imbox.emojikeyboard.data.model.Category
-import io.github.davidimbox.emojikeyboard.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import me.imbox.emojikeyboard.R
 import java.io.IOException
 
 object AssetEmojiProvider : EmojiProvider {

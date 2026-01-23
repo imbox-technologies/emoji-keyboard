@@ -27,7 +27,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.cardview.widget.CardView
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import io.github.davidimbox.emojikeyboard.R
+import me.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
 

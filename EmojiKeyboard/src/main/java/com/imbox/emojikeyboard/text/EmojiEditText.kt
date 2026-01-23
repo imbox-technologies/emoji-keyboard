@@ -24,7 +24,7 @@ import androidx.annotation.CallSuper
 import androidx.annotation.DimenRes
 import androidx.annotation.Px
 import androidx.appcompat.widget.AppCompatEditText
-import io.github.davidimbox.emojikeyboard.R
+import me.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.utils.EmojiUtils
 
 open class EmojiEditText @JvmOverloads constructor(

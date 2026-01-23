@@ -26,7 +26,7 @@ import android.os.Looper
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toDrawable
-import io.github.davidimbox.emojikeyboard.R
+import me.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
 

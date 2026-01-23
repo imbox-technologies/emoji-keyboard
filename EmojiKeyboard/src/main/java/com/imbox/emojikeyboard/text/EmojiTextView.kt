@@ -23,7 +23,7 @@ import androidx.annotation.CallSuper
 import androidx.annotation.DimenRes
 import androidx.annotation.Px
 import androidx.appcompat.widget.AppCompatTextView
-import io.github.davidimbox.emojikeyboard.R
+import me.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.utils.EmojiUtils
 import com.imbox.emojikeyboard.utils.EmojiUtils.getEmojiInfo
 

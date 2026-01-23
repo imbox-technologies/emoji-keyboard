@@ -14,7 +14,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.davidimbox.emojikeyboard"
+    namespace = "me.imbox.emojikeyboard"
     compileSdk = 36
 
     defaultConfig {
@@ -56,19 +56,19 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-val libraryVersion = "0.1.0"
+val libraryVersion = "0.1.1"
 
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
 
-    coordinates("io.github.davidimbox", "emojikeyboard", libraryVersion)
+    coordinates("me.imbox", "emojikeyboard", libraryVersion)
 
     pom {
         name.set("Emoji Keyboard library")
         description.set("Customizable and easy-to-use emoji keyboard for Android.")
         inceptionYear.set("2026")
-        url.set("https://github.com/DavidImbox/emoji-keyboard")
+        url.set("https://github.com/imbox-technologies/emoji-keyboard")
         licenses {
             license {
                 name.set("The Apache License, Version 2.0")
@@ -84,9 +84,9 @@ mavenPublishing {
             }
         }
         scm {
-            url.set("https://github.com/DavidImbox/emoji-keyboard/tree/main")
-            connection.set("scm:git:git://github.com/DavidImbox/emoji-keyboard.git")
-            developerConnection.set("scm:git:ssh://git@github.com/DavidImbox/emoji-keyboard.git")
+            url.set("https://github.com/imbox-technologies/emoji-keyboard/tree/main")
+            connection.set("scm:git:git://github.com/imbox-technologies/emoji-keyboard.git")
+            developerConnection.set("scm:git:ssh://git@github.com/imbox-technologies/emoji-keyboard.git")
         }
     }
 }

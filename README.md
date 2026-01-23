@@ -27,8 +27,7 @@ Customizable and easy-to-use emoji keyboard library for Android.
 1. Add the dependency to your `build.gradle.kts`:
 
 ```kotlin
-// TEMPORAL: will move to "me.imbox:emojikeyboard"
-implementation("io.github.davidimbox:emojikeyboard:0.1.0")
+implementation("me.imbox:emojikeyboard:0.1.0")
 ```
 
 2. Initialize the emoji provider and configuration in Application class:
