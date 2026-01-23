@@ -56,7 +56,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-val libraryVersion = "0.1.1"
+val libraryVersion = "0.1.2"
 
 mavenPublishing {
     publishToMavenCentral()
