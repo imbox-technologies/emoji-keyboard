@@ -10,11 +10,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.davidperi.emojikeyboardtest"
+    namespace = "com.imbox.emojikeyboardtest"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.davidperi.emojikeyboardtest"
+        applicationId = "com.imbox.emojikeyboardtest"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

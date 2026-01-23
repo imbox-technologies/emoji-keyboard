@@ -7,7 +7,7 @@
     android:paddingVertical="1dp"
     android:paddingHorizontal="4dp">
 
-    <com.davidperi.emojikeyboard.text.EmojiTextView
+    <com.imbox.emojikeyboard.text.EmojiTextView
         android:id="@+id/tv_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

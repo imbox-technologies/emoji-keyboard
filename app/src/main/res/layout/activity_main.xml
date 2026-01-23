@@ -19,7 +19,7 @@
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.davidperi.emojikeyboard.text.EmojiTextView
+        <com.imbox.emojikeyboard.text.EmojiTextView
             android:id="@+id/welcome_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,7 +84,7 @@
                 tools:visibility="visible" />
 
             <!-- Test edit text -->
-            <com.davidperi.emojikeyboard.text.EmojiEditText
+            <com.imbox.emojikeyboard.text.EmojiEditText
                 android:id="@+id/et_test"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
