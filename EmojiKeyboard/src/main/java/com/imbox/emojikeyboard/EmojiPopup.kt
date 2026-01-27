@@ -157,7 +157,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
 
     // PUBLIC API
     val state: PopupState get() = stateMachine.state
-    fun bindTo(editText: EditText) { targetEditText = editText }
+    fun bindTo(editText: EditText?) { targetEditText = editText }
     fun toggle() {
         if (!isInstalled) {
             isInstalled = true
