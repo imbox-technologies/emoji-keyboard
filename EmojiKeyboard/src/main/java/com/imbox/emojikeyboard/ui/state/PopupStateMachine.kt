@@ -108,7 +108,7 @@ internal class PopupStateMachine(
             PopupState.BEHIND -> {
                 val animate = oldState in listOf(PopupState.SEARCHING)
                 expectedIme = true
-                popup.showKeyboard()
+                if (!currentIme) { popup.showKeyboard() }
                 if (oldState == PopupState.FOCUSED) {
                     popup.updatePopupHeight(popup.getKeyboardStandardHeight(), animate)
                 } else {
