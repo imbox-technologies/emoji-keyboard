@@ -67,10 +67,12 @@ class EmojiPopup(private val rootView: ViewGroup) {
             field = value
             value?.let { editText ->
                 emojiKeyboard.setupWith(editText)
-                editText.setOnFocusChangeListener { _, hasFocus ->
+                val originalListener = editText.onFocusChangeListener
+                editText.setOnFocusChangeListener { view, hasFocus ->
                     if (hasFocus) {
                         stateMachine.write()
                     }
+                    originalListener?.onFocusChange(view, hasFocus)
                 }
             }
         }
@@ -157,7 +159,7 @@ class EmojiPopup(private val rootView: ViewGroup) {
 
     // PUBLIC API
     val state: PopupState get() = stateMachine.state
-    fun bindTo(editText: EditText) { targetEditText = editText }
+    fun bindTo(editText: EditText?) { targetEditText = editText }
     fun toggle() {
         if (!isInstalled) {
             isInstalled = true
