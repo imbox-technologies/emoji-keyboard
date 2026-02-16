@@ -91,7 +91,7 @@ internal class EmojiGrid(context: Context, private val delegate: EmojiDelegate) 
     private fun calculateSpanForHeight(heightPx: Int): Int {
         val heightDp = heightPx.px
         return when {
-            heightDp < 200 -> 3
+            heightDp < 180 -> 3
             heightDp < 240 -> 4
             heightDp < 280 -> 5
             else -> 6
