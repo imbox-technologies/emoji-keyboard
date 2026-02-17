@@ -41,6 +41,7 @@ import com.imbox.emojikeyboard.ui.view.components.EmojiGrid
 import com.imbox.emojikeyboard.ui.view.components.SearchBar
 import com.imbox.emojikeyboard.ui.view.components.SearchResults
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,7 +81,7 @@ internal class EmojiKeyboardView(context: Context) : LinearLayout(context), Emoj
 
     init {
         orientation = VERTICAL
-        setBackgroundColor(context.getColor(R.color.emjkb_bg_gray))
+        setBackgroundColor(resolveColor(context, R.attr.emjkb_colorBackground))
         setupLayout()
         loadData()
     }

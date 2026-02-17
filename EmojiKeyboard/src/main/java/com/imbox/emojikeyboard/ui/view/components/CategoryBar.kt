@@ -37,6 +37,7 @@ import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.data.model.Category
 import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 import kotlin.math.abs
 
 @SuppressLint("ViewConstructor")
@@ -151,7 +152,7 @@ internal class CategoryBar(context: Context, private val delegate: EmojiDelegate
     private fun createCategoryBackground(context: Context): StateListDrawable {
         val selectedShape = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(context.getColor(R.color.emjkb_light_gray))
+            setColor(resolveColor(context, R.attr.emjkb_colorHighlight))
         }
 
         return StateListDrawable().apply {
@@ -166,8 +167,8 @@ internal class CategoryBar(context: Context, private val delegate: EmojiDelegate
             intArrayOf()
         )
         val colors = intArrayOf(
-            context.getColor(R.color.emjkb_black),
-            context.getColor(R.color.emjkb_gray)
+            resolveColor(context, R.attr.emjkb_colorOnBackground),
+            resolveColor(context, R.attr.emjkb_colorOnBackgroundVariant)
         )
         return ColorStateList(states, colors)
     }

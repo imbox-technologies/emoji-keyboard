@@ -29,6 +29,7 @@ import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.ui.adapter.EmojiAdapter
 import com.imbox.emojikeyboard.ui.adapter.EmojiListItem
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 
 @SuppressLint("ViewConstructor")
 internal class SearchResults(context: Context, private val delegate: EmojiDelegate) :
@@ -50,7 +51,7 @@ internal class SearchResults(context: Context, private val delegate: EmojiDelega
         emptyTextView = TextView(context).apply {
             text = context.getString(R.string.search_results_text_no_emojis_found)
             gravity = Gravity.CENTER
-            setTextColor(context.getColor(R.color.emjkb_gray))
+            setTextColor(resolveColor(context, R.attr.emjkb_colorOnBackgroundVariant))
             isVisible = false
         }
 

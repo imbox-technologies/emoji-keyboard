@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr name="emjkb_colorBackground" format="color" />
+    <attr name="emjkb_colorSurface" format="color" />
+    <attr name="emjkb_colorOnBackground" format="color" />
+    <attr name="emjkb_colorOnBackgroundVariant" format="color" />
+    <attr name="emjkb_colorHighlight" format="color" />
+
     <declare-styleable name="EmojiTextView">
         <attr name="emojiSize" format="dimension" />
         <attr name="dynamicEmojiSizeEnabled" format="boolean" />

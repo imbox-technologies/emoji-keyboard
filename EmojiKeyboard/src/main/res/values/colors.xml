@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="emjkb_black">#000000</color>
-    <color name="emjkb_white">#FFFFFF</color>
-    <color name="emjkb_gray">#888888</color>
-    <color name="emjkb_light_gray">#BDBDBD</color>
-    <color name="emjkb_bg_gray">#F0F0F0</color>
-    
+    <color name="emjkb_colorBackground">#F0F0F0</color>
+    <color name="emjkb_colorSurface">#FFFFFF</color>
+    <color name="emjkb_colorOnBackground">#000000</color>
+    <color name="emjkb_colorOnBackgroundVariant">#888888</color>
+    <color name="emjkb_colorHighlight">#BDBDBD</color>
 </resources>

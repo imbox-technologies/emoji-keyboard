@@ -40,6 +40,7 @@ import com.imbox.emojikeyboard.ui.state.PopupState
 import com.imbox.emojikeyboard.ui.state.PopupStateMachine
 import com.imbox.emojikeyboard.ui.view.EmojiKeyboardView
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper
 import com.imbox.emojikeyboard.utils.DisplayUtils.hideKeyboard
 import com.imbox.emojikeyboard.utils.DisplayUtils.showKeyboard
 
@@ -51,8 +52,9 @@ class EmojiPopup(private val rootView: ViewGroup) {
 
     private class PopupContainer(context: Context): FrameLayout(context)
     private val context = rootView.context
-    private val popupContainer = PopupContainer(context)
-    private val emojiKeyboard = EmojiKeyboardView(context)
+    private val themedContext = EmojiThemeHelper.wrapContext(context, EmojiManager.getConfig().themeMode)
+    private val popupContainer = PopupContainer(themedContext)
+    private val emojiKeyboard = EmojiKeyboardView(themedContext)
     private val stateMachine = PopupStateMachine(this)
     private val animator = PopupAnimator(this)
     private val prefs get() = EmojiManager.getPrefsManager()

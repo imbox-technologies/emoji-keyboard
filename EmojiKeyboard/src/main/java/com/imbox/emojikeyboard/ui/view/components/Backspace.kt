@@ -29,6 +29,7 @@ import androidx.core.graphics.drawable.toDrawable
 import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 
 @SuppressLint("ClickableViewAccessibility", "ViewConstructor")
 internal class Backspace(context: Context, private val delegate: EmojiDelegate) :
@@ -45,6 +46,9 @@ internal class Backspace(context: Context, private val delegate: EmojiDelegate) 
 
     init {
         setImageResource(R.drawable.emjkb_delete)
+        imageTintList = android.content.res.ColorStateList.valueOf(
+            resolveColor(context, R.attr.emjkb_colorOnBackgroundVariant)
+        )
         scaleType = ScaleType.CENTER_INSIDE
         setPadding(12.dp, 12.dp, 12.dp, 12.dp)
         background = createBackspaceBackground(context)
@@ -70,7 +74,7 @@ internal class Backspace(context: Context, private val delegate: EmojiDelegate) 
     private fun createBackspaceBackground(context: Context): StateListDrawable {
         val pressedShape = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(context.getColor(R.color.emjkb_light_gray))
+            setColor(resolveColor(context, R.attr.emjkb_colorHighlight))
         }
 
         return StateListDrawable().apply {
