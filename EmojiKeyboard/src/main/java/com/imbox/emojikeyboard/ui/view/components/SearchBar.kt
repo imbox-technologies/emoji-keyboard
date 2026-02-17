@@ -30,6 +30,7 @@ import androidx.core.widget.addTextChangedListener
 import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.ui.view.EmojiDelegate
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 
 @SuppressLint("ViewConstructor")
 internal class SearchBar(context: Context, private val delegate: EmojiDelegate) :
@@ -45,7 +46,7 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
         // Styling
         radius = 20.dp.toFloat()
         cardElevation = 0f // 2.dp.toFloat()
-        setCardBackgroundColor(context.getColor(R.color.emjkb_white))
+        setCardBackgroundColor(resolveColor(context, R.attr.emjkb_colorSurface))
 
         preventCornerOverlap = false
         useCompatPadding = false
@@ -103,8 +104,8 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
             isSingleLine = true
             includeFontPadding = false
             imeOptions = EditorInfo.IME_ACTION_NONE
-            setTextColor(context.getColor(R.color.emjkb_black))
-            setHintTextColor(context.getColor(R.color.emjkb_gray))
+            setTextColor(resolveColor(context, R.attr.emjkb_colorOnBackground))
+            setHintTextColor(resolveColor(context, R.attr.emjkb_colorOnBackgroundVariant))
             textSize = 16f
         }
     }
@@ -112,6 +113,9 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
     private fun buildClearButton(): AppCompatImageView {
         return AppCompatImageView(context).apply {
             setImageResource(R.drawable.emjkb_cross)
+            imageTintList = android.content.res.ColorStateList.valueOf(
+                resolveColor(context, R.attr.emjkb_colorOnBackgroundVariant)
+            )
             visibility = GONE
             layoutParams = LinearLayout.LayoutParams(24.dp, 24.dp).apply {
                 marginEnd = 2.dp
@@ -123,7 +127,9 @@ internal class SearchBar(context: Context, private val delegate: EmojiDelegate) 
     private fun buildSearchIcon(): AppCompatImageView {
         return AppCompatImageView(context).apply {
             setImageResource(R.drawable.emjkb_search)
-            imageTintList = context.getColorStateList(R.color.emjkb_gray)
+            imageTintList = android.content.res.ColorStateList.valueOf(
+                resolveColor(context, R.attr.emjkb_colorOnBackgroundVariant)
+            )
             layoutParams = LinearLayout.LayoutParams(24.dp, 24.dp).apply {
                 marginStart = 4.dp
                 marginEnd = 8.dp

@@ -17,10 +17,11 @@
 package com.imbox.emojikeyboard.ui.view.components
 
 import android.content.Context
-import android.graphics.Color
 import android.util.TypedValue
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import com.imbox.emojikeyboard.R
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 import kotlin.math.min
 
 class EmojiCellView(context: Context) : AppCompatTextView(context) {
@@ -28,7 +29,7 @@ class EmojiCellView(context: Context) : AppCompatTextView(context) {
     init {
         gravity = Gravity.CENTER
         includeFontPadding = false
-        setTextColor(Color.BLACK)
+        setTextColor(resolveColor(context, R.attr.emjkb_colorOnBackground))
 
         val outValue = TypedValue()
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)

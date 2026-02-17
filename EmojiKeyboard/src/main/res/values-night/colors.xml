@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="emjkb_colorBackground">#1E1E1E</color>
+    <color name="emjkb_colorSurface">#2C2C2C</color>
+    <color name="emjkb_colorOnBackground">#E0E0E0</color>
+    <color name="emjkb_colorOnBackgroundVariant">#9E9E9E</color>
+    <color name="emjkb_colorHighlight">#3D3D3D</color>
+</resources>

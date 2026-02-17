@@ -17,6 +17,7 @@
 package com.imbox.emojikeyboard.ui.view.components
 
 import android.content.Context
+import android.graphics.Typeface
 import android.text.TextUtils
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -24,6 +25,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
 import com.imbox.emojikeyboard.R
 import com.imbox.emojikeyboard.utils.DisplayUtils.dp
+import com.imbox.emojikeyboard.utils.EmojiThemeHelper.resolveColor
 
 class EmojiHeaderItem (context: Context) : AppCompatTextView(context) {
 
@@ -39,8 +41,9 @@ class EmojiHeaderItem (context: Context) : AppCompatTextView(context) {
         maxLines = 1
         ellipsize = TextUtils.TruncateAt.END
         setSingleLine()
-
-        setTextAppearance(context, R.style.HeaderText)
+        setTextSize(14f)
+        setTypeface(typeface, Typeface.BOLD)
+        setTextColor(resolveColor(context, R.attr.emjkb_colorOnBackground))
     }
 
 }

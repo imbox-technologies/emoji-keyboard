@@ -10,36 +10,4 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <style name="SimpleTextStyle">
-        <item name="android:textColor">#000000</item>
-        <item name="android:textColorHint">#000000</item>
-    </style>
-
-    <style name="SimpleCardBubbleStyle">
-        <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">0dp</item>
-        <item name="cardBackgroundColor">#6DA7D0</item>
-    </style>
-
-    <style name="HeaderText">
-        <item name="android:textSize">14sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#404040</item>
-    </style>
-
-
-    <!-- CLEAN -->
-    <style name="SearchBarText">
-        <item name="android:textColorHint">@color/emjkb_gray</item>
-        <item name="android:textColor">@color/emjkb_black</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:background">@null</item>
-    </style>
-
-    <style name="SearchBarBackground">
-        <item name="cardCornerRadius">20dp</item>
-        <item name="cardElevation">0dp</item>
-        <item name="cardBackgroundColor">@color/emjkb_white</item>
-    </style>
-
 </resources>

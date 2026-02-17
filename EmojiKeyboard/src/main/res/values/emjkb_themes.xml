@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="EmojiKeyboardTheme" parent="">
+        <item name="emjkb_colorBackground">@color/emjkb_colorBackground</item>
+        <item name="emjkb_colorSurface">@color/emjkb_colorSurface</item>
+        <item name="emjkb_colorOnBackground">@color/emjkb_colorOnBackground</item>
+        <item name="emjkb_colorOnBackgroundVariant">@color/emjkb_colorOnBackgroundVariant</item>
+        <item name="emjkb_colorHighlight">@color/emjkb_colorHighlight</item>
+    </style>
+
+    <style name="EmojiKeyboardTheme.Light" parent="">
+        <item name="emjkb_colorBackground">#F0F0F0</item>
+        <item name="emjkb_colorSurface">#FFFFFF</item>
+        <item name="emjkb_colorOnBackground">#000000</item>
+        <item name="emjkb_colorOnBackgroundVariant">#888888</item>
+        <item name="emjkb_colorHighlight">#BDBDBD</item>
+    </style>
+
+    <style name="EmojiKeyboardTheme.Dark" parent="">
+        <item name="emjkb_colorBackground">#1E1E1E</item>
+        <item name="emjkb_colorSurface">#2C2C2C</item>
+        <item name="emjkb_colorOnBackground">#E0E0E0</item>
+        <item name="emjkb_colorOnBackgroundVariant">#9E9E9E</item>
+        <item name="emjkb_colorHighlight">#3D3D3D</item>
+    </style>
+</resources>
