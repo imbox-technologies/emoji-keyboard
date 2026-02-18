@@ -1,9 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.EmojiKeyboardTest" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/emojitest_primary</item>
+        <item name="colorOnPrimary">@color/emojitest_on_primary</item>
+        <item name="colorSurface">@color/emojitest_surface</item>
+        <item name="colorOnSurface">@color/emojitest_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/emojitest_on_surface_variant</item>
+        <item name="android:statusBarColor">@color/emojitest_background</item>
+        <item name="android:navigationBarColor">@color/emojitest_background</item>
+        <item name="android:windowBackground">@color/emojitest_background</item>
+        <item name="android:colorBackground">@color/emojitest_background</item>
     </style>
-
     <style name="Theme.EmojiKeyboardTest" parent="Base.Theme.EmojiKeyboardTest" />
 </resources>

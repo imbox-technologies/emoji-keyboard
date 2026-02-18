@@ -18,7 +18,7 @@
         android:paddingTop="8dp"
         android:paddingEnd="12dp"
         android:paddingBottom="8dp"
-        android:textColor="@android:color/white"
+        android:textColor="@color/chat_bubble_text"
         android:textSize="16sp"
         app:dynamicEmojiSizeEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"

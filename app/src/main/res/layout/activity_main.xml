@@ -5,15 +5,14 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="?android:attr/colorBackground"
     tools:context=".MainActivity">
 
-    <!-- Simple header -->
     <LinearLayout
         android:id="@+id/header_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="?android:attr/colorBackground"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="8dp"
@@ -24,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Emoji Keyboard Test 😀"
-            android:textColor="@color/emjkb_black"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -33,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="COLLAPSED"
-            android:textColor="#8E8E93"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -58,7 +57,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        app:cardBackgroundColor="@color/emjkb_white"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_send"
@@ -79,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:src="@drawable/emjkb_smile"
-                android:tint="@color/emjkb_black"
+                android:tint="?attr/colorOnSurface"
                 android:visibility="visible"
                 tools:visibility="visible" />
 
@@ -93,8 +92,8 @@
                 android:background="@null"
                 android:hint="@string/write_here"
                 android:includeFontPadding="false"
-                android:textColor="@color/emjkb_black"
-                android:textColorHint="#9D9D9D" />
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -110,7 +109,7 @@
         android:focusable="true"
         android:padding="8dp"
         android:src="@drawable/ic_send"
-        android:tint="#4CB6C5"
+        android:tint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@id/input_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_goneMarginBottom="8dp" />

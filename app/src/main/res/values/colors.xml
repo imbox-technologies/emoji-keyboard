@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="emjkb_black">#FF000000</color>
+    <color name="emjkb_black">#FF1C1C1E</color>
     <color name="emjkb_white">#FFFFFFFF</color>
+    <color name="chat_bubble">#266C76</color>
+    <color name="chat_bubble_text">#FFFFFFFF</color>
+    <color name="emojitest_background">#FFF5F4F2</color>
+    <color name="emojitest_surface">#FFFFFFFF</color>
+    <color name="emojitest_on_surface">#FF1C1C1E</color>
+    <color name="emojitest_on_surface_variant">#FF6E6E73</color>
+    <color name="emojitest_primary">#FF2E7D7A</color>
+    <color name="emojitest_on_primary">#FFFFFFFF</color>
 </resources>
