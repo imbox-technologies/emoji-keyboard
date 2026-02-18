@@ -21,16 +21,25 @@ import android.graphics.Typeface
 import com.imbox.emojikeyboard.EmojiConfig
 import com.imbox.emojikeyboard.EmojiLayoutMode
 import com.imbox.emojikeyboard.EmojiManager
+import com.imbox.emojikeyboard.EmojiThemeMode
+import com.imbox.emojikeyboardtest.prefs.KeyboardConfigPrefs
 
 class EmojiKeyboardTestApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        val configPrefs = KeyboardConfigPrefs(this)
+        val font = if (configPrefs.fontId == "cooper") {
+            runCatching { Typeface.createFromAsset(assets, "fonts/Cooper.ttf") }.getOrNull()
+        } else null
+        val layoutMode = configPrefs.layoutMode
+        val themeMode = configPrefs.themeMode
         EmojiManager.install(
             context = this,
             config = EmojiConfig(
-                font = Typeface.createFromAsset(this.assets, "fonts/Cooper.ttf"),
-                layoutMode = EmojiLayoutMode.COOPER
+                font = font,
+                layoutMode = layoutMode,
+                themeMode = themeMode
             )
         )
     }

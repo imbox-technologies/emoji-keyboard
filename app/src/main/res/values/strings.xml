@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name" translatable="false">EmojiKeyboardTest</string>
     <string name="write_here">Hello! 😀. Write here to test</string>
+    <string name="open_keyboard_config">Open keyboard configuration</string>
+    <string name="keyboard_config_title">Keyboard options</string>
+    <string name="keyboard_config_subtitle">Preview changes in real time</string>
+    <string name="keyboard_config_font">Emoji font</string>
+    <string name="keyboard_config_layout">Layout mode</string>
+    <string name="keyboard_config_theme">Theme mode</string>
+    <string name="option_font_default">Default</string>
+    <string name="option_font_cooper">Cooper</string>
 </resources>

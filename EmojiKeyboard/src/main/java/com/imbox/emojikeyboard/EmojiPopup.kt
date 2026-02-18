@@ -52,9 +52,8 @@ class EmojiPopup(private val rootView: ViewGroup) {
 
     private class PopupContainer(context: Context): FrameLayout(context)
     private val context = rootView.context
-    private val themedContext = EmojiThemeHelper.wrapContext(context, EmojiManager.getConfig().themeMode)
-    private val popupContainer = PopupContainer(themedContext)
-    private val emojiKeyboard = EmojiKeyboardView(themedContext)
+    private val popupContainer = PopupContainer(context)
+    private var emojiKeyboard = EmojiKeyboardView(buildThemedContext())
     private val stateMachine = PopupStateMachine(this)
     private val animator = PopupAnimator(this)
     private val prefs get() = EmojiManager.getPrefsManager()
@@ -84,6 +83,10 @@ class EmojiPopup(private val rootView: ViewGroup) {
         setupLayout()
         setupInsetsListener()
         setupSearchFocusListener()
+    }
+
+    private fun buildThemedContext(): Context {
+        return EmojiThemeHelper.wrapContext(context, EmojiManager.getConfig().themeMode)
     }
 
 
@@ -162,6 +165,24 @@ class EmojiPopup(private val rootView: ViewGroup) {
     // PUBLIC API
     val state: PopupState get() = stateMachine.state
     fun bindTo(editText: EditText?) { targetEditText = editText }
+    fun recreateFromConfig() {
+        val newKeyboard = EmojiKeyboardView(buildThemedContext())
+        targetEditText?.let(newKeyboard::setupWith)
+        popupContainer.removeAllViews()
+        val keyboardHeight = when {
+            currentHeight > 0 -> currentHeight
+            prefs.lastKeyboardHeight > 0 -> prefs.lastKeyboardHeight
+            else -> DEFAULT_HEIGHT_DP.dp
+        }
+        popupContainer.addView(newKeyboard, FrameLayout.LayoutParams(MATCH_PARENT, keyboardHeight))
+        newKeyboard.updateContentHeight(keyboardHeight)
+        emojiKeyboard = newKeyboard
+        setupSearchFocusListener()
+        emojiKeyboard.onStateChanged(state)
+        if (isInstalled) {
+            ViewCompat.requestApplyInsets(rootView)
+        }
+    }
     fun toggle() {
         if (!isInstalled) {
             isInstalled = true

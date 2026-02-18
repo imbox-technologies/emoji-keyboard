@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="chip_config_stroke_width">1.5dp</dimen>
+</resources>

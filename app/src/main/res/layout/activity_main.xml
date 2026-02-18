@@ -13,23 +13,43 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/colorBackground"
-        android:gravity="center"
         android:orientation="vertical"
-        android:padding="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.imbox.emojikeyboard.text.EmojiTextView
-            android:id="@+id/welcome_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Emoji Keyboard Test 😀"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.imbox.emojikeyboard.text.EmojiTextView
+                android:id="@+id/welcome_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Emoji Keyboard Test 😀"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_open_config"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="end|center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="@string/open_keyboard_config"
+                android:focusable="true"
+                android:padding="6dp"
+                android:src="@drawable/ic_tune"
+                android:tint="?attr/colorOnSurface" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/debug_status"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:gravity="center"
             android:layout_height="wrap_content"
             android:text="COLLAPSED"
             android:textColor="?attr/colorOnSurfaceVariant"

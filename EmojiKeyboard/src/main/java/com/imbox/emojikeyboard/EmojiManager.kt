@@ -145,6 +145,15 @@ object EmojiManager {
         return appContext
     }
 
+    @JvmStatic
+    fun updateConfig(config: EmojiConfig) {
+        checkInstalled()
+        synchronized(this) {
+            this.config = config
+            loadTypeface()
+        }
+    }
+
     private fun loadTypeface() {
         typeface = config.font ?: Typeface.DEFAULT
     }
