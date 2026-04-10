@@ -17,7 +17,6 @@
 package com.imbox.emojikeyboardtest
 
 import android.app.Application
-import android.graphics.Typeface
 import com.imbox.emojikeyboard.EmojiConfig
 import com.imbox.emojikeyboard.EmojiLayoutMode
 import com.imbox.emojikeyboard.EmojiManager
@@ -29,7 +28,7 @@ class EmojiKeyboardTestApp : Application() {
         EmojiManager.install(
             context = this,
             config = EmojiConfig(
-                font = Typeface.createFromAsset(this.assets, "fonts/Cooper.ttf"),
+                fontAssetPath = "fonts/Cooper.ttf",
                 layoutMode = EmojiLayoutMode.COOPER
             )
         )

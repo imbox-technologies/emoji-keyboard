@@ -34,6 +34,7 @@ enum class EmojiThemeMode {
 data class EmojiConfig @JvmOverloads constructor(
     val provider: EmojiProvider = AssetEmojiProvider,
     val font: Typeface? = null,
+    val fontAssetPath: String? = null,
     val layoutMode: EmojiLayoutMode = EmojiLayoutMode.COOPER,
     val themeMode: EmojiThemeMode = EmojiThemeMode.DEFAULT,
 )

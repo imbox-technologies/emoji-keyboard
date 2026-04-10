@@ -36,7 +36,7 @@ object EmojiManager {
     private lateinit var config: EmojiConfig
 
     private var categories: List<Category> = emptyList()
-    private var typeface: Typeface? = null
+    @Volatile private var typeface: Typeface? = null
     private var emojiIndex: EmojiIndex? = null
 
     private val managerScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -62,7 +62,9 @@ object EmojiManager {
             appContext = context.applicationContext
             this.config = config
 
-            loadTypeface()
+            if (config.font != null) {
+                typeface = config.font
+            }
             preloadCategories()
 
             installed = true
@@ -145,13 +147,18 @@ object EmojiManager {
         return appContext
     }
 
-    private fun loadTypeface() {
-        typeface = config.font ?: Typeface.DEFAULT
-    }
-
     private fun preloadCategories() {
         managerScope.launch(Dispatchers.IO) {
+            loadTypefaceFromAssetIfNeeded()
             loadCategoriesAndBuildIndex()
+        }
+    }
+
+    private fun loadTypefaceFromAssetIfNeeded() {
+        if (typeface == null) {
+            typeface = config.fontAssetPath?.let {
+                Typeface.createFromAsset(appContext.assets, it)
+            } ?: Typeface.DEFAULT
         }
     }
 
